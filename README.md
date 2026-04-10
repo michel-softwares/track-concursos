@@ -36,7 +36,7 @@ QR Code Pix
 - [Por Que Este Projeto Existe](#por-que-este-projeto-existe)
 - [Principais Funcionalidades](#principais-funcionalidades)
 - [Modelos de Prova Suportados](#modelos-de-prova-suportados)
-- [Fluxo de Uso](#fluxo-de-uso)
+- [Manual de uso inicial](#manual-de-uso-inicial)
 - [Instalação](#instalacao)
 - [Como Abrir o Programa](#como-abrir-o-programa)
 - [Estrutura do Projeto](#estrutura-do-projeto)
@@ -49,7 +49,7 @@ QR Code Pix
 
 ## Visão Geral
 
-O Track Concursos foi pensado para quem precisa de algo mais completo do que uma planilha ou checklist genérico. Cada concurso pode ser tratado como um projeto de estudo, com organização do conteúdo, registro da execução, controle de revisões, simulados e análise de desempenho.
+O Track Concursos foi criado para ser o centro da sua preparação. Aqui, cada concurso vira um projeto completo de estudo, com conteúdo programático organizado, ciclo de estudos, painel da prova, revisões, simulados e métricas que ajudam você a enxergar com clareza onde está evoluindo e onde ainda precisa melhorar.
 
 Com ele, é possível:
 
@@ -67,13 +67,13 @@ Com ele, é possível:
 
 ## Por Que Este Projeto Existe
 
-Como um concurseiro, eu sei que a nossa preparação para concursos costuma ficar espalhada entre PDFs, cronômetros, várias planilhas, cadernos e plataformas de questões. O Track Concursos nasceu para reunir essas camadas em um único ambiente organizado, reduzindo a fragmentação e permitindo um acompanhamento mais claro da jornada, acessando aulas e livros com poucos cliques.
+Como concurseiro, eu sei que a nossa preparação para concursos costuma ficar espalhada entre PDFs, cronômetros, várias planilhas, cadernos e plataformas de questões. O Track Concursos nasceu para reunir essas camadas em um único ambiente organizado, reduzindo a fragmentação e permitindo um acompanhamento mais claro da jornada, acessando aulas e livros com poucos cliques.
 
 Ele centraliza:
 
-- planejamento do edital intelingente e com auxílio de inteligência artificial (PROMPT que organiza automaticamente todo o contéudo programático para você)
+- planejamento do edital inteligente e com auxílio de inteligência artificial (PROMPT que organiza automaticamente todo o conteúdo programático para você)
 - rotina diária de estudo
-- registro de horas estudadas e questões, com uma análise profunda de pontos fracos e fortes
+- registro de horas estudadas e questões, com análise profunda dos pontos fortes e fracos
 - revisões periódicas
 - simulados com uma área de análise de dados específica para ele
 - histórico de todas as suas conquistas, desde reprovações em concursos até aprovações e a tão sonhada nomeação
@@ -125,7 +125,7 @@ Os simulados podem ser lançados manualmente ou calculados automaticamente a par
 - comparação com o simulado anterior
 - comparação com a média geral
 - raio-x por matéria
-- análise de maior facilidade e maior dificuldade
+- análise dos pontos fortes e das maiores dificuldades
 
 ### 6. Edital Premium
 
@@ -172,10 +172,10 @@ Isso permite que o cálculo dos simulados fique mais fiel ao edital cadastrado p
 Um fluxo comum dentro do Track Concursos é:
 
 1. Criar um novo concurso em `Meus Concursos`
-2. Cadastrar manualmente ou importar a estrutura do edital através de um EDITAL PREMIUM (feito e distribuído por mim, não tente importar dados de outros usuários pois isso pode corromper seu aplicativo!)
-3. Criar e escolher entre ciclo de estudos ou cronograma semanal
+2. Cadastrar manualmente ou importar a estrutura do edital por meio de um EDITAL PREMIUM (feito e distribuído por mim, não tente importar dados de outros usuários pois isso pode corromper seu aplicativo!)
+3. Escolher entre ciclo de estudos e cronograma semanal
 4. Configurar o Painel da Prova
-5. Linkar seu material de estudo: é possível linkar pdfs diretamente do seu computador, ou da internet, em cada matéria/tópico/subtópico
+5. Linkar seu material de estudo: é possível linkar PDFs diretamente do seu computador ou da internet, em cada matéria/tópico/subtópico
 6. Registrar suas horas estudadas e questões feitas
 7. Criar e realizar simulados para acompanhar a evolução geral e por matéria
 
@@ -187,7 +187,7 @@ Um fluxo comum dentro do Track Concursos é:
 
 - Windows 11
 - Python 3.11 ou superior
-- Instalar os requisitos presentes em requirements.txt que são
+- Instale os requisitos presentes no arquivo requirements.txt, que são:
 pywebview>=4.4.1
 pyinstaller>=6.0
 
@@ -202,7 +202,7 @@ Se o Python ainda não estiver instalado:
 
 ### Instalação das dependências/requisitos
 
-Abra o terminal na pasta do projeto (na pasta do Track Concursos, clique com o botão direito em uma área vazia em seguida clique em Abrir no Terminal) e rode:
+Abra o terminal na pasta do projeto (na pasta do Track Concursos, clique com o botão direito em uma área vazia e, em seguida, clique em Abrir no Terminal) e rode:
 
 ```powershell
 pip install -r requirements.txt
@@ -263,7 +263,7 @@ O aplicativo salva os dados LOCALMENTE na própria pasta do projeto. Isso inclui
 - backups
 - configurações auxiliares
 
-Na prática, isso significa que os **dados são portáteis**. Se a pasta completa do programa for levada para outro computador com Python e dependências instalados, a tendência é que o app continue funcionando com os mesmos dados locais.
+Na prática, isso significa que os **dados são portáteis**. Se a pasta completa do programa for transferida para outro computador com Python e dependências instalados, a tendência é que o app continue funcionando com os mesmos dados locais.
 
 Importante:
 
@@ -295,14 +295,14 @@ Tecnologias utilizadas:
 
 - Linguagens: HTML, CSS, JavaScript e Python
 - Claude Sonnet 4.6: utilizado no início do projeto
-- Antigraviry Gemini 3 Flash e Gemini 3.1 Pro: utilizados em grande parte do desenvolvimento
+- Antigravity Gemini 3 Flash e Gemini 3.1 Pro: utilizados em grande parte do desenvolvimento
 - Codex GPT-5.4: utilizado no refatoramento e na finalização do projeto
 
 ---
 
 ## Solução de Problemas
 
-### `python nao e reconhecido como comando`
+### `python nao é reconhecido como comando`
 
 - reinstale o Python marcando `Add Python to PATH`
 
@@ -318,7 +318,7 @@ pip install pywebview
 
 - confira se a pasta `www/` está na mesma pasta do programa
 
-### `O launcher .pyw nao abriu`
+### `O launcher .pyw não abriu`
 
 Tente:
 
@@ -330,7 +330,7 @@ pythonw "Track Concursos.pyw"
 
 ## Contato e comunidade
 
-Sugestões, feedbacks e dúvidas são sempre bem-vindos. Também estou disponível para tirar dúvidas e auxiliar sobre o uso do programa no grupo do Telegram.
+Sugestões, feedbacks e dúvidas são sempre bem-vindos. Também estou disponível para tirar dúvidas e auxiliar no uso do programa no grupo do Telegram.
 
 - [Grupo no Telegram](https://t.me/+nlYaAYBFTYs4YTYx)
 
