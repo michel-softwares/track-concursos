@@ -23,7 +23,9 @@ Se ele foi útil para você, considere apoiar o projeto com uma doação via Pix
 
 QR Code Pix
 
-![QR Code Pix](www/assets/qrcode-pix.png)
+<p>
+  <img src="www/assets/qrcode-pix.png" alt="QR Code Pix" width="300">
+</p>
 
 ---
 
