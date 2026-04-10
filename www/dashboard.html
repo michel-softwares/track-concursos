@@ -2231,12 +2231,12 @@
       const materias = CT.getMaterias(cId);
       let totalGlobal = 0;
 
-      const metaHtml = `
+      const metaHtml = isCespe ? `
         <div style="padding:0 14px 12px; font-size:11px; color:var(--text3); display:flex; flex-wrap:wrap; gap:8px; align-items:center">
-          <span style="font-weight:800; color:${isCespe ? 'var(--accent2)' : 'var(--accent)'}">${isCespe ? 'Método CESPE/CEBRASPE' : 'Método tradicional por peso'}</span>
-          <span>${isCespe ? `+1 por acerto • -${formatPainelNumero(errorPenalty)} por erro • 0 em branco` : 'Pontuação por questão x peso'}</span>
+          <span style="font-weight:800; color:var(--accent2)">Método CESPE/CEBRASPE</span>
+          <span>+1 por acerto • -${formatPainelNumero(errorPenalty)} por erro • 0 em branco</span>
         </div>
-      `;
+      ` : '';
 
       resEl.innerHTML = metaHtml + config.groups.map(g => {
         let groupScore = 0;
