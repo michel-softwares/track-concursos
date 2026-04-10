@@ -4,7 +4,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Windows](https://img.shields.io/badge/platform-Windows-0A84FF.svg)](#instalacao)
-[![Status](https://img.shields.io/badge/status-beta-6C63FF.svg)](#visao-geral)
+[![Status](https://img.shields.io/badge/status-v1.0-6C63FF.svg)](#visao-geral)
 [![Licença Proprietária](https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg)](LICENSE)
 
 **Track Concursos** é um aplicativo desktop criado para organizar a rotina de estudos para concursos públicos, desde o planejamento do pré-edital até a análise pós-prova, reunindo organização do seu material de estudo particular, execução e acompanhamento de desempenho em uma única experiência local.
