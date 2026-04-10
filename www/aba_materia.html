@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Matéria</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14; --bg2: #13161e; --bg3: #1a1e2a; --bg4: #1f2330;
+    --border: #252836; --border2: #2e3347;
+    --accent: #4f8ef7; --accent2: #7c5cfc;
+    --text: #e8eaf2; --text2: #f1f2f6; --text3: #a1a6c2;
+    --green: #3ecf8e; --green2: #27a06b; --yellow: #FFD700; --orange: #f5874a; --red: #f55a5a;
+    --mono: 'Inter', sans-serif; --sans: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { position: fixed; left:0; top:0; bottom:0; width:220px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 0; z-index:100; }
+  .sidebar-logo { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .brand-logo:hover { transform: scale(1.04); }
+  .nav { padding:16px 12px; flex:1; }
+  .nav-label { font-size:12px; font-weight:600; letter-spacing:1.5px; color:var(--text3); padding:0 8px; margin-bottom:8px; text-transform:uppercase; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; cursor:pointer; font-size:13.5px; font-weight:500; color:var(--text2); transition:all 0.15s; margin-bottom:2px; }
+  .nav-item:hover { background:var(--bg3); color:var(--text); }
+  .nav-item.active { background:rgba(79,142,247,0.12); color:var(--accent); }
+  .nav-item .icon { font-size:16px; width:20px; text-align:center; }
+  .sidebar-concurso { margin:0 12px 12px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px; }
+  .concurso-nome { font-size:12px; font-weight:700; color:var(--text); margin-bottom:2px; }
+  .concurso-banca { font-size:12px; color:var(--text3); margin-bottom:10px; }
+  .timer-box { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; text-align:center; }
+  .timer-num { font-family:var(--mono); font-size:22px; font-weight:700; color:var(--accent); line-height:1; }
+  .timer-label { font-size:12px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
+
+  /* MAIN */
+  .main { margin-left:220px; min-height:100vh; }
+
+  /* TOP BAR DA MATÉRIA */
+  .materia-topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 32px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:50; }
+  .back-link { display:flex; align-items:center; gap:6px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; border:1px solid var(--border); background:var(--bg3); font-family:var(--sans); padding:6px 12px; border-radius:8px; flex-shrink:0; }
+  .back-link:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,142,247,0.08); }
+  .topbar-divider { width:1px; height:20px; background:var(--border); flex-shrink:0; }
+  .topbar-materia { font-size:16px; font-weight:700; color:var(--text); flex:1; }
+  .topbar-cadernos-btn { display:flex; align-items:center; gap:7px; padding:7px 14px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+  .topbar-cadernos-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* PROGRESSO DA MATÉRIA */
+  .materia-progress { padding:20px 32px; background:var(--bg2); border-bottom:1px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:16px; align-items:center; }
+  .prog-info { display:flex; align-items:center; gap:20px; }
+  .prog-num { font-family:var(--mono); font-size:12px; color:var(--text2); }
+  .prog-num strong { color:var(--text); }
+  .prog-pct { font-family:var(--mono); font-size:22px; font-weight:700; color:var(--accent); }
+  .prog-bar-wrap { flex:1; max-width:300px; }
+  .prog-bar { height:6px; background:var(--bg3); border-radius:6px; overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:6px; transition:width 0.6s ease; }
+  .prog-stats { display:flex; gap:16px; cursor:pointer; padding:8px 12px; border-radius:10px; transition:all 0.15s; position:relative; }
+  .prog-stats:hover { background:rgba(79,142,247,0.08); }
+  .prog-stats::after { content:'✏️'; position:absolute; top:-6px; right:-6px; font-size:12px; opacity:0; transition:opacity 0.2s; }
+  .prog-stats:hover::after { opacity:1; }
+  .prog-stat { text-align:center; }
+  .prog-stat-val { font-family:var(--mono); font-size:16px; font-weight:700; color:var(--text); }
+  .prog-stat-label { font-size:12px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  /* CADERNOS DA MATÉRIA (simulado geral) */
+  .materia-cadernos-bar { padding:12px 32px; background:rgba(79,142,247,0.04); border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:12px; }
+  .cadernos-bar-label { display:flex; flex-direction:column; gap:3px; min-width:220px; max-width:360px; flex-shrink:0; }
+  .cadernos-bar-label strong { font-size:12px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; }
+  .cadernos-bar-label small { font-size:11px; color:var(--text3); line-height:1.35; opacity:0.92; }
+  .cadernos-list { display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; }
+  .caderno-chip { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; transition:transform 0.15s; }
+  .caderno-chip:hover { transform:scale(1.1); }
+  .caderno-emoji { font-size:20px; line-height:1; }
+  .caderno-label { font-size:8px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+  .caderno-add { width:28px; height:28px; border-radius:50%; background:var(--bg3); border:1px dashed var(--border2); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--text3); cursor:pointer; transition:all 0.15s; }
+  .caderno-add:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,142,247,0.08); }
+
+  /* CONTENT */
+  .content { padding:24px 32px; }
+
+  /* TÓPICO */
+  .topico-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden; transition:border-color 0.15s; }
+  .topico-card:hover { border-color:var(--border2); }
+  .topico-card.estudado { border-color:rgba(62,207,142,0.3); }
+  .topico-card.estudado .topico-header { background:rgba(62,207,142,0.03); }
+
+  .topico-header { display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; }
+  .topico-expand { font-size:12px; color:var(--text3); transition:transform 0.2s; flex-shrink:0; width:16px; }
+  .topico-card.open .topico-expand { transform:rotate(90deg); }
+
+  .topico-nome { flex:1; font-size:14px; font-weight:600; color:var(--text); line-height:1.3; }
+  .topico-card.estudado .topico-nome { color:var(--green); }
+
+  /* AÇÕES DO TÓPICO */
+  .topico-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+  .pct-badge { font-family:var(--mono); font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px; }
+.pct-badge.g1 { background:rgba(52,245,141,0.16); color:#34f58d; }
+.pct-badge.g2 { background:rgba(156,247,204,0.16); color:#9cf7cc; }
+.pct-badge.y  { background:rgba(255,228,92,0.16); color:#ffe45c; }
+  .pct-badge.o  { background:rgba(245,135,74,0.15); color:var(--orange); }
+  .pct-badge.r  { background:rgba(245,90,90,0.15); color:var(--red); }
+  .pct-badge.none { color:var(--text3); font-size:12px; }
+
+  .chip { display:flex; flex-direction:column; align-items:center; gap:1px; cursor:pointer; transition:transform 0.15s; }
+  .chip:hover { transform:scale(1.15); }
+  .chip-emoji { font-size:17px; line-height:1; }
+  .chip-label { font-size:7px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.3px; }
+
+  .revisao-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:12px; font-weight:600; }
+  .revisao-badge.hoje { background:rgba(245,200,66,0.12); color:var(--yellow); border:1px solid rgba(245,200,66,0.25); }
+  .revisao-badge.atrasada { background:rgba(245,90,90,0.12); color:var(--red); border:1px solid rgba(245,90,90,0.25); }
+  .revisao-badge.agendada { background:rgba(79,142,247,0.08); color:var(--text3); border:1px solid var(--border); font-size:12px; }
+
+  .btn-estudado { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; border:none; font-family:var(--sans); }
+  .btn-estudado.pendente { background:var(--bg3); color:var(--text3); border:1px solid var(--border2); }
+  .btn-estudado.pendente:hover { border-color:var(--green); color:var(--green); background:rgba(62,207,142,0.06); }
+  .btn-estudado.done { background:rgba(62,207,142,0.12); color:var(--green); border:1px solid rgba(62,207,142,0.3); }
+
+  /* SUBTÓPICO */
+  .topico-body { display:none; padding:0 16px 12px 42px; }
+  .topico-card.open .topico-body { display:block; }
+
+  /* QUESTOES INLINE */
+  .questoes-inline { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; }
+  .questoes-inline-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .questoes-inline-title { font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
+  .questoes-hist { display:flex; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .qhist-item { font-size:12px; color:var(--text2); font-family:var(--mono); }
+  .qhist-item span { font-weight:700; }
+  .qhist-item span.c { color:var(--green); }
+  .qhist-item span.e { color:var(--red); }
+
+  .cole-row { display:flex; align-items:center; gap:8px; }
+  .cole-input { flex:1; background:var(--bg2); border:1px solid var(--border2); border-radius:7px; padding:7px 12px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; transition:border-color 0.15s; }
+  .cole-input:focus { border-color:var(--accent); }
+  .cole-input::placeholder { color:var(--text3); }
+  .cole-btn { padding:7px 11px; border-radius:7px; border:1px solid var(--border2); background:var(--bg2); color:var(--text3); font-size:12px; cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+  .cole-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .cole-btn.undo { font-size:12px; }
+
+  .quick-field::-webkit-inner-spin-button,
+  .quick-field::-webkit-outer-spin-button,
+  .sub-quick-field::-webkit-inner-spin-button,
+  .sub-quick-field::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  .quick-field, .sub-quick-field { -moz-appearance:textfield; appearance: textfield; }
+
+  /* ENTRADA RÁPIDA */
+  .quick-inputs { display:flex; gap:6px; flex-shrink:0; }
+  .quick-group { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .quick-label { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; }
+  .quick-label.c { color:var(--green); }
+  .quick-label.e { color:var(--red); }
+  .quick-field { width:46px; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:5px 6px; color:var(--text); font-family:var(--mono); font-size:12px; font-weight:700; text-align:center; outline:none; transition:all 0.15s; }
+  .quick-field.acertos:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(62,207,142,0.12); }
+  .quick-field.erros:focus   { border-color:var(--red);   box-shadow:0 0 0 2px rgba(245,90,90,0.12); }
+  .quick-field::placeholder  { color:var(--text3); font-size:12px; }
+
+  /* SUBTÓPICO ROW */
+  .subtopico-row { display:flex; flex-direction:column; padding:8px 0; border-bottom:1px solid var(--border); gap:6px; }
+  .subtopico-row:last-of-type { border-bottom:none; }
+  .sub-main { display:flex; align-items:center; gap:8px; }
+  .sub-dot { width:6px; height:6px; border-radius:50%; background:var(--border2); flex-shrink:0; }
+  .sub-dot.done { background:var(--green); }
+  .sub-nome { flex:1; font-size:12px; color:var(--text2); line-height:1.3; }
+  .sub-nome.done { color:var(--green); text-decoration:line-through; opacity:0.7; }
+  .sub-actions { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+
+  /* QUESTÕES DO SUBTÓPICO */
+  .sub-questoes { margin-left:14px; background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:7px 10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .sub-qhist { display:flex; gap:10px; flex:1; flex-wrap:wrap; }
+  .sub-qhist span { font-size:12px; color:var(--text2); font-family:var(--mono); }
+  .sub-qhist span strong { font-weight:700; }
+  .sub-qhist span strong.c { color:var(--green); }
+  .sub-qhist span strong.e { color:var(--red); }
+  .sub-quick { display:flex; gap:5px; align-items:center; }
+  .sub-quick-group { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .sub-quick-label { font-size:7px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .sub-quick-label.c { color:var(--green); }
+  .sub-quick-label.e { color:var(--red); }
+  .sub-quick-field { width:38px; background:var(--bg2); border:1px solid var(--border2); border-radius:5px; padding:4px 5px; color:var(--text); font-family:var(--mono); font-size:12px; font-weight:700; text-align:center; outline:none; transition:all 0.15s; }
+  .sub-quick-field.c:focus { border-color:var(--green); }
+  .sub-quick-field.e:focus { border-color:var(--red); }
+  .sub-quick-field::placeholder { color:var(--text3); font-size:12px; }
+
+  .add-sub-btn { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text3); font-weight:600; cursor:pointer; border:none; background:none; font-family:var(--sans); padding:6px 0 2px; transition:color 0.15s; }
+  .add-sub-btn:hover { color:var(--accent); }
+
+  /* POPUP REVISÃO */
+  .popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+  .popup-overlay.visible { opacity:1; pointer-events:all; }
+  .popup { background:var(--bg2); border:1px solid var(--border2); border-radius:16px; padding:28px; max-width:420px; width:90%; transform:scale(0.95); transition:transform 0.2s; box-shadow:0 24px 60px rgba(0,0,0,0.5); }
+  .popup-overlay.visible .popup { transform:scale(1); }
+
+  .popup-icon { font-size:32px; text-align:center; margin-bottom:12px; }
+  .popup-title { font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; text-align:center; }
+  .popup-topico { font-size:12px; color:var(--accent); text-align:center; margin-bottom:16px; font-weight:600; background:rgba(79,142,247,0.08); padding:6px 12px; border-radius:20px; display:inline-block; width:100%; }
+  .popup-tip { font-size:12px; color:var(--text3); text-align:center; line-height:1.6; margin-bottom:20px; background:var(--bg3); border-radius:8px; padding:10px 14px; border-left:3px solid var(--accent2); text-align:left; }
+  .popup-tip strong { color:var(--text2); }
+
+  .popup-opts { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:12px; }
+  .popup-opt { padding:10px; border-radius:9px; border:2px solid var(--border2); background:var(--bg3); cursor:pointer; text-align:center; transition:all 0.15s; }
+  .popup-opt:hover { border-color:var(--accent); background:rgba(79,142,247,0.06); }
+  .popup-opt.selected { border-color:var(--accent); background:rgba(79,142,247,0.1); }
+  .popup-opt-num { font-family:var(--mono); font-size:20px; font-weight:700; color:var(--accent); line-height:1; }
+  .popup-opt-label { font-size:12px; color:var(--text3); margin-top:3px; }
+
+  .popup-custom { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+  .popup-custom input { flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:9px 12px; color:var(--text); font-family:var(--sans); font-size:12px; outline:none; transition:border-color 0.15s; }
+  .popup-custom input:focus { border-color:var(--accent); }
+
+  .popup-btns { display:flex; gap:8px; }
+  .popup-btn-skip { flex:1; padding:10px; border-radius:8px; border:1px solid var(--border2); background:transparent; color:var(--text3); font-family:var(--sans); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+  .popup-btn-skip:hover { border-color:var(--red); color:var(--red); }
+  .popup-btn-ok { flex:2; padding:10px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; font-family:var(--sans); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 14px rgba(79,142,247,0.3); }
+  .popup-btn-ok:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(79,142,247,0.4); }
+
+  /* AJUSTE MANUAL STYLES */
+  .adj-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  .adj-item { display:flex; flex-direction:column; gap:6px; }
+  .adj-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+  .adj-input { width: 100%; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:10px; color:var(--text); font-family:var(--mono); font-size:14px; font-weight:700; outline:none; text-align:center; transition:border-color 0.15s; }
+  .adj-input:focus { border-color:var(--accent); }
+  .adj-history-tip { font-size:12px; color:var(--text3); line-height:1.5; margin-bottom:12px; }
+  .adj-history-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); cursor:pointer; transition:all 0.15s; margin-bottom:10px; }
+  .adj-history-toggle:hover { border-color:var(--accent); background:rgba(79,142,247,0.06); }
+  .adj-history-toggle-label { font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; }
+  .adj-history-toggle-meta { font-size:11px; color:var(--text3); }
+  .adj-history-toggle-icon { font-size:14px; color:var(--accent); transition:transform 0.18s ease; }
+  .adj-history-box { display:none; }
+  .adj-history-box.open { display:block; }
+  .adj-history-toggle.open .adj-history-toggle-icon { transform:rotate(180deg); }
+  .adj-history-list { max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
+  .adj-history-empty { padding:18px 12px; border:1px dashed var(--border2); border-radius:10px; color:var(--text3); font-size:12px; text-align:center; }
+  .adj-history-item { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; gap:10px; align-items:flex-start; }
+  .adj-history-icon { width:30px; height:30px; border-radius:999px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(79,142,247,0.12); font-size:14px; }
+  .adj-history-body { flex:1; min-width:0; }
+  .adj-history-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px; }
+  .adj-history-title { font-size:12px; font-weight:700; color:var(--text); }
+  .adj-history-date { font-size:11px; color:var(--text3); font-family:var(--mono); white-space:nowrap; }
+  .adj-history-meta { font-size:11px; color:var(--text3); line-height:1.5; }
+  .adj-history-values { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .adj-history-pill { padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.05); font-size:11px; font-weight:700; color:var(--text2); font-family:var(--mono); }
+  .adj-history-pill.good { color:var(--green); background:rgba(62,207,142,0.12); }
+  .adj-history-pill.bad { color:var(--red); background:rgba(245,90,90,0.12); }
+  .adj-history-delete { padding:8px 10px; border-radius:8px; border:1px solid rgba(245,90,90,0.3); background:rgba(245,90,90,0.06); color:var(--red); font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+  .adj-history-delete:hover { background:var(--red); color:#fff; border-color:var(--red); }
+  .btn-reset-materia { margin-top:16px; padding:10px; border-radius:8px; border:1px solid rgba(245,90,90,0.3); background:rgba(245,90,90,0.05); color:var(--red); font-family:var(--sans); font-size:11px; font-weight:700; text-transform:uppercase; cursor:pointer; width:100%; transition:all 0.15s; }
+  .btn-reset-materia:hover { background:var(--red); color:#fff; border-color:var(--red); }
+
+  /* SECTION LABEL */
+  .section-label { font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); margin:20px 0 10px; display:flex; align-items:center; gap:10px; }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+  @keyframes glowLink {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--yellow)); opacity: 0.8; }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--yellow)); opacity: 1; }
+    100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--yellow)); opacity: 0.8; }
+  }
+  .link-glow {
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 14px;
+    animation: glowLink 2s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  .link-glow:hover { transform: scale(1.3) !important; animation: none; filter: drop-shadow(0 0 10px var(--yellow)); }
+
+  .match-item {
+    padding: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+  }
+  .match-item:hover { border-color: var(--yellow); background: var(--bg4); }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
+    <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span> Simulados</div>
+    <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+        <a href="ajuda.html" style="text-decoration:none">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6">
+            <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+            <span style="opacity:0.7">powered by Antigravity Gemini</span>
+          </div>
+        </a>
+      </div>
+      <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <div class="materia-topbar">
+    <button class="back-link" onclick="location.href='dashboard.html'">← Voltar</button>
+    <div class="topbar-divider"></div>
+    <div class="topbar-materia" id="topbarNome">📘 Matéria</div>
+  </div>
+
+  <!-- PROGRESSO -->
+  <div class="materia-progress">
+    <div class="prog-info">
+      <div class="prog-pct" id="progPct">0%</div>
+      <div>
+        <div class="prog-num"><strong id="progEst">0</strong> / <span id="progTotal">0</span> tópicos concluídos</div>
+        <div style="margin-top:6px" class="prog-bar-wrap">
+          <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="prog-stats" onclick="abrirModalAjuste()">
+      <div class="prog-stat"><div class="prog-stat-val" id="statHoras">—</div><div class="prog-stat-label">Horas</div></div>
+      <div class="prog-stat"><div class="prog-stat-val" id="statQ">—</div><div class="prog-stat-label">Questões</div></div>
+      <div class="prog-stat"><div class="prog-stat-val" id="statAcertos">—</div><div class="prog-stat-label">Acertos</div></div>
+    </div>
+  </div>
+
+  <!-- CADERNOS DA MATÉRIA -->
+  <div class="materia-cadernos-bar">
+    <div class="cadernos-bar-label">
+      <strong>📚 Material geral da matéria</strong>
+      <small>Playlists, cursos, livros, flashcards, caderno de questões e simulados</small>
+    </div>
+    <div class="cadernos-list" id="cadernos-materia">
+      <div class="caderno-add" title="Adicionar caderno" onclick="event.stopPropagation();abrirModalCaderno(null,null,true)">＋</div>
+    </div>
+  </div>
+
+  <!-- TÓPICOS -->
+  <div class="content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div class="section-label" style="margin:0">Tópicos</div>
+    <button onclick="adicionarTopico()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:8px;color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s">＋ Novo tópico</button>
+  </div>
+  <div id="topicos-container">
+      <div style="text-align:center;padding:40px;color:var(--text3)">Carregando tópicos...</div>
+    </div>
+  </div>
+</main>
+
+<!-- POPUP DE REVISÃO -->
+<div class="popup-overlay" id="popup-overlay" onclick="closePopupOutside(event)">
+  <div class="popup">
+    <div class="popup-icon">✅</div>
+    <div class="popup-title">Tópico marcado como estudado!</div>
+    <div class="popup-topico" id="popup-topico-name">Negociação distributiva e integrativa</div>
+    <div class="popup-tip">
+      💡 <strong>Pesquisas mostram</strong> que revisões espaçadas aumentam muito a retenção. Quando deseja revisitar este tópico?
+    </div>
+    <div class="popup-opts">
+      <div class="popup-opt selected" onclick="selectOpt(this)">
+        <div class="popup-opt-num">5</div>
+        <div class="popup-opt-label">dias</div>
+      </div>
+      <div class="popup-opt" onclick="selectOpt(this)">
+        <div class="popup-opt-num">7</div>
+        <div class="popup-opt-label">dias</div>
+      </div>
+      <div class="popup-opt" onclick="selectOpt(this)">
+        <div class="popup-opt-num">15</div>
+        <div class="popup-opt-label">dias</div>
+      </div>
+      <div class="popup-opt" onclick="selectOpt(this)">
+        <div class="popup-opt-num">30</div>
+        <div class="popup-opt-label">dias</div>
+      </div>
+    </div>
+    <div class="popup-custom">
+      <input type="date" placeholder="Ou escolha uma data específica">
+    </div>
+    <div class="popup-btns">
+      <button class="popup-btn-skip" onclick="naoRevisar()">Não revisar</button>
+      <button class="popup-btn-ok" onclick="confirmarEstudado()">✓ Agendar revisão</button>
+    </div>
+    <div class="section-label">Histórico dos Lançamentos</div>
+    <div class="adj-history-tip">Audite tudo que compõe as estatísticas gerais desta matéria e exclua lançamentos equivocados sem precisar zerar tudo.</div>
+    <div class="adj-history-list" id="adj-history-list"></div>
+  </div>
+</div>
+
+<!-- POPUP AJUSTE MANUAL DA MATÉRIA -->
+<div class="popup-overlay" id="modal-ajuste-materia" onclick="if(event.target===this) fecharModalAjuste()">
+  <div class="popup" style="max-width:560px">
+    <div class="popup-title">Ajuste Manual da Matéria</div>
+    <div class="popup-topico" id="adj-materia-nome" style="background:rgba(255,215,0,0.08);color:var(--yellow)">Nome da Matéria</div>
+    
+    <div class="section-label" style="margin-top:0">Tempo de Estudo</div>
+    <div class="adj-grid">
+      <div class="adj-item">
+        <div class="adj-label">Horas</div>
+        <input type="number" id="adjH" class="adj-input" placeholder="0" min="0">
+      </div>
+      <div class="adj-item">
+        <div class="adj-label">Minutos</div>
+        <input type="number" id="adjM" class="adj-input" placeholder="0" min="0" max="59">
+      </div>
+    </div>
+
+    <div class="section-label">Lançamento de Questões</div>
+    <div class="adj-grid">
+      <div class="adj-item">
+        <div class="adj-label">Acertos</div>
+        <input type="number" id="adjA" class="adj-input" placeholder="0" min="0" style="color:var(--green)">
+      </div>
+      <div class="adj-item">
+        <div class="adj-label">Erros</div>
+        <input type="number" id="adjE" class="adj-input" placeholder="0" min="0" style="color:var(--red)">
+      </div>
+    </div>
+
+    <div class="popup-btns">
+      <button class="popup-btn-skip" onclick="fecharModalAjuste()">Cancelar</button>
+      <button class="popup-btn-ok" onclick="salvarAjusteManual()">✓ Salvar Ajuste</button>
+    </div>
+
+    <button class="btn-reset-materia" onclick="zerarEstatisticasMateria()">⚠️ Zerar Métricas da Matéria</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+// ── SIDEBAR CONCURSO ─────────────────────
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>
+<script>
+// ── ESTADO ────────────────────────────────
+const cId      = sessionStorage.getItem('ct_concurso_ativo');
+const mId      = sessionStorage.getItem('ct_materia_ativa');
+let   materia  = null;
+let   popupTopicoId = null;
+let   popupSubId    = null;
+
+// ── INIT ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!cId || !mId) { location.href = 'dashboard.html'; return; }
+  materia = CT.getMateria(mId);
+  if (!materia) { location.href = 'dashboard.html'; return; }
+
+  // Sidebar
+  const c = CT.getConcurso(cId);
+  if (c) {
+    document.querySelector('.concurso-nome').textContent = c.nome;
+    document.querySelector('.concurso-banca').textContent = c.banca || '—';
+  }
+
+  const titleContainer = document.getElementById('topbarNome');
+  titleContainer.innerHTML = `📘 ${materia.nome} <button onclick="abrirOpcoesMateria()" style="margin-left:8px;padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:16px;color:var(--text3);opacity:0.8;transition:all 0.15s" onmouseover="this.style.opacity=1;this.style.borderColor='var(--text3)';this.style.color='var(--text)'" onmouseout="this.style.opacity=0.8;this.style.borderColor='var(--border)';this.style.color='var(--text3)'" title="Configurações da Matéria">⋮</button>`;
+  
+  // Check for subject-level matches
+  if (!materia.cadernos || materia.cadernos.length === 0) {
+    const m = CT.findMatches(materia.nome, cId, 'materia');
+    if (m.length > 0) {
+      const link = document.createElement('span');
+      link.className = 'link-glow';
+      link.innerHTML = '🔗';
+      link.title = 'Encontramos materiais desta matéria em outros concursos!';
+      link.style.marginLeft = '12px';
+      link.onclick = (e) => { e.stopPropagation(); abrirModalLink(mId, materia.nome, 'materia'); };
+      titleContainer.appendChild(link);
+    }
+  }
+
+  renderCadernos();
+  CT_MigratePDFEmojis();
+  renderTopicos();
+  updateProgresso();
+  ensureAjusteHistoryHost();
+});
+
+// ── PROGRESSO ─────────────────────────────
+function updateProgresso() {
+  const topicos   = CT.getTopicos(mId);
+  const estudados = topicos.filter(t => t.estudado).length;
+  const total     = topicos.length;
+  const pct       = total > 0 ? Math.round(estudados/total*100) : 0;
+
+  document.getElementById('progPct').textContent   = pct + '%';
+  document.getElementById('progEst').textContent   = estudados;
+  document.getElementById('progTotal').textContent = total;
+  document.getElementById('progFill').style.width  = pct + '%';
+
+  const sessoes  = CT.getSessoes({ concursoId: cId, materiaId: mId });
+  const seg      = CT.totalSegundos(sessoes);
+  const questoes = CT.getQuestoes({ materiaId: mId });
+  const stats    = CT.calcStats(questoes);
+
+  document.getElementById('statHoras').textContent   = seg > 0 ? CT.formatarTempo(seg) : '—';
+  document.getElementById('statQ').textContent        = stats.resolvidas > 0 ? stats.resolvidas : '—';
+  const aEl = document.getElementById('statAcertos');
+  if (stats.pct != null) {
+    aEl.textContent = stats.pct + '%';
+    aEl.style.color = pctColor(stats.pct);
+  } else {
+    aEl.textContent = '—';
+    aEl.style.color = 'var(--text3)';
+  }
+}
+
+// ── CORES ─────────────────────────────────
+function pctColor(p) {
+  return CT.pctColor ? CT.pctColor(p) : 'var(--text3)';
+}
+function pctClass(p) {
+  return CT.pctClass ? CT.pctClass(p) : 'none';
+}
+
+// ── MIGRAÇÃO DE DADOS (PDF EMOJI) ───────
+function CT_MigratePDFEmojis() {
+  const topicos = CT.getTopicos();
+  topicos.forEach(t => {
+    if (!t.cadernos) return;
+    let ch = false;
+    t.cadernos.forEach(c => {
+      if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
+        c.emoji = '📙'; ch = true;
+      }
+    });
+    if (ch) CT.saveTopico(t);
+  });
+
+  const subs = CT.getSubtopicos();
+  subs.forEach(s => {
+    if (!s.cadernos) return;
+    let ch = false;
+    s.cadernos.forEach(c => {
+      if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
+        c.emoji = '📙'; ch = true;
+      }
+    });
+    if (ch) CT.saveSubtopico(s);
+  });
+
+  const mats = CT.getMaterias();
+  mats.forEach(m => {
+    if (!m.cadernos) return;
+    let ch = false;
+    m.cadernos.forEach(c => {
+      if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
+        c.emoji = '📙'; ch = true;
+      }
+    });
+    if (ch) CT.saveMateria(m);
+  });
+}
+
+// ── CADERNOS DA MATÉRIA ───────────────────
+function renderCadernos() {
+  const m = CT.getMateria(mId);
+  const cadernos = m.cadernos || [];
+  const el = document.getElementById('cadernos-materia');
+  el.innerHTML = cadernos.map((cad, i) => `
+    <div class="caderno-chip" title="${cad.nome}" onclick="window.open('${cad.url}','_blank')">
+      <div class="caderno-emoji">${cad.emoji||'📓'}</div>
+      <div class="caderno-label">${cad.rotulo}</div>
+    </div>`).join('') +
+    `<div class="caderno-add" title="Adicionar caderno" onclick="event.stopPropagation();abrirModalCaderno(null,null,true)">＋</div>`;
+}
+
+function adicionarCadernoMateria() {
+  abrirModalCaderno(null, null, true);
+}
+
+function deletarCadernoMateria(idx) {
+  const m = CT.getMateria(mId);
+  if (!m.cadernos) return;
+  m.cadernos.splice(idx, 1);
+  CT.saveMateria(m);
+  renderCadernos();
+}
+
+// ── RENDER TÓPICOS ────────────────────────
+function renderTopicos() {
+  const abertos = new Set();
+  document.querySelectorAll('.topico-card.open').forEach(el => abertos.add(el.id));
+  const topicos = CT.getTopicos(mId);
+  const revisoes = CT.getRevisoes();
+  const hoje = CT._today();
+  const container = document.getElementById('topicos-container');
+
+  if (!topicos.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">
+      Nenhum tópico cadastrado.<br>
+      <small>Importe o edital JSON ou adicione tópicos manualmente.</small>
+    </div>`;
+    return;
+  }
+
+  const htmlStr = topicos.map(t => {
+    const subs  = CT.getSubtopicos(t.id);
+    const q     = CT.calcStats(CT.getQuestoes({ topicoId: t.id }));
+    const rev   = revisoes.find(r => r.topicoId === t.id && !r.concluida);
+    const revBadge = rev
+      ? rev.data < hoje
+        ? `<span class="revisao-badge atrasada">🔴 ${diasAtraso(rev.data)}d atrasada</span>`
+        : rev.data === hoje
+          ? `<span class="revisao-badge hoje">🟡 Revisão hoje</span>`
+          : `<span class="revisao-badge agendada">🗓 rev. ${fmtDate(rev.data)}</span>`
+      : '';
+
+    const pctBadge = q.pct != null
+      ? `<span class="pct-badge ${pctClass(q.pct)}">${q.pct}%</span>`
+      : '';
+
+    const btnEst = t.estudado
+      ? `<button class="btn-estudado done" data-tid="${t.id}" onclick="event.stopPropagation();reabrirTopico('${t.id}')">✅ Estudado</button>`
+      : `<button class="btn-estudado pendente" data-tid="${t.id}" onclick="event.stopPropagation();abrirPopupTopico('${t.id}')">✓</button>`;
+
+    const cadChips = (t.cadernos||[]).map(cad =>
+      `<div class="chip" onclick="event.stopPropagation();window.open('${cad.url}','_blank')" title="${cad.nome}">
+        <div class="chip-emoji">${cad.emoji||'📓'}</div><div class="chip-label">${cad.rotulo}</div>
+      </div>`).join('');
+
+    const subHtml = subs.map(s => renderSubtopico(s)).join('');
+
+    const qHist = q.resolvidas > 0
+      ? `<div class="qhist-item">Resolvidas: <span>${q.resolvidas}</span></div>
+         <div class="qhist-item">Acertos: <span class="c">${q.acertos}</span></div>
+         <div class="qhist-item">Erros: <span class="e">${q.erros}</span></div>
+         <div class="qhist-item">Taxa: <span class="${pctClass(q.pct)}">${q.pct}%</span></div>`
+      : `<div style="font-size:12px;color:var(--text3)">Nenhuma questão registrada ainda.</div>`;
+
+    return `
+    <div class="topico-card${t.estudado?' estudado':''}" id="tc_${t.id}" draggable="true" ondragstart="dragStart(event, 'topico', '${t.id}')" ondragend="dragEnd(event)" ondragover="dragOver(event, 'topico')" ondragleave="dragLeave(event)" ondrop="drop(event, 'topico', '${t.id}')">
+      <div class="topico-header" onclick="toggleTopico('tc_${t.id}')">
+        <span class="topico-expand">›</span>
+        <div style="flex:1; display:flex; align-items:center; gap:6px; overflow:hidden">
+          <span class="topico-nome" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${t.nome}</span>
+          ${(t.cadernos && t.cadernos.length > 0) ? '' : (function(){
+            const m = CT.findMatches(t.nome, cId, 'topico');
+            return m.length > 0 ? `<span class="link-glow" title="Encontramos materiais deste tópico em outros concursos!" onclick="event.stopPropagation();abrirModalLink('${t.id}', '${t.nome.replace(/'/g, "\\'")}', 'topico')">🔗</span>` : '';
+          })()}
+        </div>
+        <div class="topico-actions">
+          ${cadChips}
+          <div class="caderno-add" style="font-size:12px" onclick="event.stopPropagation();abrirModalCaderno('${t.id}',null,false)" title="Adicionar caderno">＋</div>
+          ${revBadge}
+          ${btnEst}
+          <button onclick="event.stopPropagation();abrirOpcoes('${t.id}',null)" title="Opções do Tópico" style="padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer;transition:all 0.15s;flex-shrink:0" onmouseover="this.style.borderColor='var(--text3)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">⋮</button>
+        </div>
+        <div style="width:65px; flex-shrink:0; display:flex; justify-content:flex-end; margin-left:8px">
+          ${pctBadge}
+        </div>
+      </div>
+      <div class="topico-body">
+        <div class="questoes-inline">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="questoes-inline-title">📝 Questões</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="quick-inputs">
+                <div class="quick-group"><span class="quick-label c">＋ Acertos</span>
+                  <input class="quick-field acertos" id="qa_${t.id}" type="number" min="0" placeholder="0" onkeydown="if(event.key==='Enter')lancarAmbos('${t.id}',null,this)"></div>
+                <div class="quick-group"><span class="quick-label e">＋ Erros</span>
+                  <input class="quick-field erros" id="qe_${t.id}" type="number" min="0" placeholder="0" onkeydown="if(event.key==='Enter')lancarAmbos('${t.id}',null,this)"></div>
+              </div>
+              <button onclick="desfazerLancamento('${t.id}', null)" class="cole-btn undo" title="Desfazer">↩</button>
+              <button onclick="toggleEditarQ('${t.id}', null)"
+                id="btnEditQ_${t.id}"
+                style="padding:3px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s"
+                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">📊 Editar</button>
+            </div>
+          </div>
+
+          <!-- TOTAIS ATUAIS -->
+          <div class="questoes-hist" id="qhist_${t.id}" style="margin-bottom:8px">${qHist}</div>
+
+          <!-- PAINEL DE EDIÇÃO (oculto por padrão) -->
+          <div id="editQ_${t.id}" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:8px">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px">📊 Editar estatísticas do tópico</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">✅ Acertos</div>
+                <input id="editAcertos_${t.id}" type="number" min="0" value="${q.acertos||0}"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 6px;color:var(--green);font-family:var(--mono);font-size:16px;font-weight:700;text-align:center;outline:none">
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">❌ Erros</div>
+                <input id="editErros_${t.id}" type="number" min="0" value="${q.erros||0}"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 6px;color:var(--red);font-family:var(--mono);font-size:16px;font-weight:700;text-align:center;outline:none">
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">⏱ Horas</div>
+                <input id="editH_${t.id}" type="number" min="0" max="999" value="${Math.floor(CT.totalSegundos(CT.getSessoes({concursoId:cId,materiaId:mId}).filter(s=>s.topicoId===t.id))/3600)}"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 6px;color:var(--accent);font-family:var(--mono);font-size:16px;font-weight:700;text-align:center;outline:none">
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">⏱ Min</div>
+                <input id="editMin_${t.id}" type="number" min="0" max="59" value="${Math.floor((CT.totalSegundos(CT.getSessoes({concursoId:cId,materiaId:mId}).filter(s=>s.topicoId===t.id))%3600)/60)}"
+                  style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 6px;color:var(--accent);font-family:var(--mono);font-size:16px;font-weight:700;text-align:center;outline:none">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="salvarEdicaoEstat('${t.id}')"
+                style="flex:1;padding:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">
+                ✓ Salvar tudo
+              </button>
+              <button onclick="toggleEditarQ('${t.id}', null)"
+                style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer">
+                Cancelar
+              </button>
+            </div>
+          </div>
+
+        </div> <!-- end questoes-inline -->
+        ${subHtml}
+        <button class="add-sub-btn" onclick="adicionarSubtopico('${t.id}')">＋ adicionar subtópico</button>
+      </div> <!-- end topico-body -->
+    </div>`;
+  }).join('');
+  container.innerHTML = htmlStr;
+  // Reabre os cards que estavam abertos
+  abertos.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+  });
+}
+
+function renderSubtopico(s) {
+  const q    = CT.calcStats(CT.getQuestoes({ subtopId: s.id }));
+  const pctB = q.pct != null ? `<span class="pct-badge ${pctClass(q.pct)}">${q.pct}%</span>` : '';
+
+  const cadChips = (s.cadernos||[]).map(cad =>
+    `<div class="chip" onclick="window.open('${cad.url}','_blank')" title="${cad.nome}" style="cursor:pointer">
+      <div class="chip-emoji">${cad.emoji||'📓'}</div><div class="chip-label">${cad.rotulo}</div>
+    </div>`).join('');
+
+  const btnEst = s.estudado
+    ? `<button class="btn-estudado done" style="font-size:12px;padding:3px 9px" onclick="reabrirSubtopico('${s.id}')">✅</button>`
+    : `<button class="btn-estudado pendente" style="font-size:12px;padding:3px 9px" onclick="abrirPopupSubtopico('${s.id}')">✓</button>`;
+
+  const qHist = q.resolvidas > 0
+    ? `<div class="questoes-hist" style="margin:6px 0">
+        <div class="qhist-item">Resolvidas: <span>${q.resolvidas}</span></div>
+        <div class="qhist-item">Acertos: <span class="c">${q.acertos}</span></div>
+        <div class="qhist-item">Erros: <span class="e">${q.erros}</span></div>
+        <div class="qhist-item">Taxa: <span class="${pctClass(q.pct)}">${q.pct}%</span></div>
+      </div>`
+    : `<div style="font-size:12px;color:var(--text3);margin:6px 0">Nenhuma questão registrada ainda.</div>`;
+
+  const subSess = CT.getSessoes().filter(ss => ss.subtopId === s.id);
+  const subSeg  = CT.totalSegundos(subSess);
+  return `
+  <div class="subtopico-row" id="sc_${s.id}" style="flex-direction:column;gap:0;padding:0;border-bottom:1px solid var(--border)" draggable="true" ondragstart="dragStart(event, 'subtopico', '${s.id}', '${s.topicoId}')" ondragend="dragEnd(event)" ondragover="dragOver(event, 'subtopico')" ondragleave="dragLeave(event)" ondrop="drop(event, 'subtopico', '${s.id}', '${s.topicoId}')">
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;flex-wrap:wrap;cursor:pointer" onclick="toggleSub('sc_${s.id}')">
+      <span style="font-size:12px;color:var(--text3);transition:transform 0.2s;display:inline-block" class="sub-expand">›</span>
+      <div class="sub-dot${s.estudado?' done':''}"></div>
+      <div style="flex:1; display:flex; align-items:center; gap:6px; min-width:0">
+        <span class="sub-nome${s.estudado?' done':''}" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${s.nome}</span>
+        ${(s.cadernos && s.cadernos.length > 0) ? '' : (function(){
+          const matches = CT.findMatches(s.nome, cId, 'subtopico');
+          return matches.length > 0 ? `<span class="link-glow" title="Encontramos materiais deste subtópico em outros concursos!" onclick="event.stopPropagation();abrirModalLink('${s.id}', '${s.nome.replace(/'/g, "\\'")}', 'subtopico')">🔗</span>` : '';
+        })()}
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0">
+        ${cadChips}
+        <div class="caderno-add" style="width:22px;height:22px;font-size:12px" onclick="event.stopPropagation();abrirModalCaderno(null,'${s.id}',false)">＋</div>
+        ${btnEst}
+        <button onclick="event.stopPropagation();abrirOpcoes(null,'${s.id}')" title="Opções" style="padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer;transition:all 0.15s;flex-shrink:0" onmouseover="this.style.borderColor='var(--text3)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">⋮</button>
+      </div>
+      <div style="width:65px; flex-shrink:0; display:flex; justify-content:flex-end; margin-left:8px">
+        ${pctB}
+      </div>
+    </div>
+    <div class="sub-body" style="display:none;padding:0 0 10px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px" onclick="event.stopPropagation()">
+        <div class="questoes-inline-title" style="font-size:12px">📝 Questões</div>
+        <button onclick="toggleEditarQ('${s.topicoId}','${s.id}')" id="btnEditQ_${s.id}"
+          style="padding:2px 8px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">📊 Editar</button>
+      </div>
+      ${qHist}
+      <div id="editQ_${s.id}" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:8px">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px">📊 Editar estatísticas</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">
+          <div><div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">✅ Acertos</div>
+            <input id="editAcertos_${s.id}" type="number" min="0" value="${q.acertos||0}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:6px 4px;color:var(--green);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none"></div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">❌ Erros</div>
+            <input id="editErros_${s.id}" type="number" min="0" value="${q.erros||0}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:6px 4px;color:var(--red);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none"></div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">⏱ Horas</div>
+            <input id="editH_sub_${s.id}" type="number" min="0" value="${Math.floor(subSeg/3600)}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:6px 4px;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none"></div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">⏱ Min</div>
+            <input id="editMin_sub_${s.id}" type="number" min="0" max="59" value="${Math.floor((subSeg%3600)/60)}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:6px 4px;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none"></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="salvarEdicaoSubEstat('${s.id}','${s.topicoId}')" style="flex:1;padding:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:6px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✓ Salvar</button>
+          <button onclick="toggleEditarQ('${s.topicoId}','${s.id}')" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div class="sub-quick" style="margin:0">
+          <div class="sub-quick-group"><span class="sub-quick-label c">＋ Acertos</span>
+            <input class="sub-quick-field c" id="sqa_${s.id}" type="number" min="0" placeholder="0"
+              onkeydown="if(event.key==='Enter')lancarAmbos('${s.topicoId}','${s.id}',this)"></div>
+          <div class="sub-quick-group"><span class="sub-quick-label e">＋ Erros</span>
+            <input class="sub-quick-field e" id="sqe_${s.id}" type="number" min="0" placeholder="0"
+              onkeydown="if(event.key==='Enter')lancarAmbos('${s.topicoId}','${s.id}',this)"></div>
+        </div>
+        <button class="cole-btn undo" title="Desfazer" onclick="desfazerLancamento('${s.topicoId}','${s.id}')" style="margin-top:14px">↩</button>
+        <button onclick="abrirAddHorasSub('${s.id}','${s.topicoId}')" style="margin-top:14px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">⏱ + horas</button>
+      </div>
+    </div>
+  </div>`;
+}
+// ── ESTUDADO / REABRIR ────────────────────
+function abrirPopupTopico(tid) {
+  popupTopicoId = tid; popupSubId = null;
+  const t = CT.getTopico(tid);
+  document.getElementById('popup-topico-name').textContent = t ? t.nome : '';
+  document.getElementById('popup-overlay').classList.add('visible');
+  document.querySelectorAll('.popup-opt').forEach((o,i) => o.classList.toggle('selected', i===0));
+  document.querySelector('.popup-custom input').value = '';
+}
+
+function abrirPopupSubtopico(sid) {
+  popupSubId = sid; popupTopicoId = null;
+  const s = CT.getSubtopicos().find(x => x.id === sid);
+  document.getElementById('popup-topico-name').textContent = s ? s.nome : '';
+  document.getElementById('popup-overlay').classList.add('visible');
+  document.querySelectorAll('.popup-opt').forEach((o,i) => o.classList.toggle('selected', i===0));
+  document.querySelector('.popup-custom input').value = '';
+}
+
+function confirmarEstudado() {
+  const selOpt = document.querySelector('.popup-opt.selected');
+  const diasNum = selOpt ? parseInt(selOpt.querySelector('.popup-opt-num').textContent) : null;
+  const dataCustom = document.querySelector('.popup-custom input').value;
+  let dataRevisao = null;
+  if (dataCustom) {
+    dataRevisao = dataCustom;
+  } else if (diasNum) {
+    const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + diasNum);
+    dataRevisao = CT._dateString(d);
+  }
+
+  if (popupTopicoId) {
+    CT.marcarEstudado(popupTopicoId, dataRevisao);
+  } else if (popupSubId) {
+    const s = CT.getSubtopicos().find(x => x.id === popupSubId);
+    if (s) { s.estudado = true; s.estudadoEm = CT._today(); CT.saveSubtopico(s); }
+    if (dataRevisao) CT.agendarRevisao(popupSubId, dataRevisao);
+  }
+  closePopup();
+  renderTopicos();
+  updateProgresso();
+}
+
+function naoRevisar() {
+  if (popupTopicoId) CT.marcarEstudado(popupTopicoId, null);
+  else if (popupSubId) {
+    const s = CT.getSubtopicos().find(x => x.id === popupSubId);
+    if (s) { s.estudado = true; CT.saveSubtopico(s); }
+  }
+  closePopup();
+  renderTopicos();
+  updateProgresso();
+}
+
+function reabrirTopico(tid) {
+  if (!confirm('Desmarcar este tópico como estudado?')) return;
+  CT.desmarcarEstudado(tid);
+  renderTopicos();
+  updateProgresso();
+}
+
+function reabrirSubtopico(sid) {
+  if (!confirm('Desmarcar este subtópico como estudado?')) return;
+  const s = CT.getSubtopicos().find(x => x.id === sid);
+  if (s) { s.estudado = false; s.estudadoEm = null; CT.saveSubtopico(s); }
+  renderTopicos();
+}
+
+// ── EDITAR TOTAIS ─────────────────────────
+function toggleEditarQ(tid, sid) {
+  const panelId = sid ? 'editQ_sub_' + sid : 'editQ_' + tid;
+  const btnId   = sid ? 'btnEditQ_sub_' + sid : 'btnEditQ_' + tid;
+  const panel   = document.getElementById(panelId);
+  const btn     = document.getElementById(btnId);
+  if (!panel) return;
+  const visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : '';
+  if (btn) btn.textContent = visible ? '✏️ Editar totais' : '✕ Fechar';
+}
+
+function salvarEdicaoEstat(tid) {
+  // Salva questões
+  salvarEdicaoQ(tid, null, false);
+  // Salva horas
+  const h   = parseInt(document.getElementById('editH_'   + tid)?.value) || 0;
+  const min = parseInt(document.getElementById('editMin_' + tid)?.value) || 0;
+  const novosSeg = h * 3600 + min * 60;
+  // Remove todas as sessões anteriores vinculadas a este tópico
+  const sessoes = CT.getSessoes().filter(s => s.topicoId !== tid);
+  localStorage.setItem('ct_sessoes', JSON.stringify(sessoes));
+  // Salva nova sessão consolidada se houver horas
+  if (novosSeg > 0) {
+    CT.registrarSessao({ concursoId: cId, materiaId: mId, topicoId: tid, duracaoSegundos: novosSeg });
+  }
+  toggleEditarQ(tid, null);
+  renderTopicos();
+  updateProgresso();
+}
+
+function salvarEdicaoSubEstat(sid, tid) {
+  const ac = parseInt(document.getElementById('editAcertos_' + sid)?.value) || 0;
+  const er = parseInt(document.getElementById('editErros_' + sid)?.value) || 0;
+  const h = parseInt(document.getElementById('editH_sub_' + sid)?.value) || 0;
+  const m = parseInt(document.getElementById('editMin_sub_' + sid)?.value) || 0;
+  localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(q => q.subtopId !== sid)));
+  if (ac+er > 0) CT.lancarQuestoes({ topicoId: tid, subtopId: sid, materiaId: mId, concursoId: cId, resolvidas: ac + er, acertos: ac, erros: er });
+  localStorage.setItem('ct_sessoes', JSON.stringify(CT.getSessoes().filter(s => s.subtopId !== sid)));
+  if (h*3600 + m*60 > 0) CT.registrarSessao({ concursoId: cId, materiaId: mId, topicoId: tid, subtopId: sid, duracaoSegundos: h*3600 + m*60 });
+  toggleEditarQ(tid, sid); renderTopicos(); updateProgresso();
+}
+
+function salvarEdicaoQ(tid, sid, fechar = true) {
+  const acId = sid ? 'editAcertos_sub_' + sid : 'editAcertos_' + tid;
+  const erId = sid ? 'editErros_sub_'   + sid : 'editErros_'   + tid;
+  const acertos  = parseInt(document.getElementById(acId)?.value) || 0;
+  const erros    = parseInt(document.getElementById(erId)?.value) || 0;
+  const total    = acertos + erros;
+
+  // Remove todos os lançamentos anteriores deste tópico/subtópico
+  const filtro = sid ? { subtopId: sid } : { topicoId: tid, subtopId: null };
+  const todas  = CT.getQuestoes();
+  const filtradas = todas.filter(q => {
+    if (sid) return q.subtopId !== sid;
+    return q.topicoId !== tid || q.subtopId; // mantém lançamentos de subtópicos
+  });
+  localStorage.setItem('ct_questoes', JSON.stringify(filtradas));
+
+  // Salva um único lançamento com os totais corrigidos
+  if (total > 0) {
+    CT.lancarQuestoes({
+      topicoId:  tid,
+      subtopId:  sid || null,
+      materiaId: mId,
+      concursoId: cId,
+      resolvidas: total,
+      acertos,
+      erros,
+    });
+  }
+
+  if (fechar) { toggleEditarQ(tid, sid); renderTopicos(); updateProgresso(); }
+}
+function lancarAmbos(tid, sid, inputEl) {
+  // Lê os dois campos do mesmo tópico/subtópico
+  const aId = sid ? 'sqa_' + sid : 'qa_' + tid;
+  const eId = sid ? 'sqe_' + sid : 'qe_' + tid;
+  const acertos = parseInt(document.getElementById(aId)?.value) || 0;
+  const erros   = parseInt(document.getElementById(eId)?.value) || 0;
+  if (acertos === 0 && erros === 0) return;
+  const dados = {
+    materiaId: mId, concursoId: cId, topicoId: tid,
+    resolvidas: acertos + erros, acertos, erros
+  };
+  if (sid) dados.subtopId = sid;
+  CT.lancarQuestoes(dados);
+  // Flash verde nos dois campos
+  [aId, eId].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = '';
+      el.style.borderColor = 'var(--green)';
+      setTimeout(() => { el.style.borderColor = ''; }, 800);
+    }
+  });
+  renderTopicos();
+  updateProgresso();
+}
+
+// ── HORAS MANUAIS ─────────────────────────
+function abrirAddHoras(tid) {
+  const panel = document.getElementById('addHoras_' + tid);
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+function salvarHoras(tid) {
+  const h = parseInt(document.getElementById('addH_' + tid)?.value) || 0;
+  const m = parseInt(document.getElementById('addM_' + tid)?.value) || 0;
+  const segundos = h * 3600 + m * 60;
+  if (segundos <= 0) { alert('Informe pelo menos 1 minuto.'); return; }
+  CT.registrarSessao({
+    concursoId: cId,
+    materiaId: mId,
+    topicoId: tid,
+    duracaoSegundos: segundos,
+  });
+  document.getElementById('addHoras_' + tid).style.display = 'none';
+  document.getElementById('addH_' + tid).value = 0;
+  document.getElementById('addM_' + tid).value = 0;
+  updateProgresso();
+  // Flash feedback
+  const btn = document.querySelector(`#tc_${tid} [onclick*="abrirAddHoras"]`);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✅ Salvo!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color=''; btn.style.borderColor=''; }, 1500);
+  }
+}
+
+// mantido por compatibilidade com cole input
+function lancarRapido(tid, sid, tipo, val, inputEl) {
+  const n = parseInt(val);
+  if (!n || n <= 0) return;
+  const dados = { materiaId: mId, concursoId: cId, topicoId: tid };
+  if (sid) dados.subtopId = sid;
+  if (tipo === 'acertos') { dados.resolvidas = n; dados.acertos = n; dados.erros = 0; }
+  else { dados.resolvidas = n; dados.acertos = 0; dados.erros = n; }
+  CT.lancarQuestoes(dados);
+  inputEl.value = '';
+  inputEl.style.borderColor = 'var(--green)';
+  setTimeout(() => { inputEl.style.borderColor = ''; }, 800);
+  renderTopicos();
+  updateProgresso();
+}
+
+function lancarCole(tid, sid, inputId) {
+  const val = document.getElementById(inputId)?.value || '';
+  const m = val.match(/Resolvidas:\s*(\d+)\s+Acertos:\s*(\d+)\s+Erros:\s*(\d+)/i);
+  const el = document.getElementById(inputId);
+  if (!m) {
+    if (el) { el.style.borderColor = 'var(--red)'; setTimeout(() => el.style.borderColor = '', 1500); }
+    return;
+  }
+  const dados = {
+    materiaId: mId, concursoId: cId, topicoId: tid,
+    resolvidas: parseInt(m[1]), acertos: parseInt(m[2]), erros: parseInt(m[3])
+  };
+  if (sid) dados.subtopId = sid;
+  CT.lancarQuestoes(dados);
+  if (el) { el.value = ''; el.style.borderColor = 'var(--green)'; setTimeout(() => el.style.borderColor = '', 800); }
+  renderTopicos();
+  updateProgresso();
+}
+
+async function colarCole(tid, sid, inputId) {
+  try {
+    const text = await navigator.clipboard.readText();
+    const el = document.getElementById(inputId);
+    if (el) el.value = text;
+    lancarCole(tid, sid, inputId);
+  } catch {
+    alert('Cole manualmente e pressione Enter.');
+  }
+}
+
+function desfazerLancamento(tid, sid) {
+  CT.desfazerUltimoLancamento({ topicoId: tid, subtopId: sid });
+  renderTopicos();
+  updateProgresso();
+}
+
+// ── CADERNOS POR TÓPICO ───────────────────
+const CADERNO_TIPOS = [
+  { emoji: '📓', nome: 'Caderno de Questões', rotulo: 'QUEST' },
+  { emoji: '📙', nome: 'PDF de Aulas',         rotulo: 'PDF'   },
+  { emoji: '🎥', nome: 'Link de Videoaulas',   rotulo: 'VIDEO' },
+  { emoji: '🎴', nome: 'Flashcards',           rotulo: 'FLASH' },
+];
+
+let _modalTid = null, _modalSid = null, _modalMateria = false, _modalTipoSel = 0;
+
+function abrirModalCaderno(tid, sid, isMateria) {
+  const old = document.getElementById('modalCaderno');
+  if (old) old.remove();
+
+  _modalTid = tid; _modalSid = sid; _modalMateria = !!isMateria;
+  _modalTipoSel = 0;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalCaderno';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.73);backdrop-filter:blur(3px);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  const tiposHtml = CADERNO_TIPOS.map((t, i) =>
+    `<div id="mTipo${i}" onclick="selecionarTipoModal(${i})"
+      style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+      background:var(--bg3);border:1px solid ${i===0?'var(--accent)':'var(--border)'};
+      border-radius:10px;cursor:pointer">
+      <span style="font-size:22px">${t.emoji}</span>
+      <span style="font-size:12px;font-weight:600;color:${i===0?'var(--accent)':'var(--text2)'}">${t.rotulo}</span>
+    </div>`
+  ).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
+      padding:28px;width:420px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">Material de estudo</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:18px">Escolha o tipo e cole o link</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">${tiposHtml}</div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Link</div>
+        <input id="modalLinkInput" type="text" placeholder="https://..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
+          padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box"
+          onkeydown="if(event.key==='Enter')confirmarModalCaderno()">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="fecharModalCaderno()"
+          style="padding:10px 18px;border:1px solid var(--border);border-radius:8px;
+          background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">
+          Cancelar
+        </button>
+        <button onclick="confirmarModalCaderno()"
+          style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+          border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">
+          ＋ Adicionar
+        </button>
+      </div>
+
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) fecharModalCaderno(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('modalLinkInput')?.focus(), 50);
+}
+
+function toggleBuscaManualModal() {
+  const area = document.getElementById('modalSearchArea');
+  const btn = document.getElementById('btnShowSearch');
+  if (area.style.display === 'none') {
+    area.style.display = 'block';
+    btn.style.color = 'var(--accent)';
+    document.getElementById('modalSearchField').focus();
+  } else {
+    area.style.display = 'none';
+    btn.style.color = 'var(--text3)';
+  }
+}
+
+function buscarManualInModal() {
+  const q = document.getElementById('modalSearchField').value.trim();
+  if (!q) return;
+  fecharModalCaderno();
+  const targetId = _modalSid || _modalTid || mId;
+  const type = _modalSid ? 'subtopico' : (_modalTid ? 'topico' : 'materia');
+  abrirModalLink(targetId, q, type);
+}
+
+function selecionarTipoModal(i) {
+  _modalTipoSel = i;
+  CADERNO_TIPOS.forEach((_, idx) => {
+    const el = document.getElementById('mTipo' + idx);
+    if (!el) return;
+    el.style.borderColor = idx === i ? 'var(--accent)' : 'var(--border)';
+    el.querySelector('span:last-child').style.color = idx === i ? 'var(--accent)' : 'var(--text2)';
+  });
+}
+
+function fecharModalCaderno() {
+  const m = document.getElementById('modalCaderno');
+  if (m) m.remove();
+}
+
+function confirmarModalCaderno() {
+  let url = document.getElementById('modalLinkInput').value.trim();
+  
+  // Remove aspas no início e no fim
+  url = url.replace(/^["']+|["']+$/g, '');
+  
+  // Se for um caminho do Windows (começa com letra de unidade e barra)
+  if (/^[a-zA-Z]:[\\/]/.test(url)) {
+    // Converte barras invertidas para barras normais e adiciona prefixo file:///
+    url = 'file:///' + url.replace(/\\/g, '/');
+  }
+
+  if (!url || url === 'https://') { 
+    document.getElementById('modalLinkInput').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('modalLinkInput').style.borderColor = '', 1200);
+    return;
+  }
+  const tipo = CADERNO_TIPOS[_modalTipoSel];
+  const cad = { rotulo: tipo.rotulo, url, nome: tipo.nome, emoji: tipo.emoji };
+  fecharModalCaderno();
+
+  if (_modalMateria) {
+    const m = CT.getMateria(mId); m.cadernos = m.cadernos||[]; m.cadernos.push(cad); CT.saveMateria(m);
+    renderCadernos();
+  } else if (_modalTid) {
+    const t = CT.getTopico(_modalTid); t.cadernos = t.cadernos||[]; t.cadernos.push(cad); CT.saveTopico(t);
+    renderTopicos();
+  } else if (_modalSid) {
+    const s = CT.getSubtopicos().find(x=>x.id===_modalSid); s.cadernos=s.cadernos||[]; s.cadernos.push(cad); CT.saveSubtopico(s);
+    renderTopicos();
+  }
+}
+
+function adicionarCadernoTopico(tid, sid) {
+  abrirModalCaderno(tid, sid, false);
+}
+
+function deletarCadernoTopico(tid, sid, idx) {
+  if (tid) {
+    const t = CT.getTopico(tid);
+    if (t && t.cadernos) { t.cadernos.splice(idx,1); CT.saveTopico(t); }
+  } else if (sid) {
+    const s = CT.getSubtopicos().find(x=>x.id===sid);
+    if (s && s.cadernos) { s.cadernos.splice(idx,1); CT.saveSubtopico(s); }
+  }
+  renderTopicos();
+}
+
+// ── TÓPICO ────────────────────────────────
+function deletarTopico(tid) {
+  const t = CT.getTopico(tid);
+  if (!t || !confirm(`Excluir o tópico "${t.nome}"?\nSubtópicos e questões vinculadas também serão removidos.`)) return;
+  localStorage.setItem('ct_topicos', JSON.stringify(CT.getTopicos().filter(x => x.id !== tid)));
+  localStorage.setItem('ct_subtopicos', JSON.stringify(CT.getSubtopicos().filter(x => x.topicoId !== tid)));
+  localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(x => x.topicoId !== tid)));
+  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(x => x.topicoId !== tid)));
+  renderTopicos(); updateProgresso();
+}
+
+function adicionarTopico() {
+  const nome = prompt('Nome do tópico:', '');
+  if (!nome?.trim()) return;
+  CT.saveTopico({ materiaId: mId, concursoId: cId, nome: nome.trim(), estudado: false });
+  renderTopicos(); updateProgresso();
+}
+
+function adicionarSubtopico(tid) {
+  const btn = document.querySelector(`#tc_${tid} .add-sub-btn`);
+  if (!btn || btn.previousElementSibling?.classList.contains('add-sub-inline')) return;
+  const div = document.createElement('div');
+  div.className = 'add-sub-inline';
+  div.style.cssText = 'display:flex;align-items:center;gap:8px;margin:6px 0';
+  div.innerHTML = `<input type="text" placeholder="Nome do subtópico..." 
+    style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none"
+    onkeydown="if(event.key==='Enter'){confirmarSubtopico('${tid}',this.value);this.parentElement.remove()}if(event.key==='Escape')this.parentElement.remove()">
+    <button onclick="confirmarSubtopico('${tid}',this.previousElementSibling.value);this.parentElement.remove()"
+      style="padding:5px 12px;background:var(--accent);border:none;border-radius:6px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✓</button>
+    <button onclick="this.parentElement.remove()"
+      style="padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer">✕</button>`;
+  btn.parentElement.insertBefore(div, btn);
+  div.querySelector('input').focus();
+}
+
+function confirmarSubtopico(tid, nome) {
+  if (!nome?.trim()) return;
+  CT.saveSubtopico({ topicoId: tid, materiaId: mId, concursoId: cId, nome: nome.trim(), estudado: false });
+  renderTopicos();
+  setTimeout(() => { document.getElementById('tc_' + tid)?.classList.add('open'); }, 50);
+}
+
+function deletarSubtopico(sid) {
+  const s = CT.getSubtopicos().find(x => x.id === sid);
+  if (!s || !confirm(`Excluir o subtópico "${s.nome}"?`)) return;
+  localStorage.setItem('ct_subtopicos', JSON.stringify(CT.getSubtopicos().filter(x => x.id !== sid)));
+  localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(x => x.subtopId !== sid)));
+  renderTopicos(); updateProgresso();
+}
+
+// ── UI / ACCORDION ────────────────────────
+function toggleTopico(id) {
+  const target = document.getElementById(id); if (!target) return;
+  const wasOpen = target.classList.contains('open');
+  document.querySelectorAll('.topico-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) target.classList.add('open');
+}
+
+function toggleSub(id) {
+  const row = document.getElementById(id); if (!row) return;
+  const body = row.querySelector('.sub-body');
+  const arrow = row.querySelector('.sub-expand'); if (!body) return;
+  const wasOpen = body.style.display !== 'none';
+  
+  document.querySelectorAll('.subtopico-row').forEach(r => {
+    const ob = r.querySelector('.sub-body'); const oa = r.querySelector('.sub-expand');
+    if (ob) ob.style.display = 'none';
+    if (oa) oa.style.transform = '';
+  });
+  
+  if (!wasOpen) {
+    body.style.display = '';
+    if (arrow) arrow.style.transform = 'rotate(90deg)';
+  }
+}
+
+// ── POPUP REVISÃO ─────────────────────────
+function closePopup() { document.getElementById('popup-overlay').classList.remove('visible'); }
+function closePopupOutside(e) { if (e.target.id === 'popup-overlay') closePopup(); }
+function selectOpt(el) { document.querySelectorAll('.popup-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+
+// ── SMART LINK ───────────────────────────
+function abrirModalLink(targetId, name, type) {
+  const matches = CT.findMatches(name, cId, type);
+  const old = document.getElementById('modalSmartLink');
+  if (old) old.remove();
+  if (!matches.length) {
+    alert('Nenhum material encontrado em outros concursos para este termo.');
+    return;
+  }
+  const overlay = document.createElement('div');
+  overlay.id = 'modalSmartLink';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:center;justify-content:center';
+  
+  let listHtml = matches.map(m => {
+    const c = CT.getConcursos().find(x => x.id === m.concursoId);
+    const logo = c?.logoPath ? `<img src="${c.logoPath}" style="width:20px;height:20px;border-radius:3px">` : '🏛️';
+    return `<div class="match-item" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--yellow);font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:5px">${logo} ${m.contestName}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${m.nome}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${m.cadernos?.length || 0} materiais</div>
+      </div>
+      <button onclick="confirmarImportacao('${targetId}', '${m.id}', '${type}')" style="padding:8px 14px;background:var(--yellow);border:none;border-radius:8px;color:#000;font-size:11px;font-weight:700;cursor:pointer">📥 Importar</button>
+    </div>`;
+  }).join('');
+
+  overlay.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px;width:460px;max-width:92vw;box-shadow:0 30px 70px rgba(0,0,0,0.7)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:18px;font-weight:800">🔗 Smart Link</div>
+      <button onclick="document.getElementById('modalSmartLink').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Encontramos estes tópicos semelhantes em outros concursos:</div>
+    <div style="max-height:350px;overflow-y:auto;margin-bottom:20px;padding-right:5px">${listHtml}</div>
+    <button onclick="document.getElementById('modalSmartLink').remove()" style="width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text2);cursor:pointer;font-weight:600">Fechar</button>
+  </div>`;
+
+  overlay.onclick = e => { if(e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function confirmarImportacao(targetId, sourceId, type) {
+  if (!confirm('Deseja importar todos os materiais deste tópico?')) return;
+  CT.importMaterials(targetId, sourceId, type);
+  document.getElementById('modalSmartLink')?.remove();
+  renderTopicos();
+}
+
+// ── CADERNOS ──────────────────────────────
+function abrirOpcoes(tid, sid) {
+  const isTop = !!tid;
+  const obj = isTop ? CT.getTopico(tid) : CT.getSubtopicos().find(x=>x.id===sid);
+  if (!obj) return;
+  const cadernos = obj.cadernos || [];
+  const old = document.getElementById('modalOpcoes'); if (old) old.remove();
+  
+  const overlay = document.createElement('div');
+  overlay.id = 'modalOpcoes';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center';
+  
+  const itens = cadernos.length ? cadernos.map((cad, i) => `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px">
+      <span style="font-size:18px">${cad.emoji||'📓'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:5px;align-items:center">
+          <input type="text" id="cad_n_${i}" value="${cad.nome.replace(/"/g, '&quot;')}" style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--text);font-family:var(--sans);font-size:12px;font-weight:600;outline:none" onkeydown="if(event.key==='Enter') salvarNomeCaderno('${tid||''}','${sid||''}',${i},this)">
+          <button onclick="salvarNomeCaderno('${tid||''}','${sid||''}',${i},document.getElementById('cad_n_${i}'))" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;font-weight:700">✓</button>
+        </div>
+        <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">${cad.url}</div>
+      </div>
+      <button onclick="deletarCadernoTopicoModal('${tid||''}','${sid||''}',${i})" style="padding:6px;background:rgba(245,90,90,0.1);border:1px solid var(--red);border-radius:6px;color:var(--red);cursor:pointer">✕</button>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:10px 0">Nenhum material associado.</div>';
+
+  let extraHtml = '';
+  if (isTop) {
+    const subs = CT.getSubtopicos(tid);
+    let subsHtml = '';
+    if (subs.length > 0) {
+       subsHtml = subs.map(sub => `
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input type="text" id="subNomeInput_${sub.id}" value="${sub.nome.replace(/"/g, '&quot;')}" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none" onkeydown="if(event.key==='Enter') salvarNovoNomeSubOpcoes('${sub.id}', this.nextElementSibling)">
+          <button onclick="salvarNovoNomeSubOpcoes('${sub.id}', this)" style="padding:8px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:12px;transition:all 0.15s">Salvar</button>
+          <button onclick="deletarSubtopicoDeOpcoes('${sub.id}', '${tid}')" style="padding:8px 14px;background:rgba(245,90,90,0.1);border:1px solid var(--red);border-radius:8px;color:var(--red);font-weight:600;cursor:pointer;font-size:12px;transition:all 0.15s" title="Excluir">✕</button>
+        </div>
+       `).join('');
+    } else {
+       subsHtml = '<div style="color:var(--text3);font-size:12px;padding:10px 0">Nenhum subtópico.</div>';
+    }
+    extraHtml = `
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:16px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Subtópicos</div>
+      <div style="display:flex;flex-direction:column;max-height:160px;overflow-y:auto;padding-right:4px">${subsHtml}</div>
+    `;
+  }
+
+  overlay.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:440px;max-width:92vw;box-shadow:0 30px 60px rgba(0,0,0,0.5);max-height:90vh;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-shrink:0"><div style="font-weight:700;font-size:16px">${isTop ? 'Configurações do Tópico' : 'Configurações do Subtópico'}</div><button onclick="document.getElementById('modalOpcoes').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">✕</button></div>
+    
+    <div style="overflow-y:auto;flex:1;padding-right:4px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Renomear</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <input type="text" id="opcoesNomeInput" value="${obj.nome.replace(/"/g, '&quot;')}" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none" onkeydown="if(event.key==='Enter') salvarNovoNomeOpcoes('${tid||''}','${sid||''}', document.getElementById('btnSalvarOpcoesNome'))">
+        <button id="btnSalvarOpcoesNome" onclick="salvarNovoNomeOpcoes('${tid||''}','${sid||''}', this)" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:12px;transition:all 0.15s">Salvar</button>
+      </div>
+
+      ${extraHtml}
+
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:16px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Materiais de Estudo</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">${itens}</div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;flex-shrink:0;">
+      <button onclick="document.getElementById('modalOpcoes').remove();${isTop ? `deletarTopico('${tid}')` : `deletarSubtopico('${sid}')`}" style="width:100%;padding:14px;background:var(--red);border:1px solid var(--red);border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-size:14px;text-transform:uppercase;letter-spacing:1px;box-shadow:0 4px 12px rgba(245,90,90,0.4);transition:all 0.15s" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">${isTop ? '✕ DELETAR TUDO' : '✕ EXCLUIR SUBTÓPICO'}</button>
+    </div>
+  </div>`;
+  
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function salvarNovoNomeOpcoes(tid, sid, btn) {
+  const inputE = document.getElementById('opcoesNomeInput');
+  if(!inputE) return;
+  const novo = inputE.value.trim();
+  if (!novo) return;
+  if (tid) {
+    const t = CT.getTopico(tid);
+    if (t) { t.nome = novo; CT.saveTopico(t); }
+  } else if (sid) {
+    const s = CT.getSubtopicos().find(x=>x.id===sid);
+    if (s) { s.nome = novo; CT.saveSubtopico(s); }
+  }
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    btn.style.backgroundColor = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = 'var(--accent)'; }, 1000);
+  }
+  renderTopicos();
+}
+
+function salvarNomeCaderno(tid, sid, idx, input) {
+  if (!input) return;
+  const novo = input.value.trim();
+  if (!novo) return;
+  const isTop = !!tid;
+  const obj = isTop ? CT.getTopico(tid) : CT.getSubtopicos().find(x=>x.id===sid);
+  if (!obj || !obj.cadernos || !obj.cadernos[idx]) return;
+  
+  obj.cadernos[idx].nome = novo;
+  if (isTop) CT.saveTopico(obj);
+  else CT.saveSubtopico(obj);
+  
+  // Feedback visual
+  input.style.borderColor = 'var(--green)';
+  setTimeout(() => { if(input) input.style.borderColor = 'var(--border2)'; }, 1000);
+  renderTopicos();
+}
+
+function salvarNovoNomeSubOpcoes(sid, btn) {
+  const inputE = document.getElementById('subNomeInput_' + sid);
+  if (!inputE) return;
+  const novo = inputE.value.trim();
+  if (!novo) return;
+  const s = CT.getSubtopicos().find(x=>x.id===sid);
+  if (s) { s.nome = novo; CT.saveSubtopico(s); }
+  renderTopicos();
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    btn.style.backgroundColor = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = 'var(--accent)'; }, 1000);
+  }
+}
+
+function deletarSubtopicoDeOpcoes(sid, tid) {
+  const s = CT.getSubtopicos().find(x => x.id === sid);
+  if (!s || !confirm(`Excluir o subtópico "${s.nome}"?`)) return;
+  localStorage.setItem('ct_subtopicos', JSON.stringify(CT.getSubtopicos().filter(x => x.id !== sid)));
+  localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(x => x.subtopId !== sid)));
+  renderTopicos();
+  document.getElementById('modalOpcoes').remove();
+  abrirOpcoes(tid, null);
+}
+
+function deletarCadernoTopicoModal(tid, sid, idx) {
+  if (tid) { const t = CT.getTopico(tid); if(t&&t.cadernos){t.cadernos.splice(idx,1);CT.saveTopico(t);} }
+  else if (sid) { const s = CT.getSubtopicos().find(x=>x.id===sid); if(s&&s.cadernos){s.cadernos.splice(idx,1);CT.saveSubtopico(s);} }
+  renderTopicos(); document.getElementById('modalOpcoes')?.remove();
+  const obj = tid ? CT.getTopico(tid) : CT.getSubtopicos().find(x=>x.id===sid);
+  if (obj?.cadernos?.length) abrirOpcoes(tid||null, sid||null);
+}
+
+function abrirAddHorasSub(sid, tid) { const p = document.getElementById('addHorasSub_' + sid); if (p) p.style.display = p.style.display === 'none' ? '' : 'none'; }
+function salvarHorasSub(sid, tid) {
+  const h = parseInt(document.getElementById('addHSub_' + sid)?.value) || 0, m = parseInt(document.getElementById('addMSub_' + sid)?.value) || 0;
+  if (h+m <= 0) return;
+  CT.registrarSessao({ concursoId: cId, materiaId: mId, topicoId: tid, subtopId: sid, duracaoSegundos: h*3600 + m*60 });
+  document.getElementById('addHorasSub_' + sid).style.display = 'none'; updateProgresso(); renderTopicos();
+}
+
+function ensureAjusteHistoryHost() {
+  document.querySelectorAll('.adj-history-list').forEach(el => {
+    const modal = el.closest('#modal-ajuste-materia');
+    if (!modal) {
+      const wrap = el.closest('.adj-history-box');
+      const toggle = wrap && wrap.nextElementSibling && wrap.nextElementSibling.classList.contains('adj-history-toggle')
+        ? wrap.nextElementSibling
+        : null;
+      if (toggle) toggle.remove();
+      if (wrap) wrap.remove();
+      else {
+        const tip = el.previousElementSibling;
+        const label = tip && tip.classList.contains('adj-history-tip') ? tip.previousElementSibling : null;
+        if (label && label.classList.contains('section-label')) label.remove();
+        if (tip && tip.classList.contains('adj-history-tip')) tip.remove();
+        el.remove();
+      }
+    }
+  });
+
+  const modal = document.getElementById('modal-ajuste-materia');
+  if (!modal) return null;
+  const box = modal.querySelector('.popup');
+  if (!box) return null;
+  let list = modal.querySelector('#adj-history-list');
+  if (list) return list;
+
+  const resetBtn = box.querySelector('.btn-reset-materia');
+  const wrap = document.createElement('div');
+  wrap.className = 'adj-history-box';
+  wrap.id = 'adj-history-box';
+  const tip = document.createElement('div');
+  tip.className = 'adj-history-tip';
+  tip.textContent = 'Audite tudo que compõe as estatísticas gerais desta matéria e exclua lançamentos equivocados sem precisar zerar tudo.';
+  list = document.createElement('div');
+  list.className = 'adj-history-list';
+  list.id = 'adj-history-list';
+  wrap.appendChild(tip);
+  wrap.appendChild(list);
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'adj-history-toggle';
+  toggle.id = 'adj-history-toggle';
+  toggle.innerHTML = `
+    <div>
+      <div class="adj-history-toggle-label">Histórico dos Lançamentos</div>
+      <div class="adj-history-toggle-meta" id="adj-history-toggle-meta">Clique para expandir</div>
+    </div>
+    <span class="adj-history-toggle-icon">▼</span>
+  `;
+  toggle.onclick = function () {
+    wrap.classList.toggle('open');
+    toggle.classList.toggle('open', wrap.classList.contains('open'));
+    updateAjusteHistoryToggle();
+  };
+
+  box.insertBefore(toggle, resetBtn);
+  box.insertBefore(wrap, resetBtn);
+  return list;
+}
+
+function updateAjusteHistoryToggle(total) {
+  const box = document.getElementById('adj-history-box');
+  const toggle = document.getElementById('adj-history-toggle');
+  const meta = document.getElementById('adj-history-toggle-meta');
+  if (!box || !toggle || !meta) return;
+  toggle.classList.toggle('open', box.classList.contains('open'));
+  const count = typeof total === 'number' ? total : document.querySelectorAll('#adj-history-list .adj-history-item').length;
+  const suffix = count === 1 ? 'registro' : 'registros';
+  meta.textContent = box.classList.contains('open')
+    ? `${count} ${suffix} • Clique para recolher`
+    : `${count} ${suffix} • Clique para expandir`;
+}
+
+function formatarDataHoraHistorico(data, horaInicio) {
+  let dt = null;
+  if (horaInicio) {
+    dt = new Date(horaInicio);
+    if (isNaN(dt.getTime())) dt = null;
+  }
+  if (!dt && data) {
+    dt = new Date(data + 'T12:00:00');
+    if (isNaN(dt.getTime())) dt = null;
+  }
+  if (!dt) return data || 'Sem data';
+  const dd = String(dt.getDate()).padStart(2, '0');
+  const mm = String(dt.getMonth() + 1).padStart(2, '0');
+  const yy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2, '0');
+  const mi = String(dt.getMinutes()).padStart(2, '0');
+  return `${dd}/${mm}/${yy} ${hh}:${mi}`;
+}
+
+function contextoLancamentoMateria(entry) {
+  const partes = [];
+  if (entry.topicoId) {
+    const top = CT.getTopico(entry.topicoId);
+    if (top && top.nome) partes.push(top.nome);
+  }
+  if (entry.subtopId) {
+    const sub = CT.getSubtopicos().find(s => s.id === entry.subtopId);
+    if (sub && sub.nome) partes.push(sub.nome);
+  }
+  if (!partes.length) partes.push('Lançamento avulso da matéria');
+  if (entry.nota) partes.push(entry.nota);
+  else if (entry.origem) partes.push('Origem: ' + entry.origem);
+  return partes.join(' • ');
+}
+
+function formatarDuracaoHistorico(segundos) {
+  const total = Math.abs(segundos || 0);
+  const sinal = (segundos || 0) < 0 ? '-' : '';
+  return sinal + CT.formatarTempo(total);
+}
+
+function escapeHtml(text) {
+  return (text || '').toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function obterHistoricoMateria() {
+  const sessoes = CT.getSessoes({ concursoId: cId, materiaId: mId }).map(s => ({
+    id: s.id,
+    tipo: 'sessao',
+    sortKey: s.horaInicio || `${s.data || ''}T00:00:00`,
+    titulo: 'Sessão de estudo',
+    dataLabel: formatarDataHoraHistorico(s.data, s.horaInicio),
+    contexto: contextoLancamentoMateria(s),
+    valores: [{ label: formatarDuracaoHistorico(s.duracaoSegundos || 0), cls: '' }]
+  }));
+  const questoes = CT.getQuestoes({ materiaId: mId }).map(q => ({
+    id: q.id,
+    tipo: 'questoes',
+    sortKey: q.horaInicio || `${q.data || ''}T00:00:00`,
+    titulo: 'Lançamento de questões',
+    dataLabel: formatarDataHoraHistorico(q.data, q.horaInicio),
+    contexto: contextoLancamentoMateria(q),
+    valores: [
+      { label: `${q.resolvidas || 0} questões`, cls: '' },
+      { label: `${q.acertos || 0} acertos`, cls: 'good' },
+      { label: `${q.erros || 0} erros`, cls: 'bad' }
+    ]
+  }));
+  return sessoes.concat(questoes).sort((a, b) => String(b.sortKey).localeCompare(String(a.sortKey)));
+}
+
+function renderHistoricoAjusteMateria() {
+  const list = ensureAjusteHistoryHost();
+  if (!list) return;
+  const historico = obterHistoricoMateria();
+  if (!historico.length) {
+    list.innerHTML = '<div class="adj-history-empty">Nenhum lançamento encontrado para esta matéria ainda.</div>';
+    updateAjusteHistoryToggle(0);
+    return;
+  }
+  list.innerHTML = historico.map(item => `
+    <div class="adj-history-item">
+      <div class="adj-history-icon">${item.tipo === 'sessao' ? '⏱️' : '📝'}</div>
+      <div class="adj-history-body">
+        <div class="adj-history-head">
+          <div class="adj-history-title">${escapeHtml(item.titulo)}</div>
+          <div class="adj-history-date">${escapeHtml(item.dataLabel)}</div>
+        </div>
+        <div class="adj-history-meta">${escapeHtml(item.contexto)}</div>
+        <div class="adj-history-values">${item.valores.map(valor => `<span class="adj-history-pill${valor.cls ? ' ' + valor.cls : ''}">${escapeHtml(valor.label)}</span>`).join('')}</div>
+      </div>
+      <button class="adj-history-delete" onclick="excluirLancamentoMateria('${item.tipo}','${item.id}')">Excluir</button>
+    </div>
+  `).join('');
+  updateAjusteHistoryToggle(historico.length);
+}
+
+function excluirLancamentoMateria(tipo, id) {
+  if (!id) return;
+  const label = tipo === 'sessao' ? 'esta sessão de estudo' : 'este lançamento de questões';
+  if (!confirm(`Excluir ${label} das estatísticas gerais da matéria?`)) return;
+  const ok = tipo === 'sessao' ? CT.excluirSessao(id) : CT.excluirLancamentoQuestoes(id);
+  if (!ok) {
+    alert('Não foi possível excluir esse lançamento.');
+    return;
+  }
+  abrirModalAjuste();
+  updateProgresso();
+  renderTopicos();
+}
+
+function abrirModalAjuste() {
+  ensureAjusteHistoryHost();
+  const sessoes = CT.getSessoes({ concursoId: cId, materiaId: mId });
+  const seg = CT.totalSegundos(sessoes);
+  
+  const questoes = CT.getQuestoes({ materiaId: mId });
+  const st = CT.calcStats(questoes);
+  
+  document.getElementById('adjH').value = Math.floor(seg / 3600);
+  document.getElementById('adjM').value = Math.floor((seg % 3600) / 60);
+  document.getElementById('adjA').value = st.acertos || 0;
+  document.getElementById('adjE').value = st.erros || 0;
+  
+  window._adjInitial = { seg, acertos: st.acertos || 0, erros: st.erros || 0 };
+  
+  document.getElementById('adj-materia-nome').textContent = materia.nome;
+  renderHistoricoAjusteMateria();
+  document.getElementById('modal-ajuste-materia').classList.add('visible');
+}
+
+function fecharModalAjuste() {
+  document.getElementById('modal-ajuste-materia').classList.remove('visible');
+}
+
+function abrirOpcoesMateria() {
+  const cadernos = materia.cadernos || [];
+  const old = document.getElementById('modalOpcoes'); if (old) old.remove();
+  
+  const overlay = document.createElement('div');
+  overlay.id = 'modalOpcoes';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center';
+  
+  const itens = cadernos.length ? cadernos.map((cad, i) => `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px">
+      <span style="font-size:18px">${cad.emoji||'📓'}</span>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cad.nome}</div><div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cad.url}</div></div>
+      <button onclick="deletarCadernoMateria(${i}); document.getElementById('modalOpcoes').remove(); abrirOpcoesMateria()" style="padding:6px;background:rgba(245,90,90,0.1);border:1px solid var(--red);border-radius:6px;color:var(--red);cursor:pointer">✕</button>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:12px;padding:10px 0">Nenhum material associado.</div>';
+
+  overlay.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:400px;max-width:92vw;box-shadow:0 30px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px"><div style="font-weight:700;font-size:16px">Configurações da Matéria</div><button onclick="document.getElementById('modalOpcoes').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">✕</button></div>
+    
+    <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Renomear</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <input type="text" id="opcoesNomeInput" value="${materia.nome.replace(/"/g, '&quot;')}" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none" onkeydown="if(event.key==='Enter') salvarNovoNomeMateria()">
+      <button onclick="salvarNovoNomeMateria()" style="padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:12px">Salvar</button>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Materiais de Estudo (Matéria)</div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;padding-right:4px">${itens}</div>
+  </div>`;
+  
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function salvarNovoNomeMateria() {
+  const inputE = document.getElementById('opcoesNomeInput');
+  if(!inputE) return;
+  const novo = inputE.value.trim();
+  if (novo && novo !== materia.nome) {
+    materia.nome = novo;
+    CT.saveMateria(materia);
+    location.reload();
+  } else {
+    document.getElementById('modalOpcoes').remove();
+  }
+}
+
+function renomearTopico(tid) {
+  const t = CT.getTopico(tid);
+  if (!t) return;
+  const novo = prompt('Renomear tópico:', t.nome);
+  if (novo && novo.trim() && novo.trim() !== t.nome) {
+    t.nome = novo.trim();
+    CT.saveTopico(t);
+    renderTopicos();
+  }
+}
+
+function renomearSubtopico(sid) {
+  const s = CT.getSubtopicos().find(x => x.id === sid);
+  if (!s) return;
+  const novo = prompt('Renomear subtópico:', s.nome);
+  if (novo && novo.trim() && novo.trim() !== s.nome) {
+    s.nome = novo.trim();
+    CT.saveSubtopico(s);
+    renderTopicos();
+  }
+}
+
+function salvarAjusteManual() {
+  const h = parseInt(document.getElementById('adjH').value) || 0, m = parseInt(document.getElementById('adjM').value) || 0;
+  const a = parseInt(document.getElementById('adjA').value) || 0, e = parseInt(document.getElementById('adjE').value) || 0;
+  const novoSeg = (h * 3600) + (m * 60), diffSeg = novoSeg - _adjInitial.seg;
+  const diffA = a - _adjInitial.acertos, diffE = e - _adjInitial.erros;
+  if (diffSeg !== 0) CT.registrarSessao({ concursoId: cId, materiaId: mId, duracaoSegundos: diffSeg, nota: 'Ajuste manual' });
+  if (diffA !== 0 || diffE !== 0) CT.lancarQuestoes({ concursoId: cId, materiaId: mId, resolvidas: diffA + diffE, acertos: diffA, erros: diffE, nota: 'Ajuste manual' });
+  fecharModalAjuste(); updateProgresso(); renderTopicos();
+}
+
+function zerarEstatisticasMateria() {
+  const m = CT.getMateria(mId); if (!m || !confirm(`⚠️ ZERAR COMPLETAMENTE a matéria "${m.nome}"?`)) return;
+  localStorage.setItem('ct_sessoes', JSON.stringify(CT.getSessoes().filter(s => s.materiaId !== mId)));
+  localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(q => q.materiaId !== mId)));
+  const topicos = CT.getTopicos(); const tIds = [];
+  topicos.forEach(t => { if (t.materiaId === mId) { t.estudado = false; t.estudadoEm = null; t.revisaoData = null; tIds.push(t.id); } });
+  localStorage.setItem('ct_topicos', JSON.stringify(topicos));
+  const subs = CT.getSubtopicos(); subs.forEach(s => { if (s.materiaId === mId) { s.estudado = false; s.estudadoEm = null; } });
+  localStorage.setItem('ct_subtopicos', JSON.stringify(subs));
+  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(r => !tIds.includes(r.topicoId))));
+  location.reload();
+}
+
+function fmtDate(data) { if(!data) return '-'; const p = data.split('-'); return `${p[2]}/${p[1]}`; }
+function diasAtraso(data) { if(!data) return 0; const diff = new Date(CT._today()) - new Date(data); return Math.max(0, Math.floor(diff / 86400000)); }
+
+// ── FECHAR CTX / DRAG AND DROP ────────────
+let _ctxTarget = null;
+function showCtxMenu(e, tid, sid, cid) {
+  e.preventDefault(); e.stopPropagation();
+  _ctxTarget = { tid, sid, cid };
+  const menu = document.getElementById('ctxMenu');
+  menu.style.display = 'block'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px';
+  document.addEventListener('click', closeCtxMenu);
+}
+function closeCtxMenu() { document.getElementById('ctxMenu').style.display = 'none'; document.removeEventListener('click', closeCtxMenu); }
+function ctxAcao(acao) {
+  const { tid, sid, cid } = _ctxTarget;
+  const obj = tid ? CT.getTopico(tid) : CT.getSubtopicos().find(x=>x.id===sid);
+  if (acao === 'abrir') { const cad = obj.cadernos.find(x=>x.id===cid); if(cad) window.open(cad.url, '_blank'); }
+  else if (acao === 'deletar') {
+    if(!confirm('Remover este material?')) return;
+    obj.cadernos = obj.cadernos.filter(x=>x.id!==cid);
+    if(tid) CT.saveTopico(obj); else CT.saveSubtopico(obj);
+    renderTopicos();
+  }
+}
+
+let _dragType = null;
+let _dragSourceId = null;
+let _dragSourceTarget = null;
+let _dragSourceParentId = null;
+
+function dragStart(e, type, id, parentId) {
+  _dragType = type;
+  _dragSourceId = id;
+  _dragSourceParentId = parentId;
+  _dragSourceTarget = e.currentTarget;
+  e.dataTransfer.effectAllowed = "move";
+  setTimeout(() => { if (_dragSourceTarget) _dragSourceTarget.style.opacity = '0.4'; }, 0);
+  e.stopPropagation();
+}
+
+function dragEnd(e) {
+  if (_dragSourceTarget) _dragSourceTarget.style.opacity = '1';
+  document.querySelectorAll('.topico-card, .subtopico-row').forEach(el => el.style.borderTop = '');
+  _dragType = null;
+  _dragSourceId = null;
+  _dragSourceTarget = null;
+}
+
+function dragOver(e, type) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (type !== _dragType || _dragSourceId === e.currentTarget.id.replace(/^(tc_|sc_)/, '')) return;
+  e.dataTransfer.dropEffect = "move";
+  e.currentTarget.style.borderTop = '2px solid var(--accent)';
+}
+
+function dragLeave(e) {
+  e.currentTarget.style.borderTop = '';
+}
+
+function drop(e, type, targetId, targetParentId) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.style.borderTop = '';
+  if (type !== _dragType || _dragSourceId === targetId) return;
+
+  if (type === 'topico') {
+    let allTopicos = CT._get('ct_topicos');
+    let fromIdx = allTopicos.findIndex(t => t.id === _dragSourceId);
+    let toIdx = allTopicos.findIndex(t => t.id === targetId);
+    if (fromIdx >= 0 && toIdx >= 0) {
+      const moved = allTopicos.splice(fromIdx, 1)[0];
+      allTopicos.splice(toIdx, 0, moved);
+      CT._set('ct_topicos', allTopicos);
+      renderTopicos();
+    }
+  } else if (type === 'subtopico') {
+    if (_dragSourceParentId !== targetParentId) {
+      alert('Arraste apenas dentro do mesmo tópico.');
+      return;
+    }
+    let allSubs = CT._get('ct_subtopicos');
+    let fromIdx = allSubs.findIndex(s => s.id === _dragSourceId);
+    let toIdx = allSubs.findIndex(s => s.id === targetId);
+    if (fromIdx >= 0 && toIdx >= 0) {
+      const moved = allSubs.splice(fromIdx, 1)[0];
+      allSubs.splice(toIdx, 0, moved);
+      CT._set('ct_subtopicos', allSubs);
+      renderTopicos();
+    }
+  }
+}
+</script>
+
+<div id="ctxMenu" style="display:none;position:fixed;z-index:99999;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:160px">
+  <div onclick="ctxAcao('abrir')" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--text2)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔗 Abrir link</div>
+  <div onclick="ctxAcao('deletar')" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--red)" onmouseover="this.style.background='rgba(245,90,90,0.08)'" onmouseout="this.style.background=''">✕ Remover</div>
+</div>
+</body>
+</html>

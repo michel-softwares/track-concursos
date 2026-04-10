@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Revisões</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
+    --border:#252836; --border2:#2e3347;
+    --accent:#4f8ef7; --accent2:#7c5cfc;
+    --text:#e8eaf2; --text2:#f1f2f6; --text3:#a1a6c2;
+    --green:#3ecf8e; --green2:#27a06b; --yellow:#FFD700; --orange:#f5874a; --red:#f55a5a;
+    --mono:'Inter',sans-serif; --sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;}
+  .sidebar-logo {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .brand-logo:hover {
+    transform: scale(1.04);
+  }
+  .nav{padding:16px 12px;flex:1;}
+  .nav-label{font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--text3);padding:0 8px;margin-bottom:8px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:2px 6px;border-radius:20px;font-family:var(--mono);}
+  .sidebar-concurso{margin:0 12px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .concurso-nome{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .concurso-banca{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .timer-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;}
+  .timer-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+  /* MAIN */
+  .main{margin-left:220px;min-height:100vh;padding:32px;}
+
+  /* PAGE HEADER */
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--text3);}
+
+  /* FILTRO CONCURSO */
+  .filtro-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .filtro-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-right:4px;}
+  .filtro-chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .filtro-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .filtro-chip.active{background:rgba(79,142,247,0.12);border-color:var(--accent);color:var(--accent);}
+
+  /* SUMÁRIO */
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+  .summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .summary-card.red::before{background:var(--red);}
+  .summary-card.yellow::before{background:var(--yellow);}
+  .summary-card.blue::before{background:var(--accent);}
+  .summary-card.green::before{background:var(--green);}
+  .summary-icon{font-size:20px;margin-bottom:10px;display:block;}
+  .summary-val{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);line-height:1;}
+  .summary-label{font-size:12px;color:var(--text3);margin-top:5px;}
+
+  /* SECTION */
+  .rev-section{margin-bottom:28px;}
+  .rev-section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .rev-section-title{font-size:14px;font-weight:700;color:var(--text);}
+  .rev-section-count{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:20px;font-weight:700;}
+  .rev-section-count.red{background:rgba(245,90,90,0.12);color:var(--red);}
+  .rev-section-count.yellow{background:rgba(245,200,66,0.12);color:var(--yellow);}
+  .rev-section-count.blue{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .rev-section-count.green{background:rgba(62,207,142,0.12);color:var(--green);}
+
+  /* REVISÃO CARD */
+  .rev-list{display:flex;flex-direction:column;gap:8px;}
+
+  .rev-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:all 0.15s;cursor:pointer;}
+  .rev-card:hover{border-color:var(--border2);background:var(--bg3);}
+  .rev-card.atrasada{border-left:3px solid var(--red);}
+  .rev-card.hoje{border-left:3px solid var(--yellow);}
+  .rev-card.proxima{border-left:3px solid var(--border2);}
+  .rev-card.feita{border-left:3px solid var(--green);opacity:0.6;}
+
+  .rev-card-left{flex:1;min-width:0;}
+  .rev-card-concurso{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+  .concurso-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .rev-card-topico{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rev-card-materia{font-size:12px;color:var(--text3);}
+
+  .rev-card-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+
+  .atraso-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;font-family:var(--mono);}
+  .atraso-badge.red{background:rgba(245,90,90,0.12);color:var(--red);}
+  .atraso-badge.yellow{background:rgba(245,200,66,0.12);color:var(--yellow);}
+  .atraso-badge.blue{background:rgba(79,142,247,0.08);color:var(--text3);font-size:12px;}
+  .atraso-badge.green{background:rgba(62,207,142,0.12);color:var(--green);}
+
+  .pct-badge{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 7px;border-radius:5px;}
+.pct-badge.g1{background:rgba(52,245,141,0.16);color:#34f58d;}
+.pct-badge.g2{background:rgba(156,247,204,0.16);color:#9cf7cc;}
+.pct-badge.y{background:rgba(255,228,92,0.16);color:#ffe45c;}
+  .pct-badge.o{background:rgba(245,135,74,0.15);color:var(--orange);}
+  .pct-badge.r{background:rgba(245,90,90,0.15);color:var(--red);}
+
+  .rev-card-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .btn-revisar{padding:6px 14px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .btn-revisar:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,0.3);}
+  .btn-revisar.green{background:linear-gradient(135deg,var(--green),var(--green2));}
+  .btn-adiar{padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all 0.15s;}
+  .btn-adiar:hover{border-color:var(--text2);color:var(--text2);}
+
+  /* AGENDA PRÓXIMOS DIAS */
+  .agenda-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .agenda-dia{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;}
+  .agenda-dia.hoje-col{border-color:rgba(79,142,247,0.4);background:rgba(79,142,247,0.05);}
+  .agenda-dia-nome{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px;}
+  .agenda-dia.hoje-col .agenda-dia-nome{color:var(--accent);}
+  .agenda-dia-num{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;}
+  .agenda-dia.hoje-col .agenda-dia-num{color:var(--accent);}
+  .agenda-count{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);line-height:1;}
+  .agenda-count.zero{color:var(--text3);font-size:14px;}
+  .agenda-count-label{font-size:12px;color:var(--text3);margin-top:3px;}
+  .agenda-dots{display:flex;gap:3px;justify-content:center;margin-top:6px;flex-wrap:wrap;}
+  .agenda-dot{width:6px;height:6px;border-radius:50%;}
+
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:32px;color:var(--text3);}
+  .empty-icon{font-size:32px;margin-bottom:10px;}
+  .empty-text{font-size:12px;}
+
+  /* POPUP REVISÃO */
+  .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+  .popup-overlay.visible{opacity:1;pointer-events:all;}
+  .popup{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;max-width:420px;width:90%;transform:scale(0.95);transition:transform 0.2s;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+  .popup-overlay.visible .popup{transform:scale(1);}
+  .popup-icon{font-size:32px;text-align:center;margin-bottom:12px;}
+  .popup-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:center;}
+  .popup-topico{font-size:12px;color:var(--accent);text-align:center;margin-bottom:16px;font-weight:600;background:rgba(79,142,247,0.08);padding:6px 12px;border-radius:20px;width:100%;display:block;}
+  .popup-tip{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:20px;background:var(--bg3);border-radius:8px;padding:10px 14px;border-left:3px solid var(--accent2);}
+  .popup-tip strong{color:var(--text2);}
+  .popup-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+  .popup-opt{padding:10px;border-radius:9px;border:2px solid var(--border2);background:var(--bg3);cursor:pointer;text-align:center;transition:all 0.15s;}
+  .popup-opt:hover{border-color:var(--accent);}
+  .popup-opt.selected{border-color:var(--accent);background:rgba(79,142,247,0.1);}
+  .popup-opt-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);line-height:1;}
+  .popup-opt-label{font-size:12px;color:var(--text3);margin-top:3px;}
+  .popup-custom{margin-bottom:16px;}
+  .popup-custom input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;transition:border-color 0.15s;}
+  .popup-custom input:focus{border-color:var(--accent);}
+  .popup-btns{display:flex;gap:8px;}
+  .popup-btn-skip{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .popup-btn-skip:hover{border-color:var(--red);color:var(--red);}
+  .popup-btn-ok{flex:2;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(79,142,247,0.3);}
+  .popup-btn-ok:hover{transform:translateY(-1px);}
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item active" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
+    <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span> Simulados</div>
+    <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+        <a href="ajuda.html" style="text-decoration:none">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6">
+            <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+            <span style="opacity:0.7">powered by Antigravity Gemini</span>
+          </div>
+        </a>
+      </div>
+      <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">🔁 Revisões</div>
+      <div class="page-sub" id="revSub">Carregando...</div>
+    </div>
+    <div class="filtro-row" id="filtroRow"></div>
+  </div>
+
+  <!-- SUMÁRIO -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+    <div style="background:rgba(245,90,90,0.08);border:1px solid rgba(245,90,90,0.2);border-radius:12px;padding:16px 20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--red)" id="cntAtrasadas">0</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">🔴 Atrasadas</div>
+    </div>
+    <div style="background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);border-radius:12px;padding:16px 20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--yellow)" id="cntHoje">0</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">🟡 Para hoje</div>
+    </div>
+    <div style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:12px;padding:16px 20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent)" id="cntFuturas">0</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">📅 Futuras</div>
+    </div>
+  </div>
+
+  <!-- ATRASADAS -->
+  <div id="secAtrasadas" style="display:none;margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Atrasadas</div>
+      <div style="font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:20px;font-family:var(--mono)" id="lblAtrasadas"></div>
+    </div>
+    <div id="listaAtrasadas" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- HOJE -->
+  <div id="secHoje" style="display:none;margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--yellow);flex-shrink:0"></div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Para hoje</div>
+      <div style="font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:20px;font-family:var(--mono)" id="lblHoje"></div>
+    </div>
+    <div id="listaHoje" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- FUTURAS -->
+  <div id="secFuturas" style="display:none;margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0"></div>
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Próximas revisões</div>
+    </div>
+    <div id="listaFuturas" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div id="emptyState" style="display:none;text-align:center;padding:80px 20px;color:var(--text3)">
+    <div style="font-size:48px;margin-bottom:16px">✅</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px">Nenhuma revisão pendente</div>
+    <div style="font-size:14px;line-height:1.6">Quando você marcar um tópico como estudado<br>e agendar revisão, ele aparecerá aqui.</div>
+  </div>
+
+</main>
+
+<!-- POPUP PRÓXIMA REVISÃO -->
+<div class="popup-overlay" id="popupOverlay" onclick="closeOutside(event)">
+  <div class="popup">
+    <div class="popup-icon">✅</div>
+    <div class="popup-title">Revisão concluída!</div>
+    <div class="popup-topico" id="popupTopico">—</div>
+    <div class="popup-tip">💡 Quando deseja revisar novamente?</div>
+    <div class="popup-opts">
+      <div class="popup-opt selected" onclick="selOpt(this)"><div class="popup-opt-num">5</div><div class="popup-opt-label">dias</div></div>
+      <div class="popup-opt" onclick="selOpt(this)"><div class="popup-opt-num">7</div><div class="popup-opt-label">dias</div></div>
+      <div class="popup-opt" onclick="selOpt(this)"><div class="popup-opt-num">15</div><div class="popup-opt-label">dias</div></div>
+      <div class="popup-opt" onclick="selOpt(this)"><div class="popup-opt-num">30</div><div class="popup-opt-label">dias</div></div>
+    </div>
+    <div class="popup-custom">
+      <input type="date" id="popupDataCustom" placeholder="Ou escolha uma data específica">
+    </div>
+    <div class="popup-btns">
+      <button class="popup-btn-skip" onclick="confirmarRevisao(false)">Não revisar mais</button>
+      <button class="popup-btn-ok" onclick="confirmarRevisao(true)">✓ Agendar próxima revisão</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+// ── SIDEBAR CONCURSO ─────────────────────
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>
+<script>
+const cId = sessionStorage.getItem('ct_concurso_ativo');
+if (!cId) location.href = 'concursos.html';
+
+let _revTopicoId = null;
+
+function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+function pctClass(p){return CT.pctClass?CT.pctClass(p):'none';}
+function diasAtraso(d){return Math.floor((new Date(CT._today())-new Date(d))/86400000);}
+function fmtDate(d){const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+
+function cardRevisao(r, tipo) {
+  const t = CT.getTopico(r.topicoId);
+  if (!t) return '';
+  const mat = CT.getMateria(t.materiaId);
+  const q   = CT.calcStats(CT.getQuestoes({ topicoId: t.id }));
+  const cor = tipo==='atrasada'?'var(--red)':tipo==='hoje'?'var(--yellow)':'var(--accent)';
+
+  const badge = tipo==='atrasada'
+    ? `<span style="background:rgba(245,90,90,0.1);border:1px solid var(--red);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--red);font-family:var(--mono)">🔴 ${diasAtraso(r.data)}d atrasada</span>`
+    : tipo==='hoje'
+    ? `<span style="background:rgba(245,200,66,0.1);border:1px solid var(--yellow);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--yellow);font-family:var(--mono)">🟡 Hoje</span>`
+    : `<span style="background:rgba(79,142,247,0.1);border:1px solid var(--accent);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--accent);font-family:var(--mono)">📅 ${fmtDate(r.data)}</span>`;
+
+  const pctBadge = q.pct!=null
+    ? `<span style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:${pctColor(q.pct)};font-family:var(--mono)">${q.pct}%</span>`
+    : '';
+
+  return `
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${t.nome}</div>
+      <div style="font-size:12px;color:var(--text3)">${mat?'📘 '+mat.nome:'—'}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+      ${badge}
+      ${pctBadge}
+      ${tipo!=='futura'?`
+      <button onclick="adiarRevisao('${r.topicoId}')"
+        style="padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Adiar</button>
+      <button onclick="abrirPopupRevisao('${r.topicoId}')"
+        style="padding:6px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✓ Revisei</button>`
+      :`<button onclick="abrirPopupRevisao('${r.topicoId}')"
+        style="padding:6px 14px;border:none;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">Revisar agora</button>`}
+    </div>
+  </div>`;
+}
+
+function render() {
+  const rev = CT.classificarRevisoes();
+
+  // Filtra pelo concurso ativo
+  function filtraConcurso(lista) {
+    return lista.filter(r => {
+      const t = CT.getTopico(r.topicoId);
+      return t && t.concursoId === cId;
+    });
+  }
+
+  const atrasadas = filtraConcurso(rev.atrasadas);
+  const hoje      = filtraConcurso(rev.hoje);
+  const futuras   = filtraConcurso(rev.futuras);
+  const total     = atrasadas.length + hoje.length + futuras.length;
+
+  // Sumário
+  document.getElementById('cntAtrasadas').textContent = atrasadas.length;
+  document.getElementById('cntHoje').textContent      = hoje.length;
+  document.getElementById('cntFuturas').textContent   = futuras.length;
+
+  // Badge sidebar
+  const badge = document.querySelector('.nav-badge');
+  const urgentes = atrasadas.length + hoje.length;
+  if (badge) badge.textContent = urgentes > 0 ? urgentes : '';
+
+  // Subtítulo
+  const c = CT.getConcurso(cId);
+  document.getElementById('revSub').textContent = c ? c.nome + ' — ' + total + ' revisão(ões) pendente(s)' : '';
+
+  // Sidebar info
+  if (c) {
+    document.querySelector('.concurso-nome').textContent = c.nome;
+    document.querySelector('.concurso-banca').textContent = c.banca || '—';
+  }
+
+  // Empty state
+  document.getElementById('emptyState').style.display = total === 0 ? '' : 'none';
+
+  // Seção atrasadas
+  const secAt = document.getElementById('secAtrasadas');
+  if (atrasadas.length) {
+    secAt.style.display = '';
+    document.getElementById('lblAtrasadas').textContent = atrasadas.length;
+    document.getElementById('listaAtrasadas').innerHTML = atrasadas
+      .sort((a,b)=>a.data.localeCompare(b.data))
+      .map(r => cardRevisao(r,'atrasada')).join('');
+  } else secAt.style.display = 'none';
+
+  // Seção hoje
+  const secHj = document.getElementById('secHoje');
+  if (hoje.length) {
+    secHj.style.display = '';
+    document.getElementById('lblHoje').textContent = hoje.length;
+    document.getElementById('listaHoje').innerHTML = hoje.map(r => cardRevisao(r,'hoje')).join('');
+  } else secHj.style.display = 'none';
+
+  // Seção futuras
+  const secFt = document.getElementById('secFuturas');
+  if (futuras.length) {
+    secFt.style.display = '';
+    document.getElementById('listaFuturas').innerHTML = futuras
+      .sort((a,b)=>a.data.localeCompare(b.data))
+      .map(r => cardRevisao(r,'futura')).join('');
+  } else secFt.style.display = 'none';
+}
+
+function abrirPopupRevisao(topicoId) {
+  _revTopicoId = topicoId;
+  const t = CT.getTopico(topicoId);
+  document.getElementById('popupTopico').textContent = t ? t.nome : '—';
+  document.getElementById('popupDataCustom').value = '';
+  document.querySelectorAll('.popup-opt').forEach((o,i) => o.classList.toggle('selected', i===0));
+  document.getElementById('popupOverlay').classList.add('visible');
+}
+
+function confirmarRevisao(agendar) {
+  if (!_revTopicoId) return;
+  let proximaData = null;
+  if (agendar) {
+    const custom = document.getElementById('popupDataCustom').value;
+    if (custom) {
+      proximaData = custom;
+    } else {
+      const sel = document.querySelector('.popup-opt.selected .popup-opt-num');
+      if (sel) {
+        const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + parseInt(sel.textContent));
+        proximaData = CT._dateString(d);
+      }
+    }
+  }
+  CT.concluirRevisao(_revTopicoId, proximaData);
+  closePopup();
+  render();
+}
+
+function adiarRevisao(topicoId) {
+  // Abre popup mas no modo "adiar" — só reagenda sem marcar como concluída
+  _revTopicoId = topicoId;
+  const t = CT.getTopico(topicoId);
+  document.getElementById('popupTopico').textContent = '📅 Adiar: ' + (t ? t.nome : '—');
+  document.getElementById('popupDataCustom').value = '';
+  document.querySelectorAll('.popup-opt').forEach((o,i) => o.classList.toggle('selected', i===0));
+  document.getElementById('popupOverlay').classList.add('visible');
+  // Marca que é adiar, não revisar
+  document.querySelector('.popup-btn-ok').onclick = () => adiarConfirmar();
+  document.querySelector('.popup-btn-skip').textContent = 'Cancelar';
+  document.querySelector('.popup-btn-skip').onclick = () => {
+    closePopup();
+    // Restaura botões
+    document.querySelector('.popup-btn-ok').onclick = () => confirmarRevisao(true);
+    document.querySelector('.popup-btn-skip').textContent = 'Não revisar mais';
+    document.querySelector('.popup-btn-skip').onclick = () => confirmarRevisao(false);
+  };
+}
+
+function adiarConfirmar() {
+  const custom = document.getElementById('popupDataCustom').value;
+  let novaData;
+  if (custom) {
+    novaData = custom;
+  } else {
+    const sel = document.querySelector('.popup-opt.selected .popup-opt-num');
+    const dias = sel ? parseInt(sel.textContent) : 7;
+    const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + dias);
+    novaData = CT._dateString(d);
+  }
+  CT.agendarRevisao(_revTopicoId, novaData);
+  closePopup();
+  // Restaura botões
+  document.querySelector('.popup-btn-ok').onclick = () => confirmarRevisao(true);
+  document.querySelector('.popup-btn-skip').textContent = 'Não revisar mais';
+  document.querySelector('.popup-btn-skip').onclick = () => confirmarRevisao(false);
+  render();
+}
+
+function closePopup() { document.getElementById('popupOverlay').classList.remove('visible'); }
+function closeOutside(e) { if (e.target===document.getElementById('popupOverlay')) closePopup(); }
+function selOpt(el) { document.querySelectorAll('.popup-opt').forEach(o=>o.classList.remove('selected')); el.classList.add('selected'); }
+
+render();
+</script>
+
+
+
+<script src="timer-popup.js"></script>
+</body>
+</html>

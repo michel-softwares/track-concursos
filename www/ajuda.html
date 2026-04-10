@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Ajuda</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
+    --border:#252836; --border2:#2e3347;
+    --accent:#4f8ef7; --accent2:#7c5cfc;
+    --text:#e8eaf2; --text2:#f1f2f6; --text3:#a1a6c2;
+    --green:#3ecf8e; --yellow:#FFD700; --orange:#f5874a; --red:#f55a5a;
+    --mono:'Inter',sans-serif; --sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;}
+  .sidebar-logo{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .brand-logo:hover { transform: scale(1.04); }
+  .nav{padding:16px 12px;flex:1;}
+  .nav-label{font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--text3);padding:0 8px;margin-bottom:8px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-concurso{margin:0 12px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .concurso-nome{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .concurso-banca{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .timer-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;}
+  .timer-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+  .main{margin-left:220px;min-height:100vh;padding:32px;max-width:860px;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--text3);margin-bottom:32px;}
+
+  .dev-card {
+    background:linear-gradient(135deg,rgba(79,142,247,0.08),rgba(124,92,252,0.08));
+    border:1px solid rgba(124,92,252,0.3);
+    border-radius:16px;padding:28px;margin-bottom:28px;
+    display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .dev-card-link { text-decoration:none; color:inherit; display:block; }
+  .dev-avatar {
+    width:80px;height:80px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;
+    font-size:36px;flex-shrink:0;
+    color:#fff;
+  }
+  .dev-avatar svg { width:72px;height:72px;display:block;fill:currentColor; }
+  .dev-info { flex:1;min-width:180px; }
+  .dev-name { font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+  .dev-tagline { font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:12px; }
+  .dev-badges { display:flex;gap:8px;flex-wrap:wrap; }
+  .dev-badge { padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid; }
+
+  .contact-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:28px; }
+  .contact-card {
+    background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+    padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    text-decoration:none;transition:border-color 0.15s,background 0.15s;
+  }
+  .contact-card:hover { border-color:var(--accent); background:var(--bg3); }
+  .contact-icon { font-size:28px;flex-shrink:0; }
+  .contact-title { font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px; }
+  .contact-sub { font-size:12px;color:var(--text3); }
+  .offer-card {
+    background:
+      radial-gradient(circle at top right, rgba(79,142,247,0.12), transparent 32%),
+      radial-gradient(circle at bottom left, rgba(124,92,252,0.12), transparent 34%),
+      linear-gradient(135deg, rgba(19,22,30,0.98), rgba(26,30,42,0.98));
+    border:1px solid rgba(79,142,247,0.2);
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:28px;
+    box-shadow:0 24px 55px rgba(0,0,0,0.28);
+  }
+  .offer-head { text-align:center;margin-bottom:14px; }
+  .offer-badge {
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:5px 12px;border-radius:999px;
+    background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.2);
+    color:var(--accent);font-size:11px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;
+    margin:0 auto 10px;
+  }
+  .offer-title { font-size:17px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:6px; }
+  .offer-sub { font-size:12px;color:var(--text3);line-height:1.7;max-width:680px;margin:0 auto 12px; }
+  .offer-highlight {
+    display:inline-block;
+    min-width:0;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(124,92,252,0.18);
+    border-radius:12px;
+    padding:10px 13px;
+  }
+  .offer-highlight-label { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px; }
+  .offer-highlight-value { font-size:13px;font-weight:700;color:var(--text);line-height:1.45; }
+  .offer-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px; }
+  .offer-item {
+    background:rgba(255,255,255,0.02);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 13px 11px;
+    text-align:center;
+  }
+  .offer-item-title { font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px; line-height:1.4; }
+  .offer-item-text { font-size:11px;color:var(--text3);line-height:1.6; }
+  .offer-actions { display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center; }
+  .offer-btn {
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    min-height:38px;padding:0 14px;border-radius:11px;
+    border:1px solid var(--border2);text-decoration:none;
+    font-size:12px;font-weight:700;transition:transform 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .offer-btn:hover { transform:translateY(-1px); }
+  .offer-btn.whatsapp {
+    background:linear-gradient(135deg, rgba(31,186,91,0.18), rgba(31,186,91,0.08));
+    border-color:rgba(31,186,91,0.35);color:#dff9e8;
+  }
+  .offer-btn.email {
+    background:linear-gradient(135deg, rgba(79,142,247,0.16), rgba(124,92,252,0.12));
+    border-color:rgba(79,142,247,0.28);color:var(--text2);
+  }
+  .offer-btn.disabled {
+    opacity:0.72;cursor:default;pointer-events:none;
+  }
+  .offer-note { font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6;text-align:center; }
+  .copy-toast {
+    position:fixed;right:24px;bottom:24px;min-width:280px;max-width:360px;
+    padding:14px 16px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(19,22,30,0.98),rgba(26,30,42,0.98));
+    border:1px solid rgba(124,92,252,0.24);box-shadow:0 18px 45px rgba(0,0,0,0.45);
+    display:flex;align-items:flex-start;gap:12px;z-index:2000;
+    opacity:0;transform:translateY(14px) scale(0.98);pointer-events:none;
+    transition:opacity 0.22s ease, transform 0.22s ease;
+  }
+  .copy-toast.show { opacity:1; transform:translateY(0) scale(1); }
+  .copy-toast-icon {
+    width:34px;height:34px;border-radius:10px;flex-shrink:0;
+    background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.22);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;
+  }
+  .copy-toast-title { font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px; }
+  .copy-toast-text { font-size:11px;color:var(--text3);line-height:1.5; }
+
+  .tips-section { background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px; }
+  .tips-title { font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px; }
+  .tip-row { display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border); }
+  .tip-row:last-child { border-bottom:none;padding-bottom:0; }
+  .tip-num { width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px; }
+  .tip-text { font-size:12px;color:var(--text2);line-height:1.6; }
+  .tip-text strong { color:var(--text);font-weight:600; }
+  @media (max-width: 820px) {
+    .contact-grid { grid-template-columns:1fr; }
+    .offer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width: 560px) {
+    .offer-grid { grid-template-columns:1fr; }
+  }
+
+  :root[data-theme="light"] .offer-card {
+    background:
+      radial-gradient(circle at top right, rgba(31,95,209,0.12), transparent 34%),
+      radial-gradient(circle at bottom left, rgba(90,56,214,0.12), transparent 36%),
+      linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,247,252,0.98));
+    border:1px solid rgba(31,95,209,0.16);
+    box-shadow:0 18px 36px rgba(21,33,56,0.08);
+  }
+  :root[data-theme="light"] .offer-badge {
+    background:rgba(31,95,209,0.08);
+    border-color:rgba(31,95,209,0.16);
+    color:var(--accent);
+  }
+  :root[data-theme="light"] .offer-title { color:var(--text); }
+  :root[data-theme="light"] .offer-sub { color:var(--text2); }
+  :root[data-theme="light"] .offer-highlight {
+    background:rgba(31,95,209,0.04);
+    border-color:rgba(90,56,214,0.14);
+  }
+  :root[data-theme="light"] .offer-highlight-label { color:var(--text3); }
+  :root[data-theme="light"] .offer-highlight-value { color:var(--text); }
+  :root[data-theme="light"] .offer-item {
+    background:rgba(255,255,255,0.78);
+    border-color:rgba(31,95,209,0.14);
+  }
+  :root[data-theme="light"] .offer-item-title { color:var(--text); }
+  :root[data-theme="light"] .offer-item-text { color:var(--text2); }
+  :root[data-theme="light"] .offer-btn.whatsapp {
+    background:linear-gradient(135deg, rgba(31,186,91,0.16), rgba(31,186,91,0.08));
+    border-color:rgba(31,186,91,0.34);
+    color:#156b52;
+  }
+  :root[data-theme="light"] .offer-btn.email {
+    background:linear-gradient(135deg, rgba(31,95,209,0.12), rgba(90,56,214,0.08));
+    border-color:rgba(31,95,209,0.22);
+    color:#1f5fd1;
+  }
+  :root[data-theme="light"] .offer-note { color:var(--text3); }
+
+  .powered {
+     text-align:center;padding:24px;color:var(--text3);font-size:12px;line-height:2;
+   }
+   .powered-brand {
+     color:var(--accent2);
+     font-weight:600;
+     display:inline-flex;
+     align-items:center;
+     justify-content:center;
+     gap:6px;
+     flex-wrap:wrap;
+   }
+   .powered-meta {
+     color:var(--text3);
+     opacity:0.7;
+   }
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
+    <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span> Simulados</div>
+    <div class="nav-item active" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+    <div style="font-size:12px;color:var(--text3);line-height:1.6">
+      <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+      <span style="opacity:0.7">powered by Antigravity Gemini</span>
+    </div>
+  </div>
+  <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="page-title">❓ Ajuda & Contato</div>
+  <div class="page-sub">Saiba como usar o Track Concursos, baixar versões oficiais e enviar feedbacks ou sugestões.</div>
+
+  <!-- SOFTWARE CARD -->
+  <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="dev-card-link" title="Página oficial do projeto no GitHub">
+    <div class="dev-card">
+      <div class="dev-avatar" aria-hidden="true">
+        <svg viewBox="0 0 16 16" role="img">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+          -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64
+          -.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65
+          0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+          1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+          0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+        </svg>
+      </div>
+      <div class="dev-info">
+        <div class="dev-name">Track Concursos <span class="dev-badge" style="color:var(--accent);border-color:rgba(79,142,247,0.3)">v1.0</span></div>
+        <div class="dev-tagline">
+          Software desenvolvido para uso gratuito com intuito de auxiliar o usuário a organizar seus estudos para qualquer concurso, analisar suas atividades de estudo de forma inteligente e registrar o histórico de todos os seus concursos já realizados.<br>
+          Para sua segurança, baixe o programa e futuras atualizações pela página oficial do projeto no GitHub.<br>
+          Informações detalhadas sobre o projeto no GitHub.<br>
+          Todos os dados são armazenados localmente.
+        </div>
+        <div class="dev-badges">
+          <span class="dev-badge" style="color:var(--accent2);border-color:rgba(124,92,252,0.3)">powered by Antigravity Gemini</span>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- CONTATO -->
+  <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px">📬 Contato</div>
+  <div class="contact-grid">
+    <a href="#" class="contact-card" onclick="copyEmailAddress(event)">
+      <div class="contact-icon">📧</div>
+      <div>
+        <div class="contact-title">E-mail</div>
+        <div class="contact-sub">
+          <strong style="color:var(--text)">michel.araujo.py@gmail.com</strong><br>
+          <span style="color:var(--text2);font-size:11px">Use este email para dúvidas, feedbacks, sugestões ou contato profissional.</span>
+        </div>
+      </div>
+    </a>
+    <a href="#" class="contact-card" onclick="copyPixKey(event)">
+      <div class="contact-icon">☕</div>
+      <div>
+        <div class="contact-title">Buy Me a <s>Coffee</s> Gemini tokens</div>
+        <div class="contact-sub" style="font-size:11px">Esse programa foi criado com auxílio de IA, se gostou e foi útil para você, considere me apoiar em atualizações ou outros projetos, como uma versão mobile!<br><strong style="color:var(--text)">Chave PIX: michelaraujo100@gmail.com (clique para copiar)</strong></div>
+      </div>
+    </a>
+  </div>
+
+  <div class="offer-card">
+    <div class="offer-head">
+      <div>
+        <div class="offer-badge">✨ Edital Premium Pronto</div>
+        <div class="offer-title">Receba um edital inteiro de sua escolha já configurado no Track Concursos</div>
+        <div class="offer-sub">Se você quiser ganhar tempo, posso personalizar um pré-edital ou pós-edital de sua escolha e entregar já estruturado dentro do seu app. Com as principais informações sobre o concurso organizadas para você começar a estudar imediatamente.</div>
+      </div>
+      <div class="offer-highlight">
+        <div class="offer-highlight-label">Sob encomenda</div>
+        <div class="offer-highlight-value">Edital pronto, organizado e configurado por mim</div>
+      </div>
+    </div>
+
+    <div class="offer-grid">
+      <div class="offer-item">
+        <div class="offer-item-title">Conteúdo programático completo</div>
+        <div class="offer-item-text">Matérias e tópicos já cadastrados conforme o edital que você escolher.</div>
+      </div>
+      <div class="offer-item">
+        <div class="offer-item-title">Planejamento inicial sugerido</div>
+        <div class="offer-item-text">Sugestão de cronograma de estudos para você sair do zero mais rápido.</div>
+      </div>
+      <div class="offer-item">
+        <div class="offer-item-title">Questões e Simulados preparados</div>
+        <div class="offer-item-text">Cadernos de Questões para cada tópico vinculados e simulados iniciais já criados no app. *é preciso ter uma assinatura ATIVA no Tec Concurso para acessá-los*</div>
+      </div>
+    </div>
+
+    <div class="offer-actions">
+      <a class="offer-btn whatsapp" href="https://api.whatsapp.com/send?phone=5589981383459&text=Ol%C3%A1,%20estou%20interessado%20em%20um%20Edital%20Premium%20para%20o%20Track%20Concursos" target="_blank" rel="noopener noreferrer">
+        <span>💬</span>
+        <span>WhatsApp: +55 89 98138-3459</span>
+      </a>
+      <a class="offer-btn email" href="#" onclick="copyEmailAddress(event)">
+        <span>📧</span>
+        <span>E-mail: michel.araujo.py@gmail.com</span>
+      </a>
+    </div>
+
+    <div class="offer-note">Editais Prontos são pagos, feitos e revisados por mim de acordo com seus objetivos.</div>
+  </div>
+
+  <!-- DICAS DE USO -->
+  <div class="tips-section">
+    <div class="tips-title">💡 Como tirar o máximo do Track Concursos Beta</div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">1. 🎯 Criando seu Foco de Concurso ou registrando concursos já realizados</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">Para começar, vá em <strong>Meus Concursos</strong> e clique em <strong>+ Cadastrar Novo Concurso</strong>. Ali você pode criar um novo foco de estudo, escolher entre <strong>pré-edital</strong>, <strong>pós-edital</strong> ou <strong>concurso já realizado</strong>, preencher os dados principais e montar o conteúdo programático. Você poderá preencher o conteúdo programático manualmente ou carregar todos os tópicos automaticamente com o auxílio do <strong>PROMPT</strong> e de uma ferramenta de inteligência artificial (recomendo o Gemini).</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">2. 🔄 Ciclo de Estudos x Cronograma Semanal</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">No <strong>Dashboard</strong>, você escolhe a rotina de estudos que melhor combina com sua realidade. O <strong>Ciclo de Estudos</strong> é mais flexível para quem tem uma rotina diária imprevisível. Ele segue uma sequência contínua de matérias com metas de tempo: você só avança para a próxima matéria da fila quando terminar sua meta de horas da matéria atual. Já o <strong>Cronograma Semanal</strong> funciona melhor para quem prefere organizar o estudo por dias fixos da semana.</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">3. 🚀 Como funciona o Pré-edital e cobertura de edital</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">Quando você marca <strong>100% dos tópicos de um edital como "Estudados"</strong>, o app detecta isso e emite um aviso para zerar o progresso, sem perder o histórico de questões ou horas, somando <strong>+1 na sua cobertura de edital</strong>. É uma ferramenta ideal para a fase de pré-edital, em que o objetivo é bater o edital múltiplas vezes. Após bater o edital uma vez, recomendo fortemente analisar seus gráficos para ver em quais matérias você tem mais facilidade e em quais tem mais dificuldade. Por isso, é importante sempre resolver questões e registrá-las nos tópicos. Com base nessa análise, você pode definir um novo ciclo de estudos para cobrir seus pontos fracos ou dar maior ênfase aos conteúdos que mais caem no seu concurso.</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">4. ⏱️ Sessões Manuais e Pomodoro</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">O <strong>Cronômetro Inteligente</strong> tem abas de Pomodoro Clássico e Cronômetro Livre. Ao iniciar uma sessão de estudo por meio do cronômetro presente no seu <strong>Ciclo de Estudos</strong>, o timer deduz automaticamente a carga planejada do seu ciclo. Você não precisa cumprir 100% da meta de uma vez: se tiver uma meta de 2h no seu ciclo e conseguir estudar apenas 1h no cronômetro, poderá parar, registrar e, quando retornar aos estudos, o cronômetro marcará automaticamente o tempo restante. Para lançamentos manuais ou simplesmente para finalizar o estudo da matéria atual do ciclo, clique no ícone "📝" e registre as horas estudadas e/ou as questões.</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">5. 🔗 Fusão entre Pré e Pós-Edital</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">Se você estudou o mesmo concurso no pré-edital e depois no pós-edital, pode usar a função de <strong>Fusão de Concursos</strong> no final, após o dia da prova, para unir sua jornada de estudo do pré ao pós-edital. Assim, o app preserva as estatísticas de estudo do pré-edital e do pós-edital do mesmo concurso, facilitando análises futuras dos gráficos: o que você mais estudou, onde teve mais dificuldade, o total de horas de estudo, as questões feitas etc. Tudo isso ficará disponível no card do concurso em <strong>Concursos Realizados</strong>, na aba <strong>Meus Concursos</strong>.</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">6. 📊 Simulados e Revisões</div>
+    <div class="tip-row" style="border-bottom:none">
+      <div class="tip-text">A opção de marcar <strong>Revisões</strong> aparece ao concluir um tópico, ou seja, ao marcá-lo como "Estudado", e elas são gerenciadas na aba Revisões (Atrasadas, Hoje, Futuras).<br><br>A aba <strong>Simulados</strong> mostra estatísticas e gráficos importantes, então é crucial que você crie simulados bem elaborados, faça-os e registre seu progresso.<br><br><strong>NÃO TENHA MEDO DE FAZER SIMULADOS.</strong> Mesmo no início dos estudos, quando você provavelmente ainda terá uma porcentagem baixa de acertos, é importante realizá-los e registrar seus resultados. Os gráficos vão mostrar sua evolução, e você perceberá seu progresso nos estudos por meio deles. Monte simulados precisos, preferencialmente com a mesma banca, sem fugir do que o edital pede. Utilize plataformas como <strong>TEC CONCURSOS</strong> para criar simulados ou busque simulados gratuitos na internet.</div>
+    </div>
+  </div>
+
+  <div class="powered">
+    <span class="powered-brand">Track Concursos — Desenvolvido por <img src="assets/logoMichelSoftwares.png" alt="Michel Softwares" style="height:44px;width:auto;max-width:260px;vertical-align:middle"></span><br>
+    <span class="powered-meta">powered by Antigravity Gemini</span><br>
+    <span style="font-size:12px;color:var(--text3)">Uso pessoal gratuito • Copyright (c) 2026 Michel Araujo • Vedada modificação ou comercialização sem autorização.</span><br>
+    <span style="font-size:12px;color:var(--text3)">Todos os dados são armazenados localmente no seu computador.</span>
+  </div>
+
+</main>
+
+<div id="copyToast" class="copy-toast" aria-live="polite">
+  <div class="copy-toast-icon">✓</div>
+  <div>
+    <div id="copyToastTitle" class="copy-toast-title">Chave PIX copiada</div>
+    <div id="copyToastText" class="copy-toast-text">michelaraujo100@gmail.com pronta para colar.</div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="nav.js"></script>
+<script src="data.js"></script>
+<script>
+let copyToastTimer = null;
+
+function showCopyToast() {
+  const toast = document.getElementById('copyToast');
+  if (!toast) return;
+  toast.classList.add('show');
+  clearTimeout(copyToastTimer);
+  copyToastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function updateCopyToast(title, text) {
+  const titleEl = document.getElementById('copyToastTitle');
+  const textEl = document.getElementById('copyToastText');
+  if (titleEl) titleEl.textContent = title;
+  if (textEl) textEl.textContent = text;
+}
+
+function copyTextValue(value, title, text) {
+  updateCopyToast(title, text);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(value)
+      .then(showCopyToast)
+      .catch(() => copyTextValueFallback(value, title, text));
+    return;
+  }
+  copyTextValueFallback(value, title, text);
+}
+
+function copyTextValueFallback(value, title, text) {
+  updateCopyToast(title, text);
+  const temp = document.createElement('textarea');
+  temp.value = value;
+  temp.setAttribute('readonly', '');
+  temp.style.position = 'absolute';
+  temp.style.left = '-9999px';
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand('copy');
+  document.body.removeChild(temp);
+  showCopyToast();
+}
+
+function copyEmailAddress(event) {
+  if (event) event.preventDefault();
+  copyTextValue(
+    'michel.araujo.py@gmail.com',
+    'E-mail copiado',
+    'michel.araujo.py@gmail.com pronto para colar.'
+  );
+}
+
+function copyPixKey(event) {
+  if (event) event.preventDefault();
+  copyTextValue(
+    'michelaraujo100@gmail.com',
+    'Chave PIX copiada',
+    'michelaraujo100@gmail.com pronta para colar.'
+  );
+}
+// ── SIDEBAR CONCURSO ─────────────────────
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>

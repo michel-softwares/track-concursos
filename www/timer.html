@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Timer Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14; --bg2: #13161e; --bg3: #1a1e2a; --bg4: #1f2330;
+    --border: #252836; --border2: #2e3347;
+    --accent: #4f8ef7; --accent2: #7c5cfc;
+    --text: #e8eaf2; --text2: #f1f2f6; --text3: #a1a6c2;
+    --green: #3ecf8e; --yellow: #FFD700; --orange: #f5874a; --red: #f55a5a;
+    --mono: 'Inter', sans-serif; --sans: 'Inter', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; font-variant-numeric: tabular-nums; }
+  body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+
+  /* PAGE BG — simula o app por baixo */
+  .page-hint { text-align:center; color:var(--text3); font-size:14px; line-height:2; }
+  .page-hint strong { color:var(--text2); }
+
+  /* ===================== PAINEL FLUTUANTE ===================== */
+  .timer-panel {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 300px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,142,247,0.08);
+    overflow: hidden;
+    z-index: 999;
+    user-select: none;
+    transition: box-shadow 0.2s;
+  }
+
+  .timer-panel.dragging { box-shadow: 0 24px 64px rgba(0,0,0,0.7); }
+
+  /* DRAG HANDLE */
+  .panel-handle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 8px;
+    cursor: grab;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-handle:active { cursor: grabbing; }
+  .handle-dots { color: var(--text3); font-size: 14px; letter-spacing: 2px; }
+  .handle-title { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); }
+  .panel-minimize { background: none; border: none; color: var(--text3); font-size: 16px; cursor: pointer; padding: 0 2px; transition: color 0.15s; line-height: 1; }
+  .panel-minimize:hover { color: var(--text); }
+
+  /* MODO SELECTOR */
+  .mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mode-tab {
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: var(--sans);
+  }
+  .mode-tab:first-child { border-right: 1px solid var(--border); }
+  .mode-tab.active { color: var(--accent); background: rgba(79,142,247,0.06); }
+
+  /* MATÉRIA SELECIONADA */
+  .panel-materia {
+    padding: 10px 14px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .materia-select {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--text2);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .materia-select:focus { border-color: var(--accent); }
+
+  /* ===== MODO LIVRE ===== */
+  .free-panel { padding: 12px 14px 16px; }
+
+  .timer-display {
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .timer-ring {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 8px;
+    position: relative;
+  }
+
+  .timer-ring svg { transform: rotate(-90deg); }
+
+  .ring-bg { fill: none; stroke: var(--bg3); stroke-width: 6; }
+  .ring-progress { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+
+  .timer-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .timer-time {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .timer-status {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* CONTROLES */
+  .timer-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .ctrl-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ctrl-btn:hover { border-color: var(--text2); color: var(--text); }
+  .ctrl-btn.primary {
+    width: 52px; height: 52px;
+    font-size: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.35);
+  }
+  .ctrl-btn.primary:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(79,142,247,0.45); }
+  .ctrl-btn.stop:hover { border-color: var(--red); color: var(--red); }
+
+  /* SESSION LOG */
+  .session-log {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .session-log-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .session-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text2);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .session-entry:last-child { border-bottom: none; }
+  .session-entry-time { font-family: var(--mono); font-size: 12px; color: var(--green); font-weight: 700; }
+
+  /* ===== MODO POMODORO ===== */
+  .pomo-panel { padding: 12px 14px 16px; display: none; }
+
+  /* CICLOS */
+  .pomo-cycles {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pomo-cycle-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    transition: all 0.3s;
+  }
+  .pomo-cycle-dot.done { background: var(--accent); border-color: var(--accent); }
+  .pomo-cycle-dot.current { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px rgba(62,207,142,0.5); }
+  .pomo-cycle-sep { width: 8px; height: 1px; background: var(--border2); }
+
+  /* FASE BADGE */
+  .pomo-fase {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .pomo-fase-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .pomo-fase-badge.foco   { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
+  .pomo-fase-badge.pausa  { background: rgba(62,207,142,0.12); color: var(--green); border: 1px solid rgba(62,207,142,0.25); }
+  .pomo-fase-badge.longa  { background: rgba(124,92,252,0.12); color: var(--accent2); border: 1px solid rgba(124,92,252,0.25); }
+
+  /* POMO CONFIG */
+  .pomo-config {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pomo-cfg-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .pomo-cfg-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 4px; }
+  .pomo-cfg-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .pomo-cfg-input::-webkit-inner-spin-button,
+  .pomo-cfg-input::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
+  .pomo-cfg-unit { font-size: 8px; color: var(--text3); margin-top: 1px; }
+
+  /* POMO PROGRESS BAR */
+  .pomo-progress-wrap {
+    margin-bottom: 14px;
+  }
+  .pomo-progress-bar {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .pomo-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s linear;
+  }
+  .pomo-progress-fill.foco  { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .pomo-progress-fill.pausa { background: var(--green); }
+  .pomo-progress-fill.longa { background: var(--accent2); }
+  .pomo-time-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+  }
+  .pomo-time-big {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+
+  /* MINIMIZED STATE */
+  .timer-panel.minimized .mode-tabs,
+  .timer-panel.minimized .panel-materia,
+  .timer-panel.minimized .free-panel,
+  .timer-panel.minimized .pomo-panel { display: none !important; }
+  .timer-panel.minimized { width: 180px; }
+  .mini-display {
+    display: none;
+    padding: 8px 14px;
+    align-items: center;
+    gap: 8px;
+  }
+  .timer-panel.minimized .mini-display { display: flex; }
+  .mini-time { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
+  .mini-play { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; }
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<div class="page-hint">
+  <strong>Track Concursos</strong> — demonstração do painel flutuante<br>
+  O timer aparece sobre qualquer tela do app<br>
+  <span style="font-size:12px">Arraste pela barra superior · Minimize com —</span>
+</div>
+
+<!-- ===================== PAINEL FLUTUANTE ===================== -->
+<div class="timer-panel" id="timerPanel">
+
+  <!-- DRAG HANDLE -->
+  <div class="panel-handle" id="dragHandle">
+    <span class="handle-dots">⠿⠿</span>
+    <span class="handle-title">⏱ Cronômetro</span>
+    <button class="panel-minimize" id="btnMinimize" title="Minimizar">—</button>
+  </div>
+
+  <!-- MINI VIEW (minimizado) -->
+  <div class="mini-display">
+    <span class="mini-time" id="miniTime">00:00</span>
+    <button class="mini-play" id="miniPlay">▶</button>
+    <span style="font-size:12px;color:var(--text3);margin-left:auto;cursor:pointer" id="btnExpand">↑ expandir</span>
+  </div>
+
+  <!-- MODO TABS -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabFree" onclick="setMode('free')">⏱ Livre</button>
+    <button class="mode-tab" id="tabPomo" onclick="setMode('pomo')">🍅 Pomodoro</button>
+  </div>
+
+  <!-- MATÉRIA -->
+  <div class="panel-materia">
+    <select class="materia-select">
+      <option>📘 Vendas e Negociação</option>
+      <option>📗 Língua Portuguesa</option>
+      <option>📙 Matemática</option>
+      <option>📕 Conhecimentos Bancários</option>
+      <option>📒 Noções de Informática</option>
+    </select>
+  </div>
+
+  <!-- ===== MODO LIVRE ===== -->
+  <div class="free-panel" id="freePanel">
+    <div class="timer-display">
+      <div class="timer-ring">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle class="ring-bg" cx="65" cy="65" r="56"/>
+          <circle class="ring-progress" id="ringProgress" cx="65" cy="65" r="56"
+            stroke="var(--accent)"
+            stroke-dasharray="351.86"
+            stroke-dashoffset="351.86"/>
+        </svg>
+        <div class="timer-inner">
+          <div class="timer-time" id="freeTime">00:00:00</div>
+          <div class="timer-status" id="freeStatus" style="color:var(--text3)">PRONTO</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timer-controls">
+      <button class="ctrl-btn stop" id="btnStop" title="Parar e registrar" onclick="stopFree()">⏹</button>
+      <button class="ctrl-btn primary" id="btnPlayPause" onclick="toggleFree()">▶</button>
+      <button class="ctrl-btn" title="Resetar" onclick="resetFree()">↺</button>
+    </div>
+
+    <div class="session-log" id="sessionLog" style="display:none">
+      <div class="session-log-title">Sessões de hoje</div>
+      <div id="sessionEntries"></div>
+    </div>
+  </div>
+
+  <!-- ===== MODO POMODORO ===== -->
+  <div class="pomo-panel" id="pomoPanel">
+
+    <!-- CICLOS -->
+    <div class="pomo-cycles" id="pomoCycles">
+      <div class="pomo-cycle-dot current"></div>
+      <div class="pomo-cycle-dot"></div>
+      <div class="pomo-cycle-dot"></div>
+      <div class="pomo-cycle-dot"></div>
+      <div class="pomo-cycle-sep"></div>
+      <span style="font-size:12px;color:var(--text3)">ciclo 1/4</span>
+    </div>
+
+    <!-- FASE -->
+    <div class="pomo-fase">
+      <span class="pomo-fase-badge foco" id="pomoFaseBadge">🎯 Foco</span>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="pomo-config">
+      <div class="pomo-cfg-item">
+        <div class="pomo-cfg-label">🎯 Foco</div>
+        <input class="pomo-cfg-input" type="number" id="cfgFoco" value="25" min="1" max="120">
+        <div class="pomo-cfg-unit">min</div>
+      </div>
+      <div class="pomo-cfg-item">
+        <div class="pomo-cfg-label">☕ Pausa</div>
+        <input class="pomo-cfg-input" type="number" id="cfgPausa" value="5" min="1" max="60">
+        <div class="pomo-cfg-unit">min</div>
+      </div>
+      <div class="pomo-cfg-item">
+        <div class="pomo-cfg-label" style="color:var(--accent2)">🛋 Longa</div>
+        <input class="pomo-cfg-input" type="number" id="cfgLonga" value="15" min="1" max="60" style="color:var(--accent2)">
+        <div class="pomo-cfg-unit">min</div>
+      </div>
+    </div>
+
+    <!-- TIMER GRANDE -->
+    <div class="pomo-time-big" id="pomoTime">25:00</div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="pomo-progress-wrap">
+      <div class="pomo-progress-bar">
+        <div class="pomo-progress-fill foco" id="pomoFill" style="width:0%"></div>
+      </div>
+      <div class="pomo-time-row">
+        <span id="pomoElapsed">0:00 decorrido</span>
+        <span id="pomoRemaining">25:00 restante</span>
+      </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="timer-controls">
+      <button class="ctrl-btn stop" title="Parar" onclick="stopPomo()">⏹</button>
+      <button class="ctrl-btn primary" id="btnPomoPlay" onclick="togglePomo()">▶</button>
+      <button class="ctrl-btn" title="Pular fase" onclick="skipPomo()" title="Pular fase">⏭</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ===== DRAG =====
+  const panel = document.getElementById('timerPanel');
+  const handle = document.getElementById('dragHandle');
+  let dragging = false, ox = 0, oy = 0;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    ox = e.clientX - panel.getBoundingClientRect().left;
+    oy = e.clientY - panel.getBoundingClientRect().top;
+    panel.classList.add('dragging');
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    panel.style.left = (e.clientX - ox) + 'px';
+    panel.style.top  = (e.clientY - oy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; panel.classList.remove('dragging'); });
+
+  // ===== MINIMIZE =====
+  document.getElementById('btnMinimize').addEventListener('click', () => {
+    panel.classList.add('minimized');
+  });
+  document.getElementById('btnExpand').addEventListener('click', () => {
+    panel.classList.remove('minimized');
+  });
+
+  // ===== MODO =====
+  function setMode(m) {
+    document.getElementById('freePanel').style.display = m === 'free' ? '' : 'none';
+    document.getElementById('pomoPanel').style.display = m === 'pomo' ? '' : 'none';
+    document.getElementById('tabFree').classList.toggle('active', m === 'free');
+    document.getElementById('tabPomo').classList.toggle('active', m === 'pomo');
+  }
+
+  // ===== MODO LIVRE =====
+  let freeRunning = false, freeSeconds = 0, freeInterval = null, sessions = [];
+
+  function toggleFree() {
+    freeRunning = !freeRunning;
+    document.getElementById('btnPlayPause').textContent = freeRunning ? '⏸' : '▶';
+    document.getElementById('freeStatus').textContent  = freeRunning ? 'ESTUDANDO' : 'PAUSADO';
+    document.getElementById('freeStatus').style.color  = freeRunning ? 'var(--green)' : 'var(--yellow)';
+    if (freeRunning) freeInterval = setInterval(tickFree, 1000);
+    else clearInterval(freeInterval);
+  }
+
+  function tickFree() {
+    freeSeconds++;
+    updateFreeDisplay();
+    // anel gira — completa volta a cada 60 min (3600s)
+    const pct = (freeSeconds % 3600) / 3600;
+    const circ = 351.86;
+    document.getElementById('ringProgress').style.strokeDashoffset = circ - (circ * pct);
+    document.getElementById('miniTime').textContent = formatMMSS(freeSeconds);
+  }
+
+  function updateFreeDisplay() {
+    document.getElementById('freeTime').textContent = formatHMS(freeSeconds);
+  }
+
+  function stopFree() {
+    if (freeSeconds === 0) return;
+    clearInterval(freeInterval);
+    freeRunning = false;
+    const dur = freeSeconds;
+    sessions.push({ dur, mat: document.querySelector('.materia-select').value, ts: new Date() });
+    renderSessions();
+    resetFree(false);
+  }
+
+  function resetFree(full = true) {
+    clearInterval(freeInterval);
+    freeRunning = false;
+    freeSeconds = 0;
+    updateFreeDisplay();
+    document.getElementById('ringProgress').style.strokeDashoffset = 351.86;
+    document.getElementById('btnPlayPause').textContent = '▶';
+    document.getElementById('freeStatus').textContent = full ? 'PRONTO' : 'PRONTO';
+    document.getElementById('freeStatus').style.color = 'var(--text3)';
+    document.getElementById('miniTime').textContent = '00:00';
+  }
+
+  function renderSessions() {
+    const log = document.getElementById('sessionLog');
+    const entries = document.getElementById('sessionEntries');
+    log.style.display = '';
+    entries.innerHTML = sessions.slice(-3).reverse().map(s =>
+      `<div class="session-entry">
+        <span>${s.mat.replace(/^.\s/,'')}</span>
+        <span class="session-entry-time">${formatHMS(s.dur)}</span>
+      </div>`
+    ).join('');
+  }
+
+  // ===== MODO POMODORO =====
+  let pomoRunning = false, pomoInterval = null;
+  let pomoFase = 'foco'; // foco | pausa | longa
+  let pomoCiclo = 0, pomoFocosFeitos = 0;
+  let pomoTotal = 0, pomoElapsed = 0;
+
+  function getPomoConfig() {
+    return {
+      foco:  parseInt(document.getElementById('cfgFoco').value)  * 60,
+      pausa: parseInt(document.getElementById('cfgPausa').value) * 60,
+      longa: parseInt(document.getElementById('cfgLonga').value) * 60,
+    };
+  }
+
+  function initPomo() {
+    const cfg = getPomoConfig();
+    pomoTotal   = cfg[pomoFase];
+    pomoElapsed = 0;
+    updatePomoDisplay();
+  }
+
+  function togglePomo() {
+    if (pomoTotal === 0) initPomo();
+    pomoRunning = !pomoRunning;
+    document.getElementById('btnPomoPlay').textContent = pomoRunning ? '⏸' : '▶';
+    if (pomoRunning) pomoInterval = setInterval(tickPomo, 1000);
+    else clearInterval(pomoInterval);
+  }
+
+  function tickPomo() {
+    pomoElapsed++;
+    if (pomoElapsed >= pomoTotal) { nextPomoFase(); return; }
+    updatePomoDisplay();
+  }
+
+  function nextPomoFase() {
+    clearInterval(pomoInterval);
+    pomoRunning = false;
+    document.getElementById('btnPomoPlay').textContent = '▶';
+
+    if (pomoFase === 'foco') {
+      pomoFocosFeitos++;
+      pomoCiclo = pomoFocosFeitos;
+      pomoFase = pomoFocosFeitos % 4 === 0 ? 'longa' : 'pausa';
+    } else {
+      pomoFase = 'foco';
+    }
+    initPomo();
+    updateCycles();
+    updateFaseBadge();
+  }
+
+  function skipPomo() { nextPomoFase(); }
+
+  function stopPomo() {
+    clearInterval(pomoInterval);
+    pomoRunning = false;
+    pomoFase = 'foco'; pomoFocosFeitos = 0; pomoCiclo = 0;
+    pomoTotal = 0; pomoElapsed = 0;
+    document.getElementById('btnPomoPlay').textContent = '▶';
+    initPomo();
+    updateCycles();
+    updateFaseBadge();
+  }
+
+  function updatePomoDisplay() {
+    const rem = pomoTotal - pomoElapsed;
+    const pct = pomoTotal > 0 ? (pomoElapsed / pomoTotal) * 100 : 0;
+    document.getElementById('pomoTime').textContent = formatMMSS(rem);
+    document.getElementById('pomoFill').style.width = pct + '%';
+    document.getElementById('pomoElapsed').textContent   = formatMMSS(pomoElapsed) + ' decorrido';
+    document.getElementById('pomoRemaining').textContent = formatMMSS(rem) + ' restante';
+    document.getElementById('miniTime').textContent = formatMMSS(rem);
+  }
+
+  function updateFaseBadge() {
+    const badge = document.getElementById('pomoFaseBadge');
+    const map = {
+      foco:  { cls: 'foco',  txt: '🎯 Foco' },
+      pausa: { cls: 'pausa', txt: '☕ Pausa' },
+      longa: { cls: 'longa', txt: '🛋 Pausa longa' },
+    };
+    const m = map[pomoFase];
+    badge.className = 'pomo-fase-badge ' + m.cls;
+    badge.textContent = m.txt;
+
+    const fill = document.getElementById('pomoFill');
+    fill.className = 'pomo-progress-fill ' + pomoFase;
+  }
+
+  function updateCycles() {
+    const dots = document.querySelectorAll('.pomo-cycle-dot');
+    const label = document.querySelector('#pomoCycles span');
+    dots.forEach((d, i) => {
+      d.classList.remove('done', 'current');
+      if (i < pomoFocosFeitos % 4) d.classList.add('done');
+      else if (i === pomoFocosFeitos % 4 && pomoFase === 'foco') d.classList.add('current');
+    });
+    const cicloAtual = Math.floor(pomoFocosFeitos / 4) + 1;
+    label.textContent = `ciclo ${cicloAtual}/4`;
+  }
+
+  // init pomo on config change
+  document.querySelectorAll('.pomo-cfg-input').forEach(inp => {
+    inp.addEventListener('change', () => { if (!pomoRunning) initPomo(); });
+  });
+
+  // mini play/pause
+  document.getElementById('miniPlay').addEventListener('click', () => {
+    const activeMode = document.getElementById('tabFree').classList.contains('active') ? 'free' : 'pomo';
+    if (activeMode === 'free') toggleFree();
+    else togglePomo();
+  });
+
+  // ===== UTILS =====
+  function formatHMS(s) {
+    const h = Math.floor(s/3600).toString().padStart(2,'0');
+    const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
+    const ss = (s%60).toString().padStart(2,'0');
+    return `${h}:${m}:${ss}`;
+  }
+  function formatMMSS(s) {
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const ss = (s%60).toString().padStart(2,'0');
+    return `${m}:${ss}`;
+  }
+
+  // init
+  initPomo();
+</script>
+<script src="nav.js"></script>
+<script src="data.js"></script>
+
+<script>
+// Override stopFree to actually save session
+const _origStop = window.stopFree;
+window.stopFree = function() {
+  if (typeof freeSeconds !== 'undefined' && freeSeconds > 0) {
+    const cId = sessionStorage.getItem('ct_concurso_ativo');
+    if (cId) {
+      const matSel = document.querySelector('.materia-select');
+      CT.registrarSessao({
+        concursoId: cId,
+        materiaId: null,
+        materiaNome: matSel ? matSel.value : '',
+        duracaoSegundos: freeSeconds,
+        origem: 'timer_livre',
+      });
+    }
+  }
+  if (_origStop) _origStop();
+};
+</script>
+
+</body>
+</html>

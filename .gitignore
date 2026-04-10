@@ -1,0 +1,33 @@
+# Ambientes locais
+venv/
+.venv/
+env/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dados locais do usuário
+profiles/
+backups/
+
+# Builds e empacotamento
+build/
+dist/
+*.spec
+
+# Arquivos temporários do sistema/editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Logs e arquivos locais
+*.log
+
+# Arquivos soltos que não fazem parte do app publicado
+1f680 (1).gif
+verify_persistence.js
+logoMichelSoftwares.png
