@@ -1,6 +1,6 @@
 # Track Concursos
 
-> Aplicativo desktop para organizar estudos para concursos com foco em edital, execução diária, métricas e simulados.
+> Aplicativo desktop para organizar estudos para concursos com foco em pré e pós-edital, rotina diária de estudos, análise de dados e simulados.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Windows](https://img.shields.io/badge/platform-Windows-0A84FF.svg)](#instalacao)
@@ -53,7 +53,7 @@ O Track Concursos foi criado para ser o centro da sua preparação. Aqui, cada c
 
 Com ele, é possível:
 
-- cadastrar concursos em pré-edital, pós-edital ou realizados
+- cadastrar concursos em pré-edital, pós-edital ou já realizados
 - organizar matérias, tópicos e subtópicos
 - montar ciclo de estudos ou cronograma semanal
 - registrar horas, questões, revisões e sessões de estudo
