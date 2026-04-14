@@ -10,9 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="#instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
+  <a href="#requisitos"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
   <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença"></a>
+  <a href="#licenca"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença"></a>
 </p>
 
 ## Visão Geral
@@ -67,6 +67,12 @@ Na maioria dos computadores com Windows 10 ou Windows 11, esse componente já es
 Download oficial do WebView2 Runtime:
 
 - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+## Requisitos
+
+- Windows 10 ou Windows 11
+- Microsoft Edge WebView2 Runtime
+- Python 3.11 ou superior apenas para a instalação manual
 
 ## Instalação Alternativa com Python
 
