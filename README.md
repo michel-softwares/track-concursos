@@ -8,14 +8,10 @@
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11%2B-blue.svg" alt="Python 3.11+"></a>
-  <a href="#instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
-  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0-6C63FF.svg" alt="Status"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
-</p>
-
-<p align="center">
-  <a href="#instalacao"><img src="https://img.shields.io/badge/INSTALA%C3%87%C3%83O-ver%20passo%20a%20passo-2ea44f?style=for-the-badge" alt="Instalação passo a passo"></a>
+  <a href="#requisitos-para-instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
+  <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
+  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0.0-6C63FF.svg" alt="Status"></a>
+  <a href="#licenca-de-uso"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
 </p>
 
 <p align="center">
@@ -62,6 +58,7 @@ QR Code Pix
 - [Principais Funcionalidades](#principais-funcionalidades)
 - [Modelos de Prova Suportados](#modelos-de-prova-suportados)
 - [Manual de uso inicial](#manual-de-uso-inicial)
+- [Requisitos para Instalação](#requisitos-para-instalacao)
 - [Instalação](#instalacao)
 - [Como Abrir o Programa](#como-abrir-o-programa)
 - [Estrutura do Projeto](#estrutura-do-projeto)
@@ -214,70 +211,82 @@ Um fluxo comum dentro do Track Concursos é:
 
 ---
 
+<h2 id="requisitos-para-instalacao">Requisitos para Instalação</h2>
+
+Para a forma recomendada de uso, você precisa de:
+
+- Windows 10 ou Windows 11
+- Microsoft Edge WebView2 Runtime
+
+O WebView2 já vem instalado em muitos computadores. Se ele não estiver presente, o instalador ou o próprio aplicativo vão avisar e orientar o download oficial.
+
+Para a instalação manual pelo código-fonte, você também precisa de:
+
+- Python 3.11 ou superior
+
+---
+
 <h2 id="instalacao">Instalação</h2>
 
 Este passo a passo foi pensado para quem nunca usou GitHub antes.
 
 > [!IMPORTANT]
-> O aplicativo roda no Windows e precisa do Python 3.11 ou superior instalado no computador.
+> A forma recomendada de instalação agora é pelo instalador `.exe` disponível na área de Releases.
 
-### 1. Baixar o projeto pelo GitHub
+### 1. Baixar o instalador pela Release
 
 1. Entre na página do repositório no GitHub.
-2. Clique no botão verde `Code`.
-3. Clique em `Download ZIP`.
-4. Aguarde o arquivo terminar de baixar.
+2. Abra a área de `Releases`.
+3. Baixe o arquivo `TrackConcursos-Setup.exe`.
+4. Aguarde o download terminar.
 
-### 2. Extrair os arquivos do programa
+### 2. Executar o instalador
 
 1. Vá até a pasta `Downloads` do seu computador.
-2. Encontre o arquivo baixado do GitHub, normalmente com nome parecido com `track-concursos-main.zip`.
-3. Clique com o botão direito no arquivo `.zip`.
-4. Clique em `Extrair Tudo...`.
-5. Escolha a Área de Trabalho como destino, se quiser deixar mais fácil de encontrar.
-6. Abra a pasta extraída para continuar a instalação.
+2. Dê duplo clique em `TrackConcursos-Setup.exe`.
+3. Siga as etapas do assistente até concluir a instalação.
+4. Abra o programa pelo atalho criado no menu Iniciar ou na Área de Trabalho.
 
+### 3. Se o Windows mostrar aviso de segurança
 
-### 3. Instalar o Python
+Como a versão atual é distribuída sem assinatura digital paga, o Windows pode exibir mensagens como:
 
-Se o Python ainda não estiver instalado no computador:
+- `O Windows protegeu o computador`
+- `Unknown publisher`
 
-1. Acesse [python.org/downloads](https://www.python.org/downloads/).
-2. Baixe o Python 3.11 ou superior.
-3. Abra o instalador.
-4. Marque a opção `Add Python to PATH`.
-5. Clique em instalar e aguarde terminar.
+Se isso acontecer:
 
-### 4. Instalar os requisitos do programa
+1. Clique em `Mais informações`.
+2. Clique em `Executar assim mesmo`.
 
-1. Abra a pasta do projeto que você extraiu.
-2. Clique com o botão direito em uma área vazia da pasta.
-3. Clique em `Abrir no Terminal`.
-4. No terminal, rode o comando abaixo:
+### 4. Se o WebView2 não estiver instalado
+
+O aplicativo usa o **Microsoft Edge WebView2 Runtime** para renderizar a interface.
+
+Se ele não estiver presente no computador:
+
+- o instalador pode avisar
+- o app também pode avisar na primeira execução
+
+Nesse caso, instale o componente oficial da Microsoft e abra o programa novamente:
+
+- [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+### 5. Instalação alternativa pelo código-fonte
+
+Se você preferir não usar o instalador, também pode rodar o projeto manualmente:
+
+1. Baixe o projeto pelo GitHub usando `Code` > `Download ZIP`.
+2. Extraia os arquivos do programa.
+3. Instale o Python 3.11 ou superior, marcando `Add Python to PATH`.
+4. Abra a pasta do projeto em um terminal.
+5. Rode o comando abaixo:
 
 ```powershell
-pip install -r requirements.txt
+python -m pip install pywebview
 ```
 
-Se `pip` não funcionar, use:
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-Os requisitos usados pelo projeto são:
-
-- `pywebview>=4.4.1`
-- `pyinstaller>=6.0`
-
-### 5. Abrir o programa
-
-Depois de instalar tudo:
-
-1. Entre na pasta do projeto.
-2. Dê duplo clique em `Track Concursos.pyw`.
-
-Se preferir abrir pelo terminal, use:
+6. Abra o programa com:
 
 ```powershell
 pythonw "Track Concursos.pyw"
@@ -287,7 +296,11 @@ pythonw "Track Concursos.pyw"
 
 ## Como Abrir o Programa
 
-Forma recomendada:
+Se você instalou pela Release:
+
+- abra o atalho `Track Concursos` criado pelo instalador
+
+Se estiver usando a versão manual:
 
 - dê duplo clique em `Track Concursos.pyw`
 
@@ -310,7 +323,10 @@ Track Concursos/
 |-- LICENSE
 |-- backups/
 |-- profiles/
-`-- www/
+|-- www/
+|-- installer/
+|-- docs/
+`-- build-resources/
 ```
 
 | Caminho | Função |
@@ -318,30 +334,43 @@ Track Concursos/
 | `Track Concursos.pyw` | launcher principal |
 | `track_concursos_app.py` | núcleo desktop do aplicativo |
 | `www/` | interface HTML, CSS e JavaScript |
-| `profiles/` | perfis locais do usuário |
-| `backups/` | backups e snapshots locais |
+| `profiles/` | perfis locais do usuário no modo manual/portátil |
+| `backups/` | backups e snapshots locais no modo manual/portátil |
+| `installer/` | arquivos do instalador Windows |
+| `docs/` | documentação de empacotamento e release |
+| `build-resources/` | ícones e imagens usadas no build |
 
 ---
 
 ## Dados e Portabilidade
 
-O aplicativo salva os dados localmente na própria pasta do projeto. Isso inclui:
+Quando o programa é instalado pelo `.exe`, os dados do usuário ficam salvos em:
+
+```text
+%LOCALAPPDATA%\Track Concursos
+```
+
+Isso inclui:
 
 - perfis
 - concursos
 - backups
 - configurações auxiliares
+- logos e arquivos complementares
 
-Na prática, isso significa que os **dados são portáteis**. Se a pasta completa do programa for transferida para outro computador com Python e dependências instalados, a tendência é que o app continue funcionando com os mesmos dados locais.
+Na instalação manual, os dados continuam locais e podem ficar na própria pasta do projeto, principalmente em:
 
-Importante:
+- `profiles/`
+- `backups/`
 
-- os **dados** são portáteis
-- a **execução** ainda depende de Python e das dependências instaladas na máquina
+Na prática:
+
+- no modo instalado, os dados ficam separados da pasta do programa
+- no modo manual/portátil, a pasta do projeto continua concentrando os dados locais
 
 ---
 
-## Licença de Uso
+<h2 id="licenca-de-uso">Licença de Uso</h2>
 
 O Track Concursos é disponibilizado gratuitamente para **uso pessoal e não comercial**.
 
@@ -367,11 +396,43 @@ Tecnologias utilizadas:
 - Antigravity Gemini 3 Flash e Gemini 3.1 Pro: utilizados em grande parte do desenvolvimento
 - Codex GPT-5.4: utilizado em correções, melhorias e na finalização do projeto
 
+No processo de empacotamento da versão Windows, o projeto também utiliza:
+
+- PyInstaller
+- Inno Setup
+
 ---
 
 ## Solução de Problemas
 
-### `python não é reconhecido como comando`
+### `O Windows protegeu o computador`
+
+Isso pode acontecer porque a versão atual ainda não possui assinatura digital paga.
+
+Faça assim:
+
+1. Clique em `Mais informações`.
+2. Clique em `Executar assim mesmo`.
+
+### O navegador não conclui o download do instalador
+
+Alguns navegadores podem interromper o download por reputação baixa do arquivo. O código-fonte está aberto aqui no github e não oferece risco algum.
+
+Alternativas:
+
+- tentar baixar novamente e escolher manter o arquivo, quando essa opção aparecer
+- Ir nos seus downloads procurar o arquivo e renomear para Track Concursos.exe e executá-lo
+
+
+### O app avisou que falta WebView2
+
+Instale o componente oficial da Microsoft:
+
+- [Baixar WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+Depois abra o programa novamente.
+
+### `python` não é reconhecido como comando
 
 - reinstale o Python marcando `Add Python to PATH`
 
@@ -380,12 +441,15 @@ Tecnologias utilizadas:
 Rode:
 
 ```powershell
-pip install pywebview
+python -m pip install pywebview
 ```
 
 ### `A janela abre em branco`
 
-- confira se a pasta `www/` está na mesma pasta do programa
+Verifique se:
+
+- o WebView2 Runtime está instalado
+- a pasta `www/` está na mesma pasta do programa, no modo manual
 
 ### `O launcher .pyw não abriu`
 
@@ -410,4 +474,4 @@ Você também pode falar comigo diretamente por:
 
 ---
 
-Para uso normal, abra sempre `Track Concursos.pyw`.
+Para uso normal, abra sempre o atalho instalado do `Track Concursos` ou, no modo manual, `Track Concursos.pyw`.

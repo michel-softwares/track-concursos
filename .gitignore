@@ -1,6 +1,7 @@
 # Ambientes locais
 venv/
 .venv/
+.build-venv/
 env/
 
 # Cache do Python
@@ -15,7 +16,7 @@ backups/
 # Builds e empacotamento
 build/
 dist/
-*.spec
+installer/output/
 
 # Arquivos temporários do sistema/editor
 .DS_Store
