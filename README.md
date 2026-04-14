@@ -1,309 +1,133 @@
+# Track Concursos
+
 <p align="center">
   <img src="www/assets/readme/logo-track.png" alt="Track Concursos" width="660">
 </p>
 
 <p align="center">
-  Aplicativo desktop para organizar estudos para concursos com foco em pré e pós-edital,
-  registrar sua rotina diária de estudos, revisões, simulados e análise de desempenho.
+  Aplicativo desktop para organizar estudos para concursos, acompanhar rotina de estudos,
+  revisões, simulados e desempenho em um ambiente local.
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11%2B-blue.svg" alt="Python 3.11+"></a>
   <a href="#instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
-  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0-6C63FF.svg" alt="Status"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
+  <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença"></a>
 </p>
 
-<p align="center">
-  <a href="#instalacao"><img src="https://img.shields.io/badge/INSTALA%C3%87%C3%83O-ver%20passo%20a%20passo-2ea44f?style=for-the-badge" alt="Instalação passo a passo"></a>
-</p>
+## Visão Geral
 
-<p align="center">
-  <img src="www/assets/readme/preview-01.png" alt="Preview 1 do Track Concursos" width="48%">
-  <img src="www/assets/readme/preview-02.png" alt="Preview 2 do Track Concursos" width="48%">
-</p>
+O **Track Concursos** foi criado para centralizar a preparação para concursos públicos em um único aplicativo desktop. Nele você pode:
 
-<p align="center">
-  <img src="www/assets/readme/preview-03.png" alt="Preview 3 do Track Concursos" width="48%">
-  <img src="www/assets/readme/preview-04.png" alt="Preview 4 do Track Concursos" width="48%">
-</p>
-
-<p align="center">
-  <img src="www/assets/readme/preview-destaque.png" alt="Preview em destaque do Track Concursos" width="90%">
-</p>
-
-**Track Concursos** é um aplicativo desktop criado para organizar a rotina de estudos para concursos públicos, desde o planejamento do pré-edital até a análise pós-prova, reunindo organização do seu material de estudo, execução e acompanhamento de desempenho em uma única experiência local e gratuita.
-
-## Apoie o projeto
-
-O **Track Concursos** é gratuito para uso pessoal.
-
-Se ele foi útil para você, considere apoiar o projeto com uma doação via Pix ou adquirindo um **Edital Premium** feito por mim, já estruturado para uso dentro do aplicativo.
-
-### Contato
-
-- WhatsApp: [falar comigo](https://api.whatsapp.com/send?phone=5589981383459&text=Ol%C3%A1,%20estou%20interessado%20em%20um%20Edital%20Premium%20para%20o%20Track%20Concursos)
-- E-mail: `michel.araujo.py@gmail.com`
-- Chave Pix: `michelaraujo100@gmail.com`
-
-QR Code Pix
-
-<p>
-  <img src="www/assets/qrcode-pix.png" alt="QR Code Pix" width="300">
-</p>
-
----
-
-## Sumário
-
-- [Apoie o projeto](#apoie-o-projeto)
-- [Visão Geral](#visao-geral)
-- [Por Que Este Projeto Existe](#por-que-este-projeto-existe)
-- [Principais Funcionalidades](#principais-funcionalidades)
-- [Modelos de Prova Suportados](#modelos-de-prova-suportados)
-- [Manual de uso inicial](#manual-de-uso-inicial)
-- [Instalação](#instalacao)
-- [Como Abrir o Programa](#como-abrir-o-programa)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Dados e Portabilidade](#dados-e-portabilidade)
-- [Licença de Uso](#licenca-de-uso)
-- [Sobre o Desenvolvimento](#sobre-o-desenvolvimento)
-- [Solução de Problemas](#solucao-de-problemas)
-
----
-
-<h2 id="visao-geral">Visão Geral</h2>
-
-O Track Concursos foi criado para ser o centro da sua preparação. Aqui, cada concurso vira um projeto completo de estudo, com conteúdo programático organizado, ciclo de estudos, painel da prova, revisões, simulados e métricas que ajudam você a enxergar com clareza onde está evoluindo e onde ainda precisa melhorar.
-
-Com ele, é possível:
-
-- cadastrar concursos em pré-edital, pós-edital ou já realizados
+- cadastrar concursos em pré-edital, pós-edital ou realizados
 - organizar matérias, tópicos e subtópicos
 - montar ciclo de estudos ou cronograma semanal
-- registrar horas, questões, revisões e sessões de estudo
-- configurar o painel da prova com quantidade de questões e pesos
+- registrar horas estudadas, questões, revisões e sessões
+- configurar o painel da prova
 - lançar simulados com cálculo automático de nota
-- analisar desempenho geral e por matéria
-- importar estruturas prontas via Edital Premium
-- usar perfis separados no mesmo computador sem misturar dados
+- acompanhar desempenho geral e por matéria
+- usar perfis separados no mesmo computador
 
-> [!TIP]
-> Entre no grupo do Telegram para ter acesso a Editais Premium gratuitos.
-> Entre em contato se quiser um em específico.
+## Instalação
 
----
+### Forma recomendada
 
-## Por Que Este Projeto Existe
+O jeito recomendado para usar o programa é baixar o instalador `.exe` na área de **Releases** do GitHub.
 
-Como concurseiro, eu sei que a nossa preparação para concursos costuma ficar espalhada entre PDFs, cronômetros, planilhas, cadernos e plataformas de questões. O Track Concursos nasceu para reunir essas camadas em um único ambiente organizado, reduzindo a fragmentação e permitindo um acompanhamento mais claro da jornada, inclusive com acesso rápido aos seus materiais de estudo.
+Passo a passo:
 
-Ele centraliza:
+1. Abra a página de **Releases** do repositório.
+2. Baixe o arquivo `TrackConcursos-Setup.exe`.
+3. Execute o instalador.
+4. Siga as etapas do assistente até concluir.
+5. Abra o programa pelo atalho criado.
 
-- planejamento do edital com apoio de inteligência artificial para organizar o conteúdo programático
-- rotina diária de estudo com ciclo de estudos
-- registro de horas estudadas e questões, com análise dos pontos fortes e fracos
-- revisões periódicas
-- simulados com uma área de análise de dados específica
-- histórico de resultados, desde reprovações até aprovações e nomeações
+### Primeira execução no Windows
 
-> [!TIP]
-> Com o Painel da Prova preenchido adequadamente e realizando simulados no mesmo formato do edital,
-> a sua nota é calculada automaticamente. O modo CESPE/CEBRASPE também está disponível.
+Como a versão atual é distribuída sem assinatura digital paga, o Windows pode exibir um aviso como:
 
----
+- `O Windows protegeu o computador`
+- `Unknown publisher`
 
-## Principais Funcionalidades
+Se isso acontecer:
 
-### 1. Gestão completa por concurso
+1. Clique em `Mais informações`.
+2. Clique em `Executar assim mesmo`.
 
-Cada concurso pode armazenar:
+### Dependência do WebView2
 
-- instituição, banca, cargo e data da prova
-- status de pré-edital, pós-edital ou realizado
-- matérias, tópicos e subtópicos
-- progresso por cobertura de edital
-- histórico de aprovação, reprovação e classificação
+O aplicativo usa o **Microsoft Edge WebView2 Runtime** para renderizar a interface.
 
-### 2. Ciclo de estudos e cronograma semanal
+Na maioria dos computadores com Windows 10 ou Windows 11, esse componente já está instalado. Se não estiver:
 
-O programa suporta dois modelos de planejamento:
+- o instalador pode avisar
+- o app também pode avisar ao abrir
+- basta instalar o componente oficial da Microsoft e abrir o programa novamente
 
-- **Ciclo de Estudos**: ideal para rotinas imprevisíveis, com sequência contínua de matérias e metas de tempo
-- **Cronograma Semanal**: ideal para quem prefere organizar os estudos por dias fixos
+Download oficial do WebView2 Runtime:
 
-### 3. Cronômetro, pomodoro e lançamentos manuais
+- [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
 
-O app permite registrar estudo por meio de:
+## Instalação Alternativa com Python
 
-- cronômetro inteligente
-- Pomodoro clássico
-- cronômetro livre
-- lançamentos manuais de horas e questões
+Se você não quiser usar o instalador, também é possível rodar o projeto manualmente.
 
-### 4. Revisões e progresso por tópico
+### 1. Instale o Python
 
-Ao concluir um tópico, o usuário pode acompanhar:
+Baixe e instale o Python 3.11 ou superior:
 
-- revisões atrasadas
-- revisões do dia
-- revisões futuras
-- progresso geral dentro do edital
+- [python.org/downloads](https://www.python.org/downloads/)
 
-### 5. Simulados com análise aprofundada
+Durante a instalação, marque a opção:
 
-Os simulados podem ser lançados manualmente ou calculados automaticamente a partir do Painel da Prova. A área de Simulados oferece:
+- `Add Python to PATH`
 
-- evolução da nota
-- comparação com o simulado anterior
-- comparação com a média geral
-- raio-x por matéria
-- análise dos pontos fortes e das maiores dificuldades
+### 2. Baixe o projeto
 
-### 6. Edital Premium
+1. Baixe o ZIP do repositório no GitHub.
+2. Extraia os arquivos em uma pasta.
+3. Abra essa pasta no Terminal.
 
-O programa suporta importação de estruturas prontas em JSON, incluindo:
+### 3. Instale a dependência manualmente
 
-- matérias
-- tópicos e subtópicos
-- painel da prova
-- simulados vinculados
-- configurações estruturais do concurso
+```powershell
+python -m pip install pywebview
+```
 
-### 7. Perfis separados e backups locais
+### 4. Abra o programa
 
-Mais de uma pessoa pode usar o programa no mesmo computador sem misturar:
+```powershell
+pythonw "Track Concursos.pyw"
+```
 
+Ou dê duplo clique em:
+
+- `Track Concursos.pyw`
+
+## Onde os Dados São Salvos
+
+### Quando o programa é instalado pelo `.exe`
+
+Os dados do usuário ficam em:
+
+```text
+%LOCALAPPDATA%\Track Concursos
+```
+
+Isso inclui:
+
+- perfis
 - concursos
-- estatísticas
 - backups
-- preferências do perfil
+- snapshots
+- logos e arquivos auxiliares
 
----
+### Quando o projeto é rodado manualmente
 
-## Modelos de Prova Suportados
+No modo manual/portátil, os dados podem ficar na própria pasta do projeto, principalmente em:
 
-O Painel da Prova suporta atualmente dois formatos principais:
-
-| Modelo | Lógica de cálculo |
-|---|---|
-| Tradicional por peso | questões x peso por matéria |
-| CESPE / CEBRASPE | +1 por acerto, penalidade configurável por erro e 0 para questão em branco |
-
-O painel também pode contemplar:
-
-- conhecimentos gerais
-- conhecimentos específicos
-- redação
-
-Isso permite que o cálculo dos simulados fique mais fiel ao edital cadastrado pelo usuário. Ao registrar a quantidade de questões e peso previstos no edital do concurso, o cálculo da sua nota é automaticamente mostrado após registrar um simulado feito.
-
----
-
-## Manual de uso inicial
-
-Um fluxo comum dentro do Track Concursos é:
-
-1. Criar um novo concurso em `Meus Concursos`.
-2. Cadastrar manualmente ou importar a estrutura do edital por meio de um Edital Premium.
-3. Escolher entre ciclo de estudos e cronograma semanal.
-4. Configurar o Painel da Prova.
-5. Linkar seu material de estudo, incluindo PDFs locais ou links da internet em matérias, tópicos e subtópicos.
-6. Registrar suas horas estudadas e questões feitas.
-7. Criar e realizar simulados para acompanhar a evolução geral e por matéria.
-
----
-
-<h2 id="instalacao">Instalação</h2>
-
-Este passo a passo foi pensado para quem nunca usou GitHub antes.
-
-> [!IMPORTANT]
-> O aplicativo roda no Windows e precisa do Python 3.11 ou superior instalado no computador.
-
-### 1. Baixar o projeto pelo GitHub
-
-1. Entre na página do repositório no GitHub.
-2. Clique no botão verde `Code`.
-3. Clique em `Download ZIP`.
-4. Aguarde o arquivo terminar de baixar.
-
-### 2. Extrair os arquivos do programa
-
-1. Vá até a pasta `Downloads` do seu computador.
-2. Encontre o arquivo baixado do GitHub, normalmente com nome parecido com `track-concursos-main.zip`.
-3. Clique com o botão direito no arquivo `.zip`.
-4. Clique em `Extrair Tudo...`.
-5. Escolha a Área de Trabalho como destino, se quiser deixar mais fácil de encontrar.
-6. Abra a pasta extraída para continuar a instalação.
-
-
-### 3. Instalar o Python
-
-Se o Python ainda não estiver instalado no computador:
-
-1. Acesse [python.org/downloads](https://www.python.org/downloads/).
-2. Baixe o Python 3.11 ou superior.
-3. Abra o instalador.
-4. Marque a opção `Add Python to PATH`.
-5. Clique em instalar e aguarde terminar.
-
-### 4. Instalar os requisitos do programa
-
-1. Abra a pasta do projeto que você extraiu.
-2. Clique com o botão direito em uma área vazia da pasta.
-3. Clique em `Abrir no Terminal`.
-4. No terminal, rode o comando abaixo:
-
-```powershell
-pip install -r requirements.txt
-```
-
-Se `pip` não funcionar, use:
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-Os requisitos usados pelo projeto são:
-
-- `pywebview>=6.1`
-
-Para gerar o executável/instalador, use também:
-
-- `requirements-build.txt`
-- `build_windows.ps1`
-- `TrackConcursos.spec`
-- `installer/TrackConcursos.iss`
-
-### 5. Abrir o programa
-
-Depois de instalar tudo:
-
-1. Entre na pasta do projeto.
-2. Dê duplo clique em `Track Concursos.pyw`.
-
-Se preferir abrir pelo terminal, use:
-
-```powershell
-pythonw "Track Concursos.pyw"
-```
-
----
-
-## Como Abrir o Programa
-
-Forma recomendada:
-
-- dê duplo clique em `Track Concursos.pyw`
-
-Ou, pelo terminal:
-
-```powershell
-pythonw "Track Concursos.pyw"
-```
-
----
+- `profiles/`
+- `backups/`
 
 ## Estrutura do Projeto
 
@@ -314,124 +138,111 @@ Track Concursos/
 |-- requirements.txt
 |-- README.md
 |-- LICENSE
-|-- backups/
+|-- www/
 |-- profiles/
-`-- www/
+`-- backups/
 ```
 
-| Caminho | Função |
-|---|---|
-| `Track Concursos.pyw` | launcher principal |
-| `track_concursos_app.py` | núcleo desktop do aplicativo |
-| `www/` | interface HTML, CSS e JavaScript |
-| `profiles/` | perfis locais do usuário |
-| `backups/` | backups e snapshots locais |
+Arquivos principais:
 
----
-
-## Dados e Portabilidade
-
-O aplicativo salva os dados localmente na própria pasta do projeto. Isso inclui:
-
-- perfis
-- concursos
-- backups
-- configurações auxiliares
-
-Na prática, isso significa que os **dados são portáteis**. Se a pasta completa do programa for transferida para outro computador com Python e dependências instalados, a tendência é que o app continue funcionando com os mesmos dados locais.
-
-Importante:
-
-- os **dados** são portáteis
-- a **execução** ainda depende de Python e das dependências instaladas na máquina
-
----
-
-## Licença de Uso
-
-O Track Concursos é disponibilizado gratuitamente para **uso pessoal e não comercial**.
-
-Sem autorização prévia e por escrito do autor, não é permitido:
-
-- modificar o software
-- redistribuir versões originais ou alteradas
-- vender, revender, sublicenciar ou explorar comercialmente o programa
-- comercializar conteúdos premium vinculados ao projeto
-
-Consulte [LICENSE](LICENSE) para os termos completos.
-
----
-
-## Sobre o Desenvolvimento
-
-O projeto foi idealizado por mim e desenvolvido com apoio de ferramentas de inteligência artificial.
-
-Tecnologias utilizadas:
-
-- Linguagens: HTML, CSS, JavaScript e Python
-- Claude Sonnet 4.6: utilizado no início do projeto
-- Antigravity Gemini 3 Flash e Gemini 3.1 Pro: utilizados em grande parte do desenvolvimento
-- Codex GPT-5.4: utilizado em correções, melhorias e na finalização do projeto
-
----
+- `Track Concursos.pyw`: launcher principal sem terminal
+- `track_concursos_app.py`: núcleo desktop do aplicativo
+- `www/`: interface HTML, CSS e JavaScript
+- `profiles/`: dados locais no modo manual/portátil
+- `backups/`: backups locais no modo manual/portátil
 
 ## Solução de Problemas
 
-### `python não é reconhecido como comando`
+### O Windows bloqueou o programa
 
-- reinstale o Python marcando `Add Python to PATH`
+Isso pode acontecer por falta de assinatura digital.
+
+Faça assim:
+
+1. Clique em `Mais informações`.
+2. Clique em `Executar assim mesmo`.
+
+### O navegador não conclui o download do instalador
+
+Alguns navegadores podem interromper o download por reputação baixa do arquivo.
+
+Alternativas:
+
+- baixar novamente e manter o arquivo
+- usar a instalação manual com Python
+- compartilhar o arquivo diretamente em ambiente de teste fechado
+
+### O app avisou que falta WebView2
+
+Instale o componente oficial da Microsoft:
+
+- [Baixar WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+Depois abra o programa novamente.
+
+### `python` não é reconhecido
+
+Reinstale o Python e marque:
+
+- `Add Python to PATH`
 
 ### `No module named webview`
 
 Rode:
 
 ```powershell
-pip install pywebview
+python -m pip install pywebview
 ```
 
-### `A janela abre em branco`
+### A janela abre em branco
 
-- confira se a pasta `www/` está na mesma pasta do programa
+Verifique se:
 
-### `O launcher .pyw não abriu`
+- o WebView2 Runtime está instalado
+- a pasta `www/` está presente ao lado dos arquivos do projeto, no modo manual
 
-Tente:
+## Desenvolvimento e Empacotamento
 
-```powershell
-pythonw "Track Concursos.pyw"
-```
+Arquivos auxiliares do processo de build:
 
----
+- `build_windows.ps1`
+- `release_windows.ps1`
+- `TrackConcursos.spec`
+- `installer/TrackConcursos.iss`
+- `requirements-build.txt`
 
-## Contato e comunidade
+Documentação auxiliar:
 
-Sugestões, feedbacks, avisos de bugs e dúvidas são sempre bem-vindos. Também estou disponível para tirar dúvidas e auxiliar no uso do programa no grupo do Telegram.
+- [Empacotamento Windows](docs/empacotamento-windows.md)
+- [Assinatura de Código](docs/assinatura-windows.md)
+- [Release sem assinatura](docs/release-sem-assinatura.md)
 
-- [Grupo no Telegram](https://t.me/+nlYaAYBFTYs4YTYx)
+## Apoie o Projeto
 
-Você também pode falar comigo diretamente por:
+O **Track Concursos** é gratuito para uso pessoal.
+
+Se ele foi útil para você, considere apoiar o projeto com uma doação via Pix ou adquirindo um **Edital Premium** feito por mim.
+
+Contato:
 
 - WhatsApp: [falar comigo](https://api.whatsapp.com/send?phone=5589981383459&text=Ol%C3%A1,%20estou%20interessado%20em%20um%20Edital%20Premium%20para%20o%20Track%20Concursos)
 - E-mail: `michel.araujo.py@gmail.com`
+- Chave Pix: `michelaraujo100@gmail.com`
 
----
+QR Code Pix:
 
-Para uso normal, abra sempre `Track Concursos.pyw`.
+<p>
+  <img src="www/assets/qrcode-pix.png" alt="QR Code Pix" width="300">
+</p>
 
----
+## Licença
 
-## Distribuição para Windows
+O Track Concursos é disponibilizado gratuitamente para **uso pessoal e não comercial**.
 
-A forma recomendada de distribuição para o usuário final agora é um instalador `.exe`.
+Consulte [LICENSE](LICENSE) para os termos completos.
 
-Fluxo recomendado:
+## Contato e Comunidade
 
-1. Gere o build com `.\build_windows.ps1`
-2. Teste `dist\TrackConcursos\TrackConcursos.exe`
-3. Compile `installer\TrackConcursos.iss` no Inno Setup
-4. Distribua `installer\output\TrackConcursos-Setup.exe`
+Sugestões, feedbacks, bugs e dúvidas são bem-vindos.
 
-Em modo instalado, os dados do usuário ficam em `%LOCALAPPDATA%\Track Concursos`, evitando falhas de permissão ao instalar em `Program Files`.
-
-O passo a passo de empacotamento está em [docs/empacotamento-windows.md](docs/empacotamento-windows.md).
-O fluxo de assinatura está em [docs/assinatura-windows.md](docs/assinatura-windows.md).
+- [Grupo no Telegram](https://t.me/+nlYaAYBFTYs4YTYx)
