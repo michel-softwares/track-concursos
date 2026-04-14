@@ -28,7 +28,7 @@ O **Track Concursos** foi criado para centralizar a preparação para concursos 
 - acompanhar desempenho geral e por matéria
 - usar perfis separados no mesmo computador
 
-## Instalação
+<h2 id="instalacao">Instalação</h2>
 
 ### Forma recomendada
 
@@ -68,7 +68,7 @@ Download oficial do WebView2 Runtime:
 
 - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
 
-## Requisitos
+<h2 id="requisitos">Requisitos</h2>
 
 - Windows 10 ou Windows 11
 - Microsoft Edge WebView2 Runtime
@@ -241,7 +241,7 @@ QR Code Pix:
   <img src="www/assets/qrcode-pix.png" alt="QR Code Pix" width="300">
 </p>
 
-## Licença
+<h2 id="licenca">Licença</h2>
 
 O Track Concursos é disponibilizado gratuitamente para **uso pessoal e não comercial**.
 
