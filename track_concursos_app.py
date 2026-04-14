@@ -9,6 +9,7 @@ import re
 import shutil
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import webview
 
@@ -22,16 +23,56 @@ def resource_path(relative):
 
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _resource_root():
+    if hasattr(sys, '_MEIPASS'):
+        return sys._MEIPASS
+    return APP_DIR
+
+
+def _install_root():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return APP_DIR
+
+
+def _portable_mode_enabled():
+    portable_flag = str(os.environ.get('TRACK_CONCURSOS_PORTABLE') or '').strip().lower()
+    if portable_flag in ('1', 'true', 'yes', 'on'):
+        return True
+    return os.path.exists(os.path.join(_install_root(), 'portable.mode'))
+
+
+def _default_data_dir():
+    if _portable_mode_enabled():
+        return _install_root()
+
+    if not getattr(sys, 'frozen', False):
+        return APP_DIR
+
+    appdata_root = (
+        os.environ.get('LOCALAPPDATA')
+        or os.environ.get('APPDATA')
+        or os.path.expanduser('~')
+    )
+    return os.path.join(appdata_root, 'Track Concursos')
+
+
+RESOURCE_DIR = _resource_root()
+INSTALL_DIR = _install_root()
+DATA_DIR = _default_data_dir()
 WWW_DIR = resource_path('www')
 START_PAGE = os.path.join(WWW_DIR, 'concursos.html')
 
-BACKUP_DIR = os.path.join(APP_DIR, 'backups')
+BACKUP_DIR = os.path.join(DATA_DIR, 'backups')
 BACKUP_FILE = os.path.join(BACKUP_DIR, 'Track_Concursos_backup.json')
 LEGACY_BACKUP_FILE = os.path.join(BACKUP_DIR, 'ConcursoTrack_backup.json')
 BACKUP_STATE_FILE = os.path.join(BACKUP_DIR, 'backup_state.json')
 
-PROFILES_DIR = os.path.join(APP_DIR, 'profiles')
+PROFILES_DIR = os.path.join(DATA_DIR, 'profiles')
 PROFILE_MANIFEST_FILE = os.path.join(PROFILES_DIR, 'manifest.json')
+LOGOS_DIR = os.path.join(DATA_DIR, 'logos')
 DEFAULT_PROFILE_ID = 'principal'
 DEFAULT_PROFILE_NAME = 'Perfil Principal'
 DEFAULT_PROFILE_GENDER = 'masculino'
@@ -131,6 +172,18 @@ def _normalize_backup_payload(data):
 
 def _dump_json(data):
     return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+def _path_to_file_url(path):
+    return Path(path).resolve().as_uri()
+
+
+def _find_logo_file(contest_id):
+    for ext in ('png', 'jpg', 'jpeg'):
+        candidate = os.path.join(LOGOS_DIR, f'{contest_id}.{ext}')
+        if os.path.exists(candidate):
+            return candidate
+    return None
 
 
 def _write_text_atomic(path, text):
@@ -425,7 +478,39 @@ def _legacy_backup_candidates():
     return unique_candidates
 
 
+def _copy_tree_if_needed(source_dir, target_dir):
+    if not os.path.isdir(source_dir):
+        return False
+    os.makedirs(os.path.dirname(target_dir), exist_ok=True)
+    shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
+    return True
+
+
+def _migrate_legacy_storage():
+    if os.path.abspath(DATA_DIR) == os.path.abspath(INSTALL_DIR):
+        return
+
+    legacy_profiles_dir = os.path.join(INSTALL_DIR, 'profiles')
+    legacy_backups_dir = os.path.join(INSTALL_DIR, 'backups')
+    legacy_logos_dir = os.path.join(INSTALL_DIR, 'www', 'assets', 'logos')
+
+    migrated_any = False
+
+    if not os.path.exists(PROFILE_MANIFEST_FILE):
+        migrated_any = _copy_tree_if_needed(legacy_profiles_dir, PROFILES_DIR) or migrated_any
+
+    if not os.path.isdir(BACKUP_DIR) or not os.listdir(BACKUP_DIR):
+        migrated_any = _copy_tree_if_needed(legacy_backups_dir, BACKUP_DIR) or migrated_any
+
+    if not os.path.isdir(LOGOS_DIR) or not os.listdir(LOGOS_DIR):
+        migrated_any = _copy_tree_if_needed(legacy_logos_dir, LOGOS_DIR) or migrated_any
+
+    if migrated_any:
+        print(f'[Track Concursos] Dados migrados para: {DATA_DIR}')
+
+
 def _ensure_profile_storage():
+    _migrate_legacy_storage()
     os.makedirs(PROFILES_DIR, exist_ok=True)
 
     manifest = _load_manifest()
@@ -613,14 +698,13 @@ def _restore_logos_from_payload(data):
         if not logos:
             return
 
-        logos_dir = os.path.join(WWW_DIR, 'assets', 'logos')
-        os.makedirs(logos_dir, exist_ok=True)
+        os.makedirs(LOGOS_DIR, exist_ok=True)
 
         for contest_id, base64_data in logos.items():
             if not contest_id or not base64_data:
                 continue
             raw_data = base64_data.split(',', 1)[1] if ',' in base64_data else base64_data
-            with open(os.path.join(logos_dir, f'{contest_id}.png'), 'wb') as handle:
+            with open(os.path.join(LOGOS_DIR, f'{contest_id}.png'), 'wb') as handle:
                 handle.write(base64.b64decode(raw_data))
     except Exception as exc:
         print(f'[Track Concursos] Erro ao restaurar logos do perfil: {exc}')
@@ -816,6 +900,7 @@ class Api:
                 'caminho': paths['profile_file'],
                 'snapshots_dir': paths['snapshots_dir'],
                 'total_snapshots': _count_snapshots(paths),
+                'data_dir': DATA_DIR,
             }
         except Exception as exc:
             return {'ok': False, 'motivo': str(exc)}
@@ -886,27 +971,26 @@ class Api:
 
     def salvar_logo(self, contest_id, base64_data):
         try:
-            logos_dir = os.path.join(WWW_DIR, 'assets', 'logos')
-            os.makedirs(logos_dir, exist_ok=True)
+            os.makedirs(LOGOS_DIR, exist_ok=True)
 
             if ',' in base64_data:
                 base64_data = base64_data.split(',')[1]
 
             img_data = base64.b64decode(base64_data)
             filename = f'{contest_id}.png'
-            filepath = os.path.join(logos_dir, filename)
+            filepath = os.path.join(LOGOS_DIR, filename)
 
             with open(filepath, 'wb') as handle:
                 handle.write(img_data)
 
-            return {'ok': True, 'path': f'assets/logos/{filename}'}
+            return {'ok': True, 'path': _path_to_file_url(filepath)}
         except Exception as exc:
             return {'ok': False, 'motivo': str(exc)}
 
     def get_logo_base64(self, contest_id):
         try:
-            logo_path = os.path.join(WWW_DIR, 'assets', 'logos', f'{contest_id}.png')
-            if os.path.exists(logo_path):
+            logo_path = _find_logo_file(contest_id)
+            if logo_path and os.path.exists(logo_path):
                 with open(logo_path, 'rb') as handle:
                     return {'ok': True, 'base64': base64.b64encode(handle.read()).decode('utf-8')}
             return {'ok': False}
@@ -935,9 +1019,8 @@ class Api:
 
     def remover_logo(self, contest_id):
         try:
-            logos_dir = os.path.join(WWW_DIR, 'assets', 'logos')
             for ext in ('png', 'jpg', 'jpeg'):
-                filepath = os.path.join(logos_dir, f'{contest_id}.{ext}')
+                filepath = os.path.join(LOGOS_DIR, f'{contest_id}.{ext}')
                 if os.path.exists(filepath):
                     os.remove(filepath)
             return {'ok': True}

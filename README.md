@@ -267,8 +267,14 @@ python -m pip install -r requirements.txt
 
 Os requisitos usados pelo projeto são:
 
-- `pywebview>=4.4.1`
-- `pyinstaller>=6.0`
+- `pywebview>=6.1`
+
+Para gerar o executável/instalador, use também:
+
+- `requirements-build.txt`
+- `build_windows.ps1`
+- `TrackConcursos.spec`
+- `installer/TrackConcursos.iss`
 
 ### 5. Abrir o programa
 
@@ -411,3 +417,21 @@ Você também pode falar comigo diretamente por:
 ---
 
 Para uso normal, abra sempre `Track Concursos.pyw`.
+
+---
+
+## Distribuição para Windows
+
+A forma recomendada de distribuição para o usuário final agora é um instalador `.exe`.
+
+Fluxo recomendado:
+
+1. Gere o build com `.\build_windows.ps1`
+2. Teste `dist\TrackConcursos\TrackConcursos.exe`
+3. Compile `installer\TrackConcursos.iss` no Inno Setup
+4. Distribua `installer\output\TrackConcursos-Setup.exe`
+
+Em modo instalado, os dados do usuário ficam em `%LOCALAPPDATA%\Track Concursos`, evitando falhas de permissão ao instalar em `Program Files`.
+
+O passo a passo de empacotamento está em [docs/empacotamento-windows.md](docs/empacotamento-windows.md).
+O fluxo de assinatura está em [docs/assinatura-windows.md](docs/assinatura-windows.md).
