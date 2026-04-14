@@ -1,0 +1,3183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Simulados</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
+    --border:#252836; --border2:#2e3347;
+    --accent:#4f8ef7; --accent2:#7c5cfc;
+    --text:#e8eaf2; --text2:#f1f2f6; --text3:#a1a6c2;
+    --green:#3ecf8e; --green2:#27a06b; --yellow:#FFD700; --orange:#f5874a; --red:#f55a5a;
+    --mono:'Inter',sans-serif; --sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;}
+  .sidebar-logo{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .brand-logo:hover { transform: scale(1.04); }
+  .nav{padding:16px 12px;flex:1;}
+  .nav-label{font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--text3);padding:0 8px;margin-bottom:8px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-concurso{margin:0 12px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .concurso-nome{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .concurso-banca{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .timer-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;}
+  .timer-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+  .main{margin-left:220px;min-height:100vh;padding:32px;}
+
+  /* HEADER */
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--text3);}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .filtro-chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .filtro-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .filtro-chip.active{background:rgba(79,142,247,0.12);border-color:var(--accent);color:var(--accent);}
+  .btn-new{display:flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(79,142,247,0.3);}
+  .btn-new:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(79,142,247,0.4);}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .stat-card.blue::before{background:var(--accent);}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.yellow::before{background:var(--yellow);}
+  .stat-card.purple::before{background:var(--accent2);}
+  .stat-icon{font-size:18px;margin-bottom:10px;display:block;}
+  .stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);line-height:1;}
+  .stat-label{font-size:12px;color:var(--text3);margin-top:5px;}
+  .stat-delta{font-size:12px;font-weight:700;margin-top:3px;color:var(--green);}
+
+  /* LAYOUT */
+  .content-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+
+  /* SIMULADO CARD */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .section-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .section-count{font-family:var(--mono);font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 9px;border-radius:20px;}
+
+  .sim-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+
+  .sim-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color 0.15s;}
+  .sim-card:hover{border-color:var(--border2);}
+  .sim-card.sem-resultado{opacity:0.75;}
+
+  .sim-card-top{display:flex;align-items:center;gap:12px;padding:14px 16px;}
+  .sim-emoji{font-size:24px;flex-shrink:0;width:42px;height:42px;background:var(--bg3);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+  .sim-info{flex:1;min-width:0;}
+  .sim-nome{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sim-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sim-banca{font-size:12px;color:var(--text3);}
+  .sim-data{font-size:12px;font-family:var(--mono);color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 7px;border-radius:10px;}
+  .sim-concurso-dot{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text3);}
+  .cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+  .sim-resultado{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .pct-badge{font-family:var(--mono);font-size:14px;font-weight:700;padding:4px 10px;border-radius:8px;}
+  .pct-badge.g1{background:var(--score-excellent-bg);color:var(--score-excellent);}
+  .pct-badge.g2{background:var(--score-good-bg);color:var(--score-good);}
+  .pct-badge.y{background:var(--score-ok-bg);color:var(--score-ok);}
+  .pct-badge.o{background:var(--score-mid-bg);color:var(--score-mid);}
+  .pct-badge.r{background:var(--score-low-bg);color:var(--score-low);}
+  .pct-badge.none{background:var(--bg3);color:var(--text3);font-size:12px;}
+
+  .btn-abrir{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .btn-abrir:hover{background:rgba(79,142,247,0.18);}
+
+  /* RESULTADO INLINE */
+  .sim-card-resultado{padding:0 16px 12px;display:flex;align-items:center;gap:8px;}
+  .resultado-stats{display:flex;gap:12px;flex:1;}
+  .res-stat{font-size:12px;color:var(--text2);font-family:var(--mono);}
+  .res-stat span{font-weight:700;}
+  .res-stat span.c{color:var(--green);}
+  .res-stat span.e{color:var(--red);}
+
+  /* COLE RESULTADO */
+  .sim-card-cole{padding:0 16px 12px;display:flex;align-items:center;gap:8px;}
+  .cole-label{font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;flex-shrink:0;}
+  .cole-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color 0.15s;}
+  .cole-input:focus{border-color:var(--accent);}
+  .cole-input::placeholder{color:var(--text3);}
+  .cole-btn{padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);font-size:12px;cursor:pointer;transition:all 0.15s;flex-shrink:0;}
+  .cole-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* ADD CARD */
+  .add-sim-card{background:transparent;border:2px dashed var(--border2);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all 0.2s;color:var(--text3);font-size:12px;font-weight:600;}
+  .add-sim-card:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.04);}
+
+  /* RIGHT PANEL */
+  .right-panel{display:flex;flex-direction:column;gap:18px;}
+  .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .chart-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .chart-sub{font-size:12px;color:var(--text3);margin-bottom:16px;}
+  .sim-panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;}
+  .sim-panel-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;min-width:0;}
+  .sim-chart-stack{display:flex;flex-direction:column;gap:20px;min-width:0;}
+  .sim-chart-stage{height:320px;min-height:260px;}
+  .sim-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .sim-toolbar-controls{display:flex;gap:8px;flex-wrap:wrap;}
+  .sim-select{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;min-width:150px;}
+  .sim-chart-empty{height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed var(--border2);border-radius:12px;color:var(--text3);font-size:12px;text-align:center;padding:20px;}
+  .sim-materia-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;}
+  .sim-materia-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:0;}
+  .sim-materia-label{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+  .sim-materia-main{font-family:var(--mono);font-size:20px;font-weight:800;color:var(--text);line-height:1.1;}
+  .sim-materia-support{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.45;}
+  .sim-materia-empty{font-size:12px;color:var(--text3);line-height:1.5;}
+  .sim-list-scroll{max-height:540px;overflow:auto;padding-right:6px;}
+  .sim-list-scroll::-webkit-scrollbar{width:8px;}
+  .sim-list-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px;}
+  .sim-list-scroll::-webkit-scrollbar-track{background:transparent;}
+
+  /* RANKING SIMULADOS */
+  .ranking-list{display:flex;flex-direction:column;gap:8px;}
+  .rank-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);}
+  .rank-pos{font-family:var(--mono);font-size:12px;font-weight:700;width:20px;flex-shrink:0;}
+  .rank-pos.gold{color:var(--yellow);}
+  .rank-pos.silver{color:var(--text2);}
+  .rank-pos.bronze{color:var(--orange);}
+  .rank-nome{flex:1;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-pct{font-family:var(--mono);font-size:12px;font-weight:700;}
+
+  /* DIVIDER */
+  .section-divider{display:flex;align-items:center;gap:12px;margin:8px 0 20px;}
+  .div-line{flex:1;height:1px;background:var(--border);}
+  .div-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);white-space:nowrap;}
+
+  /* POPUP NOVO SIMULADO */
+  .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+  .popup-overlay.visible{opacity:1;pointer-events:all;}
+  .popup{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;max-width:460px;width:90%;transform:scale(0.95);transition:transform 0.2s;box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+  .popup-overlay.visible .popup{transform:scale(1);}
+  .popup-title{font-size:18px;font-weight:700;margin-bottom:20px;}
+  .form-group{margin-bottom:14px;}
+  .form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;}
+  .form-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;transition:border-color 0.15s;}
+  .form-input:focus{border-color:var(--accent);}
+  .tipo-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .tipo-opt{padding:10px;border-radius:9px;border:2px solid var(--border2);background:var(--bg3);cursor:pointer;text-align:center;transition:all 0.15s;}
+  .tipo-opt:hover{border-color:var(--accent);}
+  .tipo-opt.selected{border-color:var(--accent);background:rgba(79,142,247,0.08);}
+  .tipo-opt-icon{font-size:20px;margin-bottom:4px;}
+  .tipo-opt-label{font-size:12px;font-weight:600;color:var(--text2);}
+  .tipo-opt.selected .tipo-opt-label{color:var(--accent);}
+  .popup-btns{display:flex;gap:8px;margin-top:20px;}
+  .btn-cancel{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all 0.15s;}
+  .btn-cancel:hover{border-color:var(--red);color:var(--red);}
+  .btn-salvar{flex:2;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(79,142,247,0.3);}
+  .btn-salvar:hover{transform:translateY(-1px);}
+
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+
+  .ph-meta::placeholder { font-size:10px; font-family:var(--sans); font-weight:600; color:var(--text3); }
+
+  @media (max-width:1180px){
+    .sim-panels{grid-template-columns:1fr;}
+    .sim-list-scroll{max-height:none;overflow:visible;padding-right:0;}
+  }
+
+  @media (max-width:980px){
+    .sim-materia-summary{grid-template-columns:1fr;}
+  }
+
+  @media (max-width:780px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
+    <div class="nav-item active" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span> Simulados</div>
+    <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+        <a href="ajuda.html" style="text-decoration:none">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6">
+      <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png?v=1" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+            <span style="opacity:0.7">powered by Antigravity Gemini</span>
+          </div>
+        </a>
+      </div>
+      <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">🏆 Simulados</div>
+      <div class="page-sub" id="simSub">Acompanhe sua evolução</div>
+    </div>
+    <button onclick="abrirModalSimulado(null)"
+      style="display:flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(79,142,247,0.3)">
+      ＋ Registrar simulado
+    </button>
+  </div>
+
+  <!-- STATS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px" id="simStats"></div>
+
+  <!-- GRÁFICO DE EVOLUÇÃO -->
+  <div class="sim-panels">
+  <div class="sim-chart-stack">
+    <div id="simChartWrap" class="sim-panel-card" style="display:none">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">📈 Evolução da nota</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="simChartSub"></div>
+      <div id="chartSimStage" class="sim-chart-stage">
+        <canvas id="chartSim"></canvas>
+      </div>
+    </div>
+
+    <div id="simMateriaChartWrap" class="sim-panel-card" style="display:none">
+      <div class="sim-toolbar" style="margin-bottom:16px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">🔎 Raio-x por matéria</div>
+          <div style="font-size:12px;color:var(--text3)" id="simMateriaChartSub"></div>
+        </div>
+        <div class="sim-toolbar-controls">
+          <select id="simMateriaMetric" class="sim-select">
+            <option value="pct">Percentual</option>
+            <option value="acertos">Acertos</option>
+            <option value="pontos">Pontos</option>
+          </select>
+        </div>
+      </div>
+      <div id="simMateriaChartStage" class="sim-chart-stage">
+        <canvas id="chartSimMateria"></canvas>
+      </div>
+      <div id="simMateriaResumo" class="sim-materia-summary"></div>
+    </div>
+  </div>
+
+  <!-- LISTA DE SIMULADOS -->
+  <div class="sim-panel-card">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">Simulados registrados</div>
+    <div id="listaSimulados" class="sim-list-scroll"></div>
+  </div>
+  </div>
+
+</main>
+
+<script src="data.js"></script>
+<script>
+// ── SIDEBAR CONCURSO ─────────────────────
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>
+<script>
+const cId = sessionStorage.getItem('ct_concurso_ativo');
+if (!cId) location.href = 'concursos.html';
+
+let _chartSim = null;
+let _editandoSimId = null;
+
+function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+function themePalette() {
+  return window.TrackTheme ? TrackTheme.palette() : {
+    accent: '#4f8ef7',
+    accent2: '#7c5cfc',
+    text: '#e8eaf2',
+    text2: '#f1f2f6',
+    text3: '#a1a6c2',
+    bg3: '#1a1e2a',
+    border: '#252836',
+    green: '#3ecf8e',
+    yellow: '#FFD700',
+    orange: '#f5874a',
+    red: '#f55a5a',
+    scoreExcellent: '#34f58d',
+    scoreGood: '#9cf7cc',
+    scoreOk: '#ffe45c',
+    scoreMid: '#f5874a',
+    scoreLow: '#f55a5a',
+    chartAxis: '#555a72',
+    chartAxisStrong: '#c8cde2',
+    chartGrid: 'rgba(255,255,255,0.05)',
+    tooltipBg: '#171b26',
+    tooltipBorder: 'rgba(255,255,255,0.08)',
+    tooltipTitle: '#f1f2f6',
+    tooltipBody: '#b9bfd6',
+    chartSurfaceBorder: '#0f1220'
+  };
+}
+function alphaColor(color, alpha) {
+  if (!color) return color;
+  if (window.TrackTheme && TrackTheme.alpha) return TrackTheme.alpha(color, alpha);
+  if (/^#([0-9a-f]{3}){1,2}$/i.test(color)) {
+    let hex = color.slice(1);
+    if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+    const num = parseInt(hex, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+  if (rgbMatch) {
+    const parts = rgbMatch[1].split(',').map(part => part.trim());
+    const [r, g, b] = parts;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  return color;
+}
+function scoreColorFromPct(value, theme) {
+  const palette = theme || themePalette();
+  const pct = Number(value);
+  if (!Number.isFinite(pct)) return palette.text3 || '#a1a6c2';
+  if (pct >= 93) return palette.scoreExcellent || palette.green || '#34f58d';
+  if (pct >= 80) return palette.scoreGood || '#9cf7cc';
+  if (pct >= 75) return palette.scoreOk || palette.yellow || '#ffe45c';
+  if (pct >= 50) return palette.scoreMid || palette.orange || '#f5874a';
+  return palette.scoreLow || palette.red || '#f55a5a';
+}
+function scoreFillFromPct(value, theme, alpha) {
+  return alphaColor(scoreColorFromPct(value, theme), alpha == null ? 0.82 : alpha);
+}
+function formatPlainNumber(value, decimals) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, decimals == null ? 1 : decimals);
+  return String(rounded).replace(/\.0$/, '');
+}
+function formatMetricValue(metric, value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  if (metric === 'pct') return formatPercent(num);
+  if (metric === 'pontos') return `${formatPlainNumber(num, 1)} pts`;
+  return `${formatPlainNumber(num, 1)} acertos`;
+}
+function formatMetricDelta(metric, value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  if (metric === 'pct') return formatDiff(num);
+  const prefix = num > 0 ? '+' : num < 0 ? '-' : '';
+  const abs = formatPlainNumber(Math.abs(num), 1);
+  return `${prefix}${abs} ${metric === 'pontos' ? 'pts' : 'acertos'}`;
+}
+function metricValueToPct(metric, value, targetValue) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return null;
+  if (metric === 'pct') return num;
+  const target = Number(targetValue);
+  if (!Number.isFinite(target) || target <= 0) return null;
+  return roundTo((num / target) * 100, 1);
+}
+function formatSimDate(value){
+  if(!value) return '—';
+  const raw = String(value);
+  const datePart = raw.includes('T') ? raw.split('T')[0] : raw.slice(0,10);
+  const parts = datePart.split('-');
+  if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return raw;
+}
+
+function render() {
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+
+  document.querySelector('.concurso-nome').textContent = c.nome;
+  document.querySelector('.concurso-banca').textContent = c.banca || '—';
+
+  const sims = CT.getSimulados(cId).sort((a,b)=>(a.criadoEm||'').localeCompare(b.criadoEm||''));
+  const simsFeitos = sims.filter(s => (s.tipo || 'realizado') === 'realizado' && s.pct != null);
+  const simsPendentes = sims.filter(s => (s.tipo || 'realizado') !== 'realizado' || s.pct == null);
+  const notaCorte = c.notaCorte || null;
+
+  document.getElementById('simSub').textContent = c.nome + ' — ' + simsFeitos.length + ' realizado(s) • ' + simsPendentes.length + ' pendente(s)';
+
+  // Stats
+  const melhor = simsFeitos.length ? Math.max(...simsFeitos.map(s=>s.pct||0)) : null;
+  const ultimo = simsFeitos.length ? simsFeitos[simsFeitos.length-1] : null;
+  const media  = simsFeitos.length ? Math.round(simsFeitos.reduce((a,s)=>a+(s.pct||0),0)/simsFeitos.length) : null;
+  const tendencia = simsFeitos.length >= 2
+    ? (simsFeitos[simsFeitos.length-1].pct - simsFeitos[simsFeitos.length-2].pct)
+    : null;
+
+  let diffMediaHtml = '';
+  if (ultimo && media != null) {
+    const diffM = Math.round(ultimo.pct - media);
+    const suffix = `<span style="font-size:10px;font-family:var(--sans);font-weight:600;color:var(--text3);margin-left:4px">em relação à média geral</span>`;
+    if (diffM > 0) diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--green);margin-top:6px;font-family:var(--mono)">↑ +${diffM}%${suffix}</div>`;
+    else if (diffM < 0) diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--red);margin-top:6px;font-family:var(--mono)">↓ ${diffM}%${suffix}</div>`;
+    else diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--text3);margin-top:6px;font-family:var(--mono)">=${suffix}</div>`;
+  }
+
+  document.getElementById('simStats').innerHTML = [
+    { icon:'🏆', val: melhor!=null?melhor+'%':'—', label:'Melhor nota',    color: melhor!=null?pctColor(melhor):'var(--text3)' },
+    { icon:'📊', val: ultimo?ultimo.pct+'%':'—',   label:'Último simulado', color: ultimo?pctColor(ultimo.pct):'var(--text3)', extra: diffMediaHtml },
+    { icon:'📈', val: media!=null?media+'%':'—',   label:'Média geral',    color: media!=null?pctColor(media):'var(--text3)' },
+    { icon:'🎯', val: notaCorte?notaCorte+'%':'—', label:'Nota de corte <span style="font-size:11px;opacity:0.7">✏️</span>', color:'var(--yellow)', action:'abrirModalCorte()' },
+  ].map(s=>`
+    <div ${s.action?`onclick="${s.action}"`:''} class="stat-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;text-align:center;${s.action?'cursor:pointer;transition:all 0.2s':''}" ${s.action?`onmouseover="this.style.borderColor='var(--yellow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'"`:''}>
+      <div style="font-size:22px;margin-bottom:6px">${s.icon}</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${s.color}">${s.val}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${s.label}</div>
+      ${s.extra ? s.extra : ''}
+    </div>`).join('');
+
+  // Gráfico
+  const wrap = document.getElementById('simChartWrap');
+  if (false && simsFeitos.length >= 2) {
+    wrap.style.display = '';
+    const labels = simsFeitos.map(s => s.criadoEm.split('-').slice(1).reverse().join('/'));
+    const notas  = simsFeitos.map(s => s.pct||0);
+
+    document.getElementById('simChartSub').textContent =
+      tendencia!=null ? (tendencia>=0?'↑ +':'↓ ') + tendencia + '% em relação ao anterior' : '';
+
+    const ctx = document.getElementById('chartSim').getContext('2d');
+    if (_chartSim) _chartSim.destroy();
+
+    const datasets = [{
+      label: 'Nota (%)',
+      data: notas,
+      borderColor: 'rgba(79,142,247,0.9)',
+      backgroundColor: 'rgba(79,142,247,0.08)',
+      borderWidth: 2,
+      pointBackgroundColor: notas.map(n => pctColor(n)),
+      pointRadius: 5,
+      tension: 0.3,
+      fill: true,
+    }];
+
+    if (notaCorte) {
+      datasets.push({
+        label: 'Nota de corte',
+        data: Array(notas.length).fill(notaCorte),
+        borderColor: 'rgba(245,200,66,0.6)',
+        borderWidth: 1,
+        borderDash: [6,4],
+        pointRadius: 0,
+        fill: false,
+      });
+    }
+
+    if (media != null) {
+      datasets.push({
+        label: 'Média geral',
+        data: Array(notas.length).fill(media),
+        borderColor: 'rgba(79,142,247,0.6)',
+        borderWidth: 1,
+        borderDash: [4,4],
+        pointRadius: 0,
+        fill: false,
+      });
+    }
+
+    _chartSim = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: notaCorte!=null, labels: { color:'#8b90a8', font:{size:11} } } },
+        scales: {
+          x: { ticks:{ color:'#555a72', font:{size:10} }, grid:{ color:'rgba(255,255,255,0.04)' } },
+          y: { ticks:{ color:'#555a72', font:{size:10}, callback: v=>v+'%' },
+               grid:{ color:'rgba(255,255,255,0.04)' }, min:0, max:100 }
+        }
+      }
+    });
+  } else {
+    wrap.style.display = 'none';
+  }
+
+  // Novo gráfico
+  const wrapNovo = document.getElementById('simChartWrap');
+  const chartStage = document.getElementById('chartSimStage');
+  wrapNovo.style.display = '';
+  if (_chartSim) _chartSim.destroy();
+  _chartSim = null;
+
+  if (false && simsFeitos.length) {
+    chartStage.style.height = Math.max(280, Math.min(440, 250 + (simsFeitos.length * 20))) + 'px';
+    chartStage.innerHTML = '<canvas id="chartSim"></canvas>';
+
+    const labels = simsFeitos.map((s, idx) => {
+      const nome = (s.nome || '').trim();
+      return nome ? (nome.length > 14 ? nome.slice(0, 14) + '...' : nome) : 'Sim ' + (idx + 1);
+    });
+    const notas = simsFeitos.map(s => s.pct || 0);
+
+    document.getElementById('simChartSub').textContent =
+      tendencia!=null ? (tendencia>=0?'↑ +':'↓ ') + tendencia + '% em relação ao anterior' : 'Leitura vertical para comparar cada simulado com mais clareza.';
+
+    const ctx = document.getElementById('chartSim').getContext('2d');
+    const datasets = [{
+      type: 'bar',
+      label: 'Nota (%)',
+      data: notas,
+      backgroundColor: notas.map(n => {
+        if (n >= 93) return 'rgba(52,245,141,0.78)';
+        if (n >= 80) return 'rgba(156,247,204,0.78)';
+        if (n >= 75) return 'rgba(255,228,92,0.82)';
+        if (n >= 50) return 'rgba(245,135,74,0.78)';
+        return 'rgba(245,90,90,0.78)';
+      }),
+      borderColor: notas.map(n => pctColor(n)),
+      borderWidth: 2,
+      borderRadius: 12,
+      borderSkipped: false,
+      maxBarThickness: 42,
+      categoryPercentage: 0.7,
+      barPercentage: 0.9
+    }];
+
+    if (notaCorte) {
+      datasets.push({
+        type: 'line',
+        label: 'Nota de corte',
+        data: Array(notas.length).fill(notaCorte),
+        borderColor: 'rgba(245,200,66,0.78)',
+        backgroundColor: 'rgba(245,200,66,0.78)',
+        borderWidth: 2,
+        borderDash: [8,5],
+        pointRadius: 0,
+        tension: 0
+      });
+    }
+
+    if (media != null) {
+      datasets.push({
+        type: 'line',
+        label: 'Média geral',
+        data: Array(notas.length).fill(media),
+        borderColor: 'rgba(124,92,252,0.82)',
+        backgroundColor: 'rgba(124,92,252,0.82)',
+        borderWidth: 2,
+        borderDash: [4,4],
+        pointRadius: 0,
+        tension: 0
+      });
+    }
+
+    _chartSim = new Chart(ctx, {
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: (notaCorte != null || media != null),
+            labels: { color:'#8b90a8', font:{size:11}, usePointStyle:true, boxWidth:10, boxHeight:10 }
+          },
+          tooltip: {
+            backgroundColor: '#171b26',
+            borderColor: 'rgba(255,255,255,0.08)',
+            borderWidth: 1,
+            titleColor: '#f1f2f6',
+            bodyColor: '#b9bfd6',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              title: function(items) {
+                const item = simsFeitos[items[0].dataIndex];
+                return (item.nome || ('Simulado ' + (items[0].dataIndex + 1))) + ' - ' + formatSimDate(item.criadoEm || CT._today());
+              },
+              label: function(ctx) {
+                if (ctx.dataset.label !== 'Nota (%)') return ' ' + ctx.dataset.label + ': ' + ctx.raw + '%';
+                return ' Nota: ' + ctx.raw + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks:{ color:'#7f86a8', font:{size:10}, maxRotation:0, minRotation:0 }, grid:{ display:false } },
+          y: { ticks:{ color:'#555a72', font:{size:10}, callback: v=>v+'%' },
+               grid:{ color:'rgba(255,255,255,0.05)' }, min:0, max:100 }
+        }
+      }
+    });
+  } else if (false) {
+    chartStage.style.height = '320px';
+    chartStage.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed var(--border2);border-radius:12px;color:var(--text3);font-size:12px;text-align:center;padding:20px">Registre seu primeiro simulado para visualizar a evolucao da nota.</div>';
+    document.getElementById('simChartSub').textContent = 'Sem dados suficientes ainda.';
+  }
+
+  // Grafico final
+  const wrapFinal = document.getElementById('simChartWrap');
+  const chartStageFinal = document.getElementById('chartSimStage');
+  wrapFinal.style.display = '';
+  if (_chartSim) _chartSim.destroy();
+  _chartSim = null;
+
+  if (simsFeitos.length) {
+    chartStageFinal.style.height = Math.max(280, Math.min(430, 240 + (simsFeitos.length * 16))) + 'px';
+    chartStageFinal.innerHTML = '<canvas id="chartSim"></canvas>';
+
+    const labels = simsFeitos.map((s, idx) => {
+      const nome = (s.nome || '').trim();
+      return nome ? (nome.length > 16 ? nome.slice(0, 16) + '...' : nome) : 'Simulado ' + (idx + 1);
+    });
+    const notas = simsFeitos.map(s => s.pct || 0);
+
+    document.getElementById('simChartSub').textContent =
+      tendencia == null ? 'Evolucao vertical das notas registradas.'
+      : (tendencia >= 0 ? '+' : '') + tendencia + '% em comparacao ao anterior';
+
+    const ctx = document.getElementById('chartSim').getContext('2d');
+    const theme = themePalette();
+    const lollipopPlugin = {
+      id: 'simuladosLollipop',
+      beforeDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0);
+        const yScale = chart.scales.y;
+        const ctx2 = chart.ctx;
+        ctx2.save();
+        meta.data.forEach((point, index) => {
+          const pct = notas[index];
+          ctx2.beginPath();
+          ctx2.strokeStyle = pctColor(pct);
+          ctx2.globalAlpha = 0.36;
+          ctx2.lineWidth = index === notas.length - 1 ? 8 : 6;
+          ctx2.lineCap = 'round';
+          ctx2.moveTo(point.x, yScale.getPixelForValue(0));
+          ctx2.lineTo(point.x, point.y + 6);
+          ctx2.stroke();
+        });
+        ctx2.restore();
+      },
+      afterDatasetsDraw(chart) {
+        const meta = chart.getDatasetMeta(0);
+        const ctx2 = chart.ctx;
+        ctx2.save();
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'bottom';
+        ctx2.font = '700 11px Inter';
+        meta.data.forEach((point, index) => {
+          ctx2.fillStyle = pctColor(notas[index]);
+          ctx2.fillText(notas[index] + '%', point.x, point.y - 10);
+        });
+        ctx2.restore();
+      }
+    };
+
+    const datasets = [{
+      type: 'line',
+      label: 'Nota',
+      data: notas,
+      borderColor: window.TrackTheme ? TrackTheme.alpha(theme.accent2, 0.32) : 'rgba(124,92,252,0.32)',
+      borderWidth: 2,
+      tension: 0.35,
+      fill: false,
+      pointRadius: notas.map((_, index) => index === notas.length - 1 ? 7 : 5),
+      pointHoverRadius: notas.map((_, index) => index === notas.length - 1 ? 8 : 6),
+      pointBorderWidth: 2,
+      pointBorderColor: theme.chartSurfaceBorder,
+      pointBackgroundColor: notas.map(n => pctColor(n))
+    }];
+
+    if (notaCorte != null) {
+      datasets.push({
+        type: 'line',
+        label: 'Corte',
+        data: Array(notas.length).fill(notaCorte),
+        borderColor: window.TrackTheme ? TrackTheme.alpha(theme.yellow, 0.62) : 'rgba(245,200,66,0.62)',
+        borderWidth: 2,
+        borderDash: [8, 6],
+        pointRadius: 0,
+        tension: 0
+      });
+    }
+
+    if (media != null) {
+      datasets.push({
+        type: 'line',
+        label: 'Média',
+        data: Array(notas.length).fill(media),
+        borderColor: window.TrackTheme ? TrackTheme.alpha(theme.accent2, 0.68) : 'rgba(124,92,252,0.68)',
+        borderWidth: 2,
+        borderDash: [4, 4],
+        pointRadius: 0,
+        tension: 0
+      });
+    }
+
+    _chartSim = new Chart(ctx, {
+      data: { labels, datasets },
+      plugins: [lollipopPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 20, right: 8, left: 8, bottom: 0 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: theme.tooltipBg,
+            borderColor: theme.tooltipBorder,
+            borderWidth: 1,
+            titleColor: theme.tooltipTitle,
+            bodyColor: theme.tooltipBody,
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              title: function(items) {
+                const item = simsFeitos[items[0].dataIndex];
+                return (item.nome || ('Simulado ' + (items[0].dataIndex + 1))) + ' - ' + formatSimDate(item.criadoEm || CT._today());
+              },
+              label: function(ctx3) {
+                if (ctx3.dataset.label === 'Corte') return ' Nota de corte: ' + ctx3.raw + '%';
+      if (ctx3.dataset.label === 'Média') return ' Média geral: ' + ctx3.raw + '%';
+                return ' Nota: ' + ctx3.raw + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: theme.chartAxisStrong, font:{size:10}, maxRotation:0, minRotation:0 },
+            grid: { display:false }
+          },
+          y: {
+            ticks: { color: theme.chartAxis, font:{size:10}, callback: v => v + '%' },
+            grid: { color: theme.chartGrid },
+            min: 0,
+            max: 100
+          }
+        }
+      }
+    });
+  } else {
+    chartStageFinal.style.height = '320px';
+    chartStageFinal.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed var(--border2);border-radius:12px;color:var(--text3);font-size:12px;text-align:center;padding:20px">Registre seu primeiro simulado para visualizar a evolucao da nota.</div>';
+    document.getElementById('simChartSub').textContent = 'Sem dados suficientes ainda.';
+  }
+
+  // Lista
+  const lista = document.getElementById('listaSimulados');
+  if (!sims.length) {
+    lista.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:36px;margin-bottom:12px">📋</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px">Nenhum simulado registrado</div>
+      <div style="font-size:12px">Clique em "＋ Registrar simulado" para começar.</div>
+    </div>`;
+    return;
+  }
+
+  const pendentesHtml = simsPendentes.length ? `
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:10px">Para fazer</div>
+    ${[...simsPendentes].reverse().map(s => {
+      const dataFmt = formatSimDate(s.criadoEm || CT._today());
+      const hasLink = !!(s.link && s.link.trim());
+      return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:88px">${dataFmt}</div>
+        <div style="flex:1;min-width:180px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div style="font-size:12px;font-weight:700;color:var(--text)">${s.nome||'Simulado pré-feito'}</div>
+            <span style="padding:3px 8px;border-radius:999px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.22);color:var(--accent2);font-size:10px;font-weight:700">PENDENTE</span>
+          </div>
+          ${s.obs?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${s.obs}</div>`:''}
+          ${hasLink?`<div style="font-size:11px;color:var(--accent);margin-top:5px;word-break:break-all">🔗 ${s.link}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap">
+          ${hasLink ? `<a href="${s.link}" target="_blank" rel="noopener noreferrer"
+            style="padding:8px 12px;border:1px solid rgba(62,207,142,0.28);border-radius:8px;background:rgba(62,207,142,0.1);color:var(--green);text-decoration:none;font-family:var(--sans);font-size:12px;font-weight:700">▶ Fazer Simulado</a>` : ''}
+          <button onclick="abrirModalSimulado('${s.id}', true)"
+            style="padding:8px 12px;border:1px solid rgba(79,142,247,0.24);border-radius:8px;background:rgba(79,142,247,0.08);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer">✓ Registrar resultado</button>
+          <button onclick="abrirModalSimulado('${s.id}')"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✏️</button>
+          <button data-sid="${s.id}" onclick="deletarSimulado(this.dataset.sid)"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+        </div>
+      </div>`;
+    }).join('')}
+  ` : '';
+
+  const feitosHtml = simsFeitos.length ? `
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin:${simsPendentes.length ? '18px' : '0'} 0 10px">Realizados</div>
+    ${[...simsFeitos].reverse().map((s,i,arr) => {
+      const prev = arr[i+1];
+      const diff = prev ? s.pct - prev.pct : null;
+      const diffStr = diff!=null
+        ? `<span style="font-size:12px;font-weight:600;color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'↑ +':'↓ '}${diff}%</span>`
+        : '<span style="font-size:12px;color:var(--text3)">—</span>';
+      const dataFmt = formatSimDate(s.criadoEm || CT._today());
+      return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:88px">${dataFmt}</div>
+        <div style="flex:1;min-width:120px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${s.nome||'Simulado'}</div>
+          ${s.obs?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${s.obs}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          ${diffStr}
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${pctColor(s.pct)}">${s.pct!=null?s.pct+'%':'—'}</div>
+          <button onclick="abrirModalSimulado('${s.id}')"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✏️</button>
+          <button data-sid="${s.id}" onclick="deletarSimulado(this.dataset.sid)"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+        </div>
+      </div>`;
+    }).join('')}
+  ` : '';
+
+  lista.innerHTML = pendentesHtml + feitosHtml;
+}
+
+function abrirModalSimulado(simId) {
+  _editandoSimId = simId;
+  const sim = simId ? CT.getSimulados(cId).find(s=>s.id===simId) : null;
+  const old = document.getElementById('modalSim');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalSim';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  const materias = CT.getMaterias(cId);
+  const notasMatHTML = materias.map((m,i) => {
+    const val = sim?.notasMaterias?.[m.id] ?? '';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="flex:1;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome}</div>
+      <input id="nm_${m.id}" type="number" min="0" max="100" value="${val}" placeholder="—"
+        style="width:64px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;text-align:center;outline:none">
+      <span style="font-size:12px;color:var(--text3);width:16px">%</span>
+    </div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:500px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">${sim?'Editar':'Registrar'} simulado</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Registre seu desempenho</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nome / Fonte</div>
+          <input id="simNome" value="${sim?.nome||''}" placeholder="Ex: Gran Cursos - Simulado 3"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+        <div >
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Data</div>
+          <input id="simData" type="date" value="${sim?.criadoEm||CT._today()}"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nota geral (%)</div>
+        <input id="simNota" type="number" min="0" max="100" value="${sim?.pct??''}" placeholder="Ex: 72"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--accent);font-family:var(--mono);font-size:20px;font-weight:700;text-align:center;outline:none;box-sizing:border-box">
+      </div>
+
+      ${materias.length ? `
+      <details style="margin-bottom:14px">
+        <summary style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;margin-bottom:10px">
+          Notas por matéria (opcional)
+        </summary>
+        <div style="margin-top:10px">${notasMatHTML}</div>
+      </details>` : ''}
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Observações</div>
+        <input id="simObs" value="${sim?.obs||''}" placeholder="Ex: Errei muito em RL, melhorar..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modalSim').remove()"
+          style="padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button onclick="salvarSimulado()"
+          style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">
+          ✓ ${sim?'Salvar alterações':'Registrar simulado'}
+        </button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('simNota')?.focus(), 50);
+}
+
+function salvarSimulado() {
+  const nome  = document.getElementById('simNome')?.value.trim() || 'Simulado';
+  const data  = document.getElementById('simData')?.value || CT._today();
+  const pct   = parseFloat(document.getElementById('simNota')?.value);
+  const obs   = document.getElementById('simObs')?.value.trim() || '';
+
+  if (isNaN(pct) || pct < 0 || pct > 100) {
+    const el = document.getElementById('simNota');
+    if (el) { el.style.borderColor='var(--red)'; setTimeout(()=>el.style.borderColor='var(--border2)',1200); }
+    return;
+  }
+
+  // Notas por matéria
+  const materias = CT.getMaterias(cId);
+  const notasMaterias = {};
+  materias.forEach(m => {
+    const val = parseFloat(document.getElementById('nm_'+m.id)?.value);
+    if (!isNaN(val)) notasMaterias[m.id] = val;
+  });
+
+  const sim = {
+    id: _editandoSimId || undefined,
+    concursoId: cId,
+    nome,
+    criadoEm: data,
+    pct,
+    obs,
+    notasMaterias: Object.keys(notasMaterias).length ? notasMaterias : null,
+  };
+
+  CT.saveSimulado(sim);
+  document.getElementById('modalSim')?.remove();
+  render();
+}
+
+function alternarCamposSimulado() {
+  const tipo = document.getElementById('simTipo')?.value || 'realizado';
+  const pendente = tipo === 'pendente';
+  const baseGrid = document.getElementById('simBaseGrid');
+  const dataWrap = document.getElementById('simDataWrap');
+  const notaWrap = document.getElementById('simNotaWrap');
+  const materiasWrap = document.getElementById('simMateriasWrap');
+  const linkWrap = document.getElementById('simLinkWrap');
+  const obsWrap = document.getElementById('simObsWrap');
+  if (baseGrid) baseGrid.style.gridTemplateColumns = pendente ? '1fr' : '1fr 1fr';
+  if (dataWrap) dataWrap.style.display = pendente ? 'none' : '';
+  if (notaWrap) notaWrap.style.display = pendente ? 'none' : '';
+  if (materiasWrap) materiasWrap.style.display = pendente ? 'none' : '';
+  if (linkWrap) linkWrap.style.display = pendente ? '' : 'none';
+  if (obsWrap) obsWrap.style.display = pendente ? 'none' : '';
+}
+
+abrirModalSimulado = function(simId, concluirPendente = false) {
+  _editandoSimId = simId;
+  const sim = simId ? CT.getSimulados(cId).find(s=>s.id===simId) : null;
+  const old = document.getElementById('modalSim');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalSim';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  const materias = CT.getMaterias(cId);
+  const notasMatHTML = materias.map((m) => {
+    const val = sim?.notasMaterias?.[m.id] ?? '';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="flex:1;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome}</div>
+      <input id="nm_${m.id}" type="number" min="0" max="100" value="${val}" placeholder="—"
+        style="width:64px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;text-align:center;outline:none">
+      <span style="font-size:12px;color:var(--text3);width:16px">%</span>
+    </div>`;
+  }).join('');
+
+  const tipoInicial = concluirPendente ? 'realizado' : (sim?.tipo || 'realizado');
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:500px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">${sim?'Editar':'Registrar'} simulado</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Cadastre um simulado realizado ou deixe um simulado pré-feito salvo para resolver depois.</div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Tipo</div>
+        <select id="simTipo" onchange="alternarCamposSimulado()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+          <option value="realizado" ${tipoInicial === 'realizado' ? 'selected' : ''}>Simulado já realizado</option>
+          <option value="pendente" ${tipoInicial === 'pendente' ? 'selected' : ''}>Simulado para fazer</option>
+        </select>
+      </div>
+
+      <div id="simBaseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nome / Fonte</div>
+          <input id="simNome" value="${sim?.nome||''}" placeholder="Ex: Gran Cursos - Simulado 3"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+        <div id="simDataWrap">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Data</div>
+          <input id="simData" type="date" value="${sim?.criadoEm||CT._today()}"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+
+      <div id="simLinkWrap" style="margin-bottom:14px;display:none">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Link do simulado</div>
+        <input id="simLink" value="${sim?.link||''}" placeholder="https://..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+
+      <div id="simNotaWrap" style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nota geral (%)</div>
+        <input id="simNota" type="number" min="0" max="100" value="${sim?.pct??''}" placeholder="Ex: 72"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--accent);font-family:var(--mono);font-size:20px;font-weight:700;text-align:center;outline:none;box-sizing:border-box">
+      </div>
+
+      ${materias.length ? `
+      <details id="simMateriasWrap" style="margin-bottom:14px">
+        <summary style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;margin-bottom:10px">
+          Notas por matéria (opcional)
+        </summary>
+        <div style="margin-top:10px">${notasMatHTML}</div>
+      </details>` : ''}
+
+      <div id="simObsWrap" style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Observações</div>
+        <input id="simObs" value="${sim?.obs||''}" placeholder="Ex: Errei muito em RL, melhorar..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modalSim').remove()"
+          style="padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button onclick="salvarSimulado()"
+          style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">
+          ✓ ${sim?'Salvar alterações':'Registrar simulado'}
+        </button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  alternarCamposSimulado();
+  setTimeout(() => {
+    const focusEl = document.getElementById(tipoInicial === 'pendente' ? 'simLink' : 'simNota');
+    if (focusEl) focusEl.focus();
+  }, 50);
+};
+
+salvarSimulado = function() {
+  const nome  = document.getElementById('simNome')?.value.trim() || 'Simulado';
+  const data  = document.getElementById('simData')?.value || CT._today();
+  const tipo  = document.getElementById('simTipo')?.value || 'realizado';
+  const link  = document.getElementById('simLink')?.value.trim() || '';
+  const pct   = parseFloat(document.getElementById('simNota')?.value);
+  const obs   = document.getElementById('simObs')?.value.trim() || '';
+
+  if (tipo === 'realizado') {
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      const el = document.getElementById('simNota');
+      if (el) { el.style.borderColor='var(--red)'; setTimeout(()=>el.style.borderColor='var(--border2)',1200); }
+      return;
+    }
+  } else if (!link) {
+    const el = document.getElementById('simLink');
+    if (el) { el.style.borderColor='var(--red)'; setTimeout(()=>el.style.borderColor='var(--border2)',1200); }
+    return;
+  }
+
+  const materias = CT.getMaterias(cId);
+  const notasMaterias = {};
+  if (tipo === 'realizado') {
+    materias.forEach(m => {
+      const val = parseFloat(document.getElementById('nm_'+m.id)?.value);
+      if (!isNaN(val)) notasMaterias[m.id] = val;
+    });
+  }
+
+  const anterior = _editandoSimId ? CT.getSimulados(cId).find(s => s.id === _editandoSimId) : null;
+  const sim = {
+    id: _editandoSimId || undefined,
+    concursoId: cId,
+    nome,
+    criadoEm: data,
+    tipo,
+    link: tipo === 'pendente' ? link : (anterior?.link || ''),
+    pct: tipo === 'realizado' ? pct : null,
+    obs,
+    notasMaterias: tipo === 'realizado' && Object.keys(notasMaterias).length ? notasMaterias : null,
+  };
+
+  CT.saveSimulado(sim);
+  document.getElementById('modalSim')?.remove();
+  render();
+};
+
+function deletarSimulado(id) {
+  if (!confirm('Excluir este simulado?')) return;
+  const sims = CT.getSimulados(cId).filter(s=>s.id!==id);
+  localStorage.setItem('ct_simulados', JSON.stringify(CT.getSimulados().filter(s=>s.concursoId!==cId||s.id!==id)));
+  render();
+}
+
+window.abrirModalCorte = function() {
+  const old = document.getElementById('modalCorte');
+  if(old) old.remove();
+  const c = CT.getConcurso(cId);
+  const overlay = document.createElement('div');
+  overlay.id = 'modalCorte';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px;width:380px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">🎯 Nota de corte</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Defina a meta do edital (%)</div>
+      <input id="inputCorte" class="ph-meta" type="number" min="0" max="100" value="${c.notaCorte||''}" placeholder="Sua meta ou nota de corte do último concurso em %"
+          style="width:100%;margin-bottom:20px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;color:var(--yellow);font-family:var(--mono);font-size:20px;font-weight:700;text-align:center;outline:none;box-sizing:border-box">
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modalCorte').remove()" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:13px;cursor:pointer">Cancelar</button>
+        <button onclick="salvarCorte()" style="flex:1.5;padding:10px;background:linear-gradient(135deg,var(--yellow),var(--orange));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer">Salvar meta</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove() });
+  document.body.appendChild(overlay);
+  setTimeout(()=>document.getElementById('inputCorte').focus(), 50);
+}
+
+window.salvarCorte = function() {
+  const val = document.getElementById('inputCorte').value;
+  const c = CT.getConcurso(cId);
+  if(!val.trim()) { c.notaCorte = null; }
+  else {
+    const num = parseFloat(val);
+    if(isNaN(num) || num<0 || num>100) { alert('Valor inválido!'); return; }
+    c.notaCorte = num;
+  }
+  CT.saveConcurso(c);
+  document.getElementById('modalCorte').remove();
+  render();
+}
+
+let _chartMateria = null;
+let _simuladosFeitosCache = [];
+let _painelMateriaInfoCache = null;
+
+function roundTo(value, decimals) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  const factor = Math.pow(10, decimals || 0);
+  return Math.round(num * factor) / factor;
+}
+function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, 1);
+  return `${String(rounded).replace(/\.0$/, '')}%`;
+}
+function formatPoints(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  return roundTo(num, 1).toFixed(1);
+}
+function formatPointsPt(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, 1);
+  return ptText(String(rounded).replace(/\.0$/, ''));
+}
+function formatDiff(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, 1);
+  const sign = rounded > 0 ? '+' : '';
+  return `${sign}${String(rounded).replace(/\.0$/, '')}%`;
+}
+function ptText(value) {
+  return String(value).replace('.', ',');
+}
+function formatPercentPt(value) {
+  const formatted = formatPercent(value);
+  return formatted === '—' ? formatted : ptText(formatted);
+}
+function formatDiffAbsPt(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, 1);
+  return `${ptText(String(Math.abs(rounded)).replace(/\.0$/, ''))}%`;
+}
+function getSimPoints(sim) {
+  const num = Number(sim?.pontosObtidos ?? sim?.desempenhoPainel?.totalPontosObtidos);
+  return Number.isFinite(num) ? roundTo(num, 1) : null;
+}
+function getSimPct(sim) {
+  const acertos = Number(sim?.acertosTotal ?? sim?.desempenhoPainel?.totalAcertos);
+  const questoes = Number(sim?.questoesTotal ?? sim?.desempenhoPainel?.totalQuestoes);
+  if (Number.isFinite(acertos) && Number.isFinite(questoes) && questoes > 0) {
+    return roundTo((acertos / questoes) * 100, 1);
+  }
+  const pct = Number(sim?.pct);
+  return Number.isFinite(pct) ? roundTo(pct, 1) : null;
+}
+function renderDeltaInline(value, label) {
+  if (value == null) {
+    return `<span style="color:var(--text3)">${label}</span>`;
+  }
+  const num = Number(value);
+  const color = num > 0 ? 'var(--green)' : num < 0 ? 'var(--red)' : 'var(--text3)';
+  const arrow = num > 0 ? '↑' : num < 0 ? '↓' : '•';
+  return `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap"><span style="color:${color};font-weight:800">${arrow} ${formatDiffAbsPt(num)}</span><span style="color:var(--text3)">${label}</span></span>`;
+}
+function renderPerformanceDeltaInline(pctDelta, pointsDelta, label) {
+  const pieces = [];
+  if (pctDelta != null) {
+    const pctNum = Number(pctDelta);
+    const pctColor = pctNum > 0 ? 'var(--green)' : pctNum < 0 ? 'var(--red)' : 'var(--text3)';
+    const pctArrow = pctNum > 0 ? '↑' : pctNum < 0 ? '↓' : '•';
+    pieces.push(`<span style="color:${pctColor};font-weight:800">${pctArrow} ${formatDiffAbsPt(pctNum)}</span>`);
+  }
+  if (pointsDelta != null) {
+    const pointsNum = Number(pointsDelta);
+    const pointsColor = pointsNum > 0 ? 'var(--green)' : pointsNum < 0 ? 'var(--red)' : 'var(--text3)';
+    const pointsArrow = pointsNum > 0 ? '↑' : pointsNum < 0 ? '↓' : '•';
+    pieces.push(`<span style="color:${pointsColor};font-weight:800">${pointsArrow} ${formatPointsPt(Math.abs(pointsNum))} pts</span>`);
+  }
+  if (!pieces.length) {
+    return `<span style="color:var(--text3)">${label}</span>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap">${pieces.join('<span style="color:var(--text3)">e</span>')}<span style="color:var(--text3)">${label}</span></span>`;
+}
+function renderMateriaDeltaByMode(metric, valueDelta, pointsDelta, label) {
+  if (metric === 'pontos') {
+    if (pointsDelta == null) return `<span style="color:var(--text3)">${label}</span>`;
+    const num = Number(pointsDelta);
+    const color = num > 0 ? 'var(--green)' : num < 0 ? 'var(--red)' : 'var(--text3)';
+    const arrow = num > 0 ? '↑' : num < 0 ? '↓' : '•';
+    return `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap"><span style="color:${color};font-weight:800">${arrow} ${formatPointsPt(Math.abs(num))} pts</span><span style="color:var(--text3)">${label}</span></span>`;
+  }
+  if (metric === 'acertos') {
+    const pieces = [];
+    if (valueDelta != null) {
+      const num = Number(valueDelta);
+      const color = num > 0 ? 'var(--green)' : num < 0 ? 'var(--red)' : 'var(--text3)';
+      const arrow = num > 0 ? '↑' : num < 0 ? '↓' : '•';
+      const abs = formatPlainNumber(Math.abs(num), 1);
+      pieces.push(`<span style="color:${color};font-weight:800">${arrow} ${abs} questões</span>`);
+    }
+    if (pointsDelta != null) {
+      const num = Number(pointsDelta);
+      const color = num > 0 ? 'var(--green)' : num < 0 ? 'var(--red)' : 'var(--text3)';
+      const arrow = num > 0 ? '↑' : num < 0 ? '↓' : '•';
+      pieces.push(`<span style="color:${color};font-weight:800">${arrow} ${formatPointsPt(Math.abs(num))} pts</span>`);
+    }
+    if (!pieces.length) return `<span style="color:var(--text3)">${label}</span>`;
+    return `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap">${pieces.join('<span style="color:var(--text3)">e</span>')}<span style="color:var(--text3)">${label}</span></span>`;
+  }
+  return renderPerformanceDeltaInline(valueDelta, pointsDelta, label);
+}
+function highlightInput(el) {
+  if (!el) return;
+  const original = el.style.borderColor;
+  el.style.borderColor = 'var(--red)';
+  setTimeout(() => { el.style.borderColor = original || 'var(--border2)'; }, 1200);
+}
+function loadPainelProvaConfig() {
+  let config = { groups: [] };
+  try {
+    const saved = localStorage.getItem('ct_config_prova_' + cId);
+    if (!saved) return config;
+    const parsed = JSON.parse(saved);
+    if (parsed && (parsed.geral || parsed.especifico)) {
+      if (parsed.geral && parsed.geral.length) config.groups.push({ id: 'mig_g', name: 'Conhecimentos Gerais', items: parsed.geral });
+      if (parsed.especifico && parsed.especifico.length) config.groups.push({ id: 'mig_e', name: 'Conhecimentos Específicos', items: parsed.especifico });
+      localStorage.setItem('ct_config_prova_' + cId, JSON.stringify(config));
+      return config;
+    }
+    if (parsed && Array.isArray(parsed.groups)) config = parsed;
+  } catch (e) {}
+  return config;
+}
+function getPainelMateriaInfo() {
+  if (_painelMateriaInfoCache) return _painelMateriaInfoCache;
+
+  const config = loadPainelProvaConfig();
+  const materias = CT.getMaterias(cId);
+  const materiasMap = new Map(materias.map(m => [String(m.id), m]));
+  const entries = [];
+  const metaByMateria = new Map();
+  let totalQuestoes = 0;
+  let totalPontos = 0;
+  let ignoredBlocks = 0;
+  let ignoredPontos = 0;
+
+  (config.groups || []).forEach((group, groupIndex) => {
+    if (group.type === 'redacao') {
+      const pts = Number(group.pts || 0);
+      if (!group.isClassificatoriaOnly && pts > 0) {
+        ignoredBlocks += 1;
+        ignoredPontos += pts;
+      }
+      return;
+    }
+
+    if (Array.isArray(group.items) && group.items.length) {
+      group.items.forEach((item, itemIndex) => {
+        const materia = materiasMap.get(String(item.id));
+        const questoes = Math.max(0, Number(item.q || 0));
+        const peso = Math.max(0, Number(item.w || 0));
+        if (!materia || questoes <= 0) return;
+
+        const pontosMax = roundTo(questoes * peso, 1);
+        const key = `${group.id || 'g' + groupIndex}::${String(item.id)}::${itemIndex}`;
+        entries.push({
+          key,
+          materiaId: String(item.id),
+          nome: materia.nome,
+          groupName: group.name || 'Bloco',
+          questoes,
+          peso,
+          pontosMax
+        });
+        totalQuestoes += questoes;
+        totalPontos += pontosMax;
+
+        const atual = metaByMateria.get(String(item.id)) || { materiaId: String(item.id), nome: materia.nome, questoes: 0, pontosMax: 0 };
+        atual.questoes += questoes;
+        atual.pontosMax = roundTo(atual.pontosMax + pontosMax, 1);
+        metaByMateria.set(String(item.id), atual);
+      });
+      return;
+    }
+
+    const blocoQuestoes = Math.max(0, Number(group.q || 0));
+    const blocoPeso = Math.max(0, Number(group.w || 0));
+    if (blocoQuestoes > 0) {
+      ignoredBlocks += 1;
+      ignoredPontos += blocoQuestoes * blocoPeso;
+    }
+  });
+
+  _painelMateriaInfoCache = {
+    hasConfig: !!((config.groups || []).length),
+    entries,
+    totalQuestoes,
+    totalPontos: roundTo(totalPontos, 1),
+    ignoredBlocks,
+    ignoredPontos: roundTo(ignoredPontos, 1),
+    metaByMateria
+  };
+  return _painelMateriaInfoCache;
+}
+function getMateriaOptionsFromData(simsFeitos) {
+  const ordemAtual = new Map(CT.getMaterias(cId).map((m, index) => [String(m.id), index]));
+  const nomes = new Map();
+
+  simsFeitos.forEach(sim => {
+    if (sim && sim.desempenhoPainel && Array.isArray(sim.desempenhoPainel.materias)) {
+      sim.desempenhoPainel.materias.forEach(item => {
+        if (!item || item.materiaId == null) return;
+        nomes.set(String(item.materiaId), item.nome || nomes.get(String(item.materiaId)) || 'Matéria');
+      });
+    } else if (sim && sim.notasMaterias && typeof sim.notasMaterias === 'object') {
+      Object.keys(sim.notasMaterias).forEach(id => {
+        const materia = CT.getMateria(id);
+        nomes.set(String(id), materia ? materia.nome : (nomes.get(String(id)) || 'Matéria'));
+      });
+    }
+  });
+
+  return Array.from(nomes.entries())
+    .sort((a, b) => {
+      const orderA = ordemAtual.has(a[0]) ? ordemAtual.get(a[0]) : 9999;
+      const orderB = ordemAtual.has(b[0]) ? ordemAtual.get(b[0]) : 9999;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a[1]).localeCompare(String(b[1]), 'pt-BR');
+    })
+    .map(([id, nome]) => ({ id, nome }));
+}
+function getMateriaMetricSnapshot(sim, materiaId, metric, metaAtual) {
+  let materia = null;
+  if (sim && sim.desempenhoPainel && Array.isArray(sim.desempenhoPainel.materias)) {
+    materia = sim.desempenhoPainel.materias.find(item => String(item.materiaId) === String(materiaId)) || null;
+  } else if (metric === 'pct' && sim && sim.notasMaterias && sim.notasMaterias[materiaId] != null) {
+    materia = { pct: Number(sim.notasMaterias[materiaId]) };
+  }
+  if (!materia) return null;
+
+  const value = metric === 'acertos'
+    ? Number(materia.acertos)
+    : metric === 'pontos'
+      ? Number(materia.pontosObtidos)
+      : Number(materia.pct);
+  if (!Number.isFinite(value)) return null;
+
+  const targetValue = metric === 'pct'
+    ? 100
+    : metric === 'acertos'
+      ? Number(materia.questoes ?? metaAtual?.questoes)
+      : Number(materia.pontosMax ?? metaAtual?.pontosMax);
+
+  return {
+    sim,
+    value: roundTo(value, 1),
+    pctValue: Number.isFinite(Number(materia.pct)) ? roundTo(Number(materia.pct), 1) : null,
+    pointsValue: Number.isFinite(Number(materia.pontosObtidos)) ? roundTo(Number(materia.pontosObtidos), 1) : null,
+    pctRef: metricValueToPct(metric, value, targetValue),
+    targetValue
+  };
+}
+function buildMateriaOverviewState(metric) {
+  const painelInfo = getPainelMateriaInfo();
+  const ordemAtual = new Map(CT.getMaterias(cId).map((m, index) => [String(m.id), index]));
+  const opcoesMap = new Map(getMateriaOptionsFromData(_simuladosFeitosCache).map(item => [String(item.id), item.nome]));
+
+  painelInfo.metaByMateria.forEach((meta, id) => {
+    if (!opcoesMap.has(String(id))) opcoesMap.set(String(id), meta.nome || 'Matéria');
+  });
+
+  const items = Array.from(opcoesMap.entries())
+    .sort((a, b) => {
+      const orderA = ordemAtual.has(a[0]) ? ordemAtual.get(a[0]) : 9999;
+      const orderB = ordemAtual.has(b[0]) ? ordemAtual.get(b[0]) : 9999;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a[1]).localeCompare(String(b[1]), 'pt-BR');
+    })
+    .map(([materiaId, nome]) => {
+      const metaAtual = painelInfo.metaByMateria.get(String(materiaId)) || null;
+      const history = _simuladosFeitosCache
+        .map(sim => getMateriaMetricSnapshot(sim, materiaId, metric, metaAtual))
+        .filter(Boolean);
+
+      if (!history.length) return null;
+
+      const ultimo = history[history.length - 1];
+      const anterior = history.length >= 2 ? history[history.length - 2] : null;
+      const media = roundTo(history.reduce((acc, item) => acc + Number(item.value || 0), 0) / history.length, 1);
+      const deltaAnterior = anterior ? roundTo(Number(ultimo.value || 0) - Number(anterior.value || 0), 1) : null;
+      const deltaMedia = roundTo(Number(ultimo.value || 0) - Number(media || 0), 1);
+      const deltaPointsAnterior = anterior && ultimo.pointsValue != null && anterior.pointsValue != null
+        ? roundTo(Number(ultimo.pointsValue || 0) - Number(anterior.pointsValue || 0), 1)
+        : null;
+      const mediaPointsList = history.map(item => item.pointsValue).filter(value => value != null);
+      const mediaPoints = mediaPointsList.length ? roundTo(mediaPointsList.reduce((acc, value) => acc + Number(value || 0), 0) / mediaPointsList.length, 1) : null;
+      const deltaPointsMedia = ultimo.pointsValue != null && mediaPoints != null
+        ? roundTo(Number(ultimo.pointsValue || 0) - Number(mediaPoints || 0), 1)
+        : null;
+
+      return {
+        materiaId: String(materiaId),
+        nome,
+        ultimo,
+        anterior,
+        media,
+        deltaAnterior,
+        deltaMedia,
+        mediaPoints,
+        deltaPointsAnterior,
+        deltaPointsMedia,
+        pctRef: ultimo.pctRef,
+        targetValue: ultimo.targetValue ?? (metric === 'pct' ? 100 : null),
+        historyCount: history.length
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      const pctA = Number.isFinite(Number(a.pctRef)) ? Number(a.pctRef) : -1;
+      const pctB = Number.isFinite(Number(b.pctRef)) ? Number(b.pctRef) : -1;
+      if (pctB !== pctA) return pctB - pctA;
+      return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+    });
+
+  const maxValue = Math.max(
+    ...items.flatMap(item => [item.ultimo?.value, item.anterior?.value]).filter(value => Number.isFinite(Number(value))).map(Number),
+    metric === 'pct' ? 100 : 0
+  );
+
+  return {
+    metric,
+    items,
+    hasData: !!items.length,
+    maxAxis: metric === 'pct' ? 100 : Math.max(5, roundTo(maxValue * 1.18, metric === 'pontos' ? 1 : 0))
+  };
+}
+function renderMateriaResumo(chartState, metric) {
+  const resumo = document.getElementById('simMateriaResumo');
+  if (!resumo) return;
+
+  if (!chartState.hasData) {
+    resumo.innerHTML = '';
+    return;
+  }
+
+  const theme = themePalette();
+  const ordered = [...chartState.items].sort((a, b) => {
+    const pctA = Number.isFinite(Number(a.pctRef)) ? Number(a.pctRef) : -1;
+    const pctB = Number.isFinite(Number(b.pctRef)) ? Number(b.pctRef) : -1;
+    if (pctB !== pctA) return pctB - pctA;
+    return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+  });
+  const topFacilidade = ordered.slice(0, 3);
+  const topDificuldade = [...ordered].reverse().slice(0, 3);
+
+  function renderResumoMaterias(titulo, color, items, emptyText) {
+    return `
+      <div class="sim-materia-card">
+        <div class="sim-materia-label" style="color:${color}">${titulo}</div>
+        ${items.length ? items.map(item => `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid ${alphaColor(theme.text3, 0.12)}">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nome}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.45">
+                ${item.deltaAnterior == null
+                  ? 'Sem simulado anterior'
+                  : renderMateriaDeltaByMode(metric, item.deltaAnterior, item.deltaPointsAnterior, 'vs simulado anterior')}
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;font-family:var(--mono);font-size:15px;font-weight:800;color:${scoreColorFromPct(item.pctRef, theme)}">
+                <span>${item.ultimo.pctValue != null ? formatPercentPt(item.ultimo.pctValue) : formatMetricValue(metric, item.ultimo.value)}</span>
+                ${item.ultimo.pointsValue != null ? `<span style="font-size:12px;color:var(--text2)">${formatPointsPt(item.ultimo.pointsValue)} pts</span>` : ''}
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:3px">${item.historyCount} sim.</div>
+            </div>
+          </div>
+        `).join('') : `<div class="sim-materia-empty">${emptyText}</div>`}
+      </div>
+    `;
+  }
+
+  resumo.innerHTML = [
+    renderResumoMaterias('Maior facilidade', theme.scoreGood || theme.green, topFacilidade, 'Registre acertos por matéria para aparecer aqui.'),
+    renderResumoMaterias('Maior dificuldade', theme.orange, topDificuldade, 'Registre acertos por matéria para aparecer aqui.')
+  ].join('');
+}
+function renderGraficoMateria() {
+  const wrap = document.getElementById('simMateriaChartWrap');
+  const metricSelect = document.getElementById('simMateriaMetric');
+  const stage = document.getElementById('simMateriaChartStage');
+  const sub = document.getElementById('simMateriaChartSub');
+  const resumo = document.getElementById('simMateriaResumo');
+  if (!wrap || !metricSelect || !stage || !sub) return;
+
+  const metric = metricSelect.value || 'pct';
+  const chartState = buildMateriaOverviewState(metric);
+
+  wrap.style.display = '';
+  if (_chartMateria) {
+    _chartMateria.destroy();
+    _chartMateria = null;
+  }
+
+  if (!chartState.hasData) {
+    stage.style.height = '260px';
+    stage.innerHTML = '<div class="sim-chart-empty">Ainda não há dados detalhados por matéria nos simulados registrados.</div>';
+    sub.textContent = 'Registre acertos por matéria para liberar o raio-x completo.';
+    if (resumo) resumo.innerHTML = '';
+    return;
+  }
+
+  stage.style.height = Math.max(320, Math.min(620, 110 + (chartState.items.length * 48))) + 'px';
+  stage.innerHTML = '<canvas id="chartSimMateria"></canvas>';
+  const totalComAnterior = chartState.items.filter(item => item.deltaAnterior != null).length;
+  sub.textContent = [
+    `${chartState.items.length} matéria(s) analisadas`,
+    metric === 'pct' ? 'comparativo por percentual' : metric === 'acertos' ? 'comparativo por acertos' : 'comparativo por pontos',
+    `${totalComAnterior} com comparação ao simulado anterior`
+  ].join(' • ');
+
+  const theme = themePalette();
+  const ctx = document.getElementById('chartSimMateria').getContext('2d');
+  const labels = chartState.items.map(item => item.nome.length > 26 ? item.nome.slice(0, 26) + '...' : item.nome);
+  const temAnterior = chartState.items.some(item => item.anterior);
+  const valueLabelPlugin = {
+    id: 'simMateriaOverviewLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      ctx2.font = '700 10px Inter';
+      ctx2.textBaseline = 'middle';
+      meta.data.forEach((bar, index) => {
+        const item = chartState.items[index];
+        if (!item || !Number.isFinite(Number(item.ultimo?.value))) return;
+        const chartArea = chart.chartArea;
+        const x = Math.min(bar.x + 10, chartArea.right - 10);
+        ctx2.textAlign = x >= chartArea.right - 24 ? 'right' : 'left';
+        ctx2.fillStyle = scoreColorFromPct(item.pctRef, theme);
+        ctx2.fillText(formatMetricValue(metric, item.ultimo.value), x, bar.y);
+      });
+      ctx2.restore();
+    }
+  };
+
+  const datasets = [{
+    label: 'Último simulado',
+    data: chartState.items.map(item => item.ultimo.value),
+    backgroundColor: chartState.items.map(item => scoreFillFromPct(item.pctRef, theme, 0.82)),
+    borderColor: chartState.items.map(item => scoreColorFromPct(item.pctRef, theme)),
+    borderWidth: 1.5,
+    borderRadius: 8,
+    borderSkipped: false,
+    barThickness: 14
+  }];
+
+  if (temAnterior) {
+    datasets.push({
+      label: 'Simulado anterior',
+      data: chartState.items.map(item => item.anterior ? item.anterior.value : null),
+      backgroundColor: alphaColor(theme.accent2, 0.34),
+      borderColor: alphaColor(theme.accent2, 0.92),
+      borderWidth: 1.3,
+      borderRadius: 8,
+      borderSkipped: false,
+      barThickness: 12
+    });
+  }
+
+  _chartMateria = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    plugins: [valueLabelPlugin],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: theme.chartAxisStrong, font: { size: 11 }, usePointStyle: true, boxWidth: 10, boxHeight: 10 }
+        },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          padding: 12,
+          cornerRadius: 10,
+          callbacks: {
+            title(items) {
+              return chartState.items[items[0].dataIndex]?.nome || 'Matéria';
+            },
+            label(ctx2) {
+              return ` ${ctx2.dataset.label}: ${formatMetricValue(metric, ctx2.raw)}`;
+            },
+            afterBody(items) {
+              const item = chartState.items[items[0].dataIndex];
+              if (!item) return [];
+              const extra = [];
+              if (item.deltaAnterior != null) extra.push(`Último vs. anterior: ${formatMetricDelta(metric, item.deltaAnterior)}`);
+              if (item.pctRef != null && metric !== 'pct') extra.push(`Aproveitamento atual: ${formatPercent(item.pctRef)}`);
+              return extra;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: theme.chartAxis,
+            font: { size: 10 },
+            callback(value) {
+              if (metric === 'pct') return value + '%';
+              if (metric === 'pontos') return formatPlainNumber(value, 1);
+              return value;
+            }
+          },
+          grid: { display: false },
+          border: { display: false },
+          min: 0,
+          max: metric === 'pct' ? 100 : chartState.maxAxis
+        },
+        y: {
+          ticks: { color: theme.chartAxisStrong, font: { size: 11 } },
+          grid: { display: false },
+          border: { display: false }
+        }
+      }
+    }
+  });
+  renderMateriaResumo(chartState, metric);
+}
+function renderGraficoGeral(simsFeitos, tendencia, media, notaCorte) {
+  const wrap = document.getElementById('simChartWrap');
+  const stage = document.getElementById('chartSimStage');
+  const sub = document.getElementById('simChartSub');
+  if (!wrap || !stage || !sub) return;
+
+  wrap.style.display = '';
+  if (_chartSim) {
+    _chartSim.destroy();
+    _chartSim = null;
+  }
+
+  if (!simsFeitos.length) {
+    stage.style.height = '320px';
+    stage.innerHTML = '<div class="sim-chart-empty">Registre seu primeiro simulado para visualizar a evolução da nota.</div>';
+    sub.textContent = 'Sem dados suficientes ainda.';
+    return;
+  }
+
+  const ultimo = simsFeitos[simsFeitos.length - 1] || null;
+  const ultimoPct = getSimPct(ultimo);
+  const deltaMedia = ultimoPct != null && media != null ? roundTo(ultimoPct - Number(media || 0), 1) : null;
+  const ultimoPontos = getSimPoints(ultimo);
+  const pontosList = simsFeitos.map(sim => getSimPoints(sim)).filter(value => value != null);
+  const mediaPontos = pontosList.length ? roundTo(pontosList.reduce((acc, value) => acc + Number(value || 0), 0) / pontosList.length, 1) : null;
+  const anterior = simsFeitos.length >= 2 ? simsFeitos[simsFeitos.length - 2] : null;
+  const anteriorPct = getSimPct(anterior);
+  const anteriorPontos = getSimPoints(anterior);
+  const deltaPontosAnterior = ultimoPontos != null && anteriorPontos != null ? roundTo(ultimoPontos - anteriorPontos, 1) : null;
+  const deltaPctAnterior = ultimoPct != null && anteriorPct != null ? roundTo(ultimoPct - anteriorPct, 1) : null;
+  const deltaPontosMedia = ultimoPontos != null && mediaPontos != null ? roundTo(ultimoPontos - mediaPontos, 1) : null;
+  const theme = themePalette();
+
+  stage.style.height = '300px';
+  stage.innerHTML = '<canvas id="chartSim"></canvas>';
+  sub.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div>
+        <span style="color:var(--text3)">Desempenho do Simulado mais recente:</span>
+        <span style="color:${ultimoPct != null ? scoreColorFromPct(ultimoPct, theme) : 'var(--text3)'};font-weight:800">${ultimoPct != null ? formatPercentPt(ultimoPct) : '—'}</span>
+        ${ultimoPontos != null ? `<span style="color:var(--text3)">•</span> <span style="color:var(--text2);font-weight:700">${formatPointsPt(ultimoPontos)} pts</span>` : ''}
+      </div>
+      <div style="font-size:11px">${renderPerformanceDeltaInline(deltaPctAnterior, deltaPontosAnterior, 'em relação ao anterior')}</div>
+      <div style="font-size:11px">${renderPerformanceDeltaInline(deltaMedia, deltaPontosMedia, 'em relação à média geral')}</div>
+    </div>
+  `;
+
+  const labels = simsFeitos.map((sim, index) => {
+    const nome = (sim.nome || '').trim();
+    return nome ? (nome.length > 16 ? nome.slice(0, 16) + '...' : nome) : `Simulado ${index + 1}`;
+  });
+  const notas = simsFeitos.map(sim => {
+    const pct = getSimPct(sim);
+    return pct != null ? pct : 0;
+  });
+  const ctx = document.getElementById('chartSim').getContext('2d');
+  const valueLabelPlugin = {
+    id: 'simuladosBarLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      ctx2.textAlign = 'center';
+      ctx2.textBaseline = 'bottom';
+      ctx2.font = '700 11px Inter';
+      meta.data.forEach((bar, index) => {
+        ctx2.fillStyle = scoreColorFromPct(notas[index], theme);
+        ctx2.fillText(formatPercent(notas[index]), bar.x, bar.y - 8);
+      });
+      ctx2.restore();
+    }
+  };
+
+  const datasets = [{
+    type: 'bar',
+    label: 'Nota',
+    data: notas,
+    backgroundColor: notas.map(value => scoreFillFromPct(value, theme, 0.82)),
+    hoverBackgroundColor: notas.map(value => scoreFillFromPct(value, theme, 0.92)),
+    borderColor: notas.map(value => scoreColorFromPct(value, theme)),
+    borderWidth: 1.5,
+    borderRadius: 10,
+    borderSkipped: false,
+    maxBarThickness: 48
+  }];
+
+  if (notaCorte != null) {
+    datasets.push({
+      type: 'line',
+      label: 'Corte',
+      data: Array(notas.length).fill(notaCorte),
+      borderColor: alphaColor(theme.yellow, 0.9),
+      borderWidth: 2,
+      borderDash: [8, 6],
+      pointRadius: 0,
+      tension: 0
+    });
+  }
+
+  if (media != null) {
+    datasets.push({
+      type: 'line',
+      label: 'Média',
+      data: Array(notas.length).fill(media),
+      borderColor: alphaColor(theme.accent2, 0.92),
+      borderWidth: 2,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      tension: 0
+    });
+  }
+
+  _chartSim = new Chart(ctx, {
+    data: { labels, datasets },
+    plugins: [valueLabelPlugin],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 20, right: 8, left: 8, bottom: 0 } },
+      plugins: {
+        legend: {
+          display: notaCorte != null || media != null,
+          labels: { color: theme.chartAxisStrong, font: { size: 11 }, usePointStyle: true, boxWidth: 10, boxHeight: 10 }
+        },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          padding: 12,
+          cornerRadius: 10,
+          callbacks: {
+            title(items) {
+              const item = simsFeitos[items[0].dataIndex];
+              return `${item.nome || ('Simulado ' + (items[0].dataIndex + 1))} - ${formatSimDate(item.criadoEm || CT._today())}`;
+            },
+            label(ctx2) {
+              if (ctx2.dataset.label === 'Corte') return ` Nota de corte: ${formatPercent(ctx2.raw)}`;
+              if (ctx2.dataset.label === 'Média') return ` Média geral: ${formatPercent(ctx2.raw)}`;
+              return ` Nota: ${formatPercent(ctx2.raw)}`;
+            },
+            afterBody(items) {
+              const index = items[0].dataIndex;
+              const atual = notas[index];
+              const anteriorNota = index > 0 ? notas[index - 1] : null;
+              if (anteriorNota == null) return [];
+              return [`Variação: ${formatDiff(roundTo(atual - anteriorNota, 1))} vs. anterior`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: theme.chartAxisStrong, font: { size: 10 }, maxRotation: 0, minRotation: 0 },
+          grid: { display: false },
+          border: { display: false }
+        },
+        y: {
+          ticks: { color: theme.chartAxis, font: { size: 10 }, callback: value => value + '%' },
+          grid: { display: false },
+          border: { display: false },
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+}
+function renderListaSimuladosDetalhada(sims, simsFeitos, simsPendentes) {
+  const lista = document.getElementById('listaSimulados');
+  if (!lista) return;
+
+  if (!sims.length) {
+    lista.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:36px;margin-bottom:12px">📋</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px">Nenhum simulado registrado</div>
+      <div style="font-size:12px">Clique em "＋ Registrar simulado" para começar.</div>
+    </div>`;
+    return;
+  }
+
+  const pendentesHtml = simsPendentes.length ? `
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:10px">Para fazer</div>
+    ${[...simsPendentes].reverse().map(sim => {
+      const dataFmt = formatSimDate(sim.criadoEm || CT._today());
+      const hasLink = !!(sim.link && sim.link.trim());
+      return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:88px">${dataFmt}</div>
+        <div style="flex:1;min-width:180px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div style="font-size:12px;font-weight:700;color:var(--text)">${sim.nome || 'Simulado pré-feito'}</div>
+            <span style="padding:3px 8px;border-radius:999px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.22);color:var(--accent2);font-size:10px;font-weight:700">PENDENTE</span>
+          </div>
+          ${sim.obs ? `<div style="font-size:12px;color:var(--text3);margin-top:2px">${sim.obs}</div>` : ''}
+          ${hasLink ? `<div style="font-size:11px;color:var(--accent);margin-top:5px;word-break:break-all">🔗 ${sim.link}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap">
+          ${hasLink ? `<a href="${sim.link}" target="_blank" rel="noopener noreferrer"
+            style="padding:8px 12px;border:1px solid rgba(62,207,142,0.28);border-radius:8px;background:rgba(62,207,142,0.1);color:var(--green);text-decoration:none;font-family:var(--sans);font-size:12px;font-weight:700">▶ Fazer Simulado</a>` : ''}
+          <button onclick="abrirModalSimulado('${sim.id}', true)"
+            style="padding:8px 12px;border:1px solid rgba(79,142,247,0.24);border-radius:8px;background:rgba(79,142,247,0.08);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer">✓ Registrar resultado</button>
+          <button onclick="abrirModalSimulado('${sim.id}')"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✏️</button>
+          <button data-sid="${sim.id}" onclick="deletarSimulado(this.dataset.sid)"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+        </div>
+      </div>`;
+    }).join('')}
+  ` : '';
+
+  const feitosHtml = simsFeitos.length ? `
+    <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin:${simsPendentes.length ? '18px' : '0'} 0 10px">Realizados</div>
+    ${[...simsFeitos].reverse().map((sim, index, arr) => {
+      const prev = arr[index + 1];
+      const simPct = getSimPct(sim);
+      const prevPct = getSimPct(prev);
+      const diff = prevPct != null && simPct != null ? roundTo(simPct - prevPct, 1) : null;
+      const diffStr = diff != null
+        ? `<span style="font-size:12px;font-weight:600;color:${diff >= 0 ? 'var(--green)' : 'var(--red)'}">${diff >= 0 ? '↑ ' + formatDiff(diff) : '↓ ' + String(roundTo(Math.abs(diff), 1)).replace(/\.0$/, '') + '%'}</span>`
+        : '<span style="font-size:12px;color:var(--text3)">—</span>';
+      const dataFmt = formatSimDate(sim.criadoEm || CT._today());
+      const detalhado = sim.desempenhoPainel
+        ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">${sim.desempenhoPainel.totalAcertos}/${sim.desempenhoPainel.totalQuestoes} acertos • ${formatPoints(sim.desempenhoPainel.totalPontosObtidos)}/${formatPoints(sim.desempenhoPainel.totalPontosMax)} pts <span style="color:var(--accent);font-weight:700;margin-left:6px">RAIO-X</span></div>`
+        : '';
+      return `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:88px">${dataFmt}</div>
+        <div style="flex:1;min-width:140px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${sim.nome || 'Simulado'}</div>
+          ${sim.obs ? `<div style="font-size:12px;color:var(--text3);margin-top:2px">${sim.obs}</div>` : ''}
+          ${detalhado}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          ${diffStr}
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:${pctColor(simPct)}">${formatPercent(simPct)}</div>
+          <button onclick="abrirModalSimulado('${sim.id}')"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✏️</button>
+          <button data-sid="${sim.id}" onclick="deletarSimulado(this.dataset.sid)"
+            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer"
+            onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+        </div>
+      </div>`;
+    }).join('')}
+  ` : '';
+
+  lista.innerHTML = pendentesHtml + feitosHtml;
+}
+render = function() {
+  _painelMateriaInfoCache = null;
+
+  const concurso = CT.getConcurso(cId);
+  if (!concurso) return;
+
+  const nomeEl = document.querySelector('.concurso-nome');
+  const bancaEl = document.querySelector('.concurso-banca');
+  if (nomeEl) nomeEl.textContent = concurso.nome;
+  if (bancaEl) bancaEl.textContent = concurso.banca || '—';
+
+  const sims = CT.getSimulados(cId).sort((a, b) => (a.criadoEm || '').localeCompare(b.criadoEm || ''));
+  const simsFeitos = sims.filter(sim => (sim.tipo || 'realizado') === 'realizado' && getSimPct(sim) != null);
+  const simsPendentes = sims.filter(sim => (sim.tipo || 'realizado') !== 'realizado' || getSimPct(sim) == null);
+  _simuladosFeitosCache = simsFeitos;
+
+  const notaCorte = concurso.notaCorte != null ? Number(concurso.notaCorte) : null;
+  const melhor = simsFeitos.length ? Math.max(...simsFeitos.map(sim => Number(getSimPct(sim) || 0))) : null;
+  const ultimo = simsFeitos.length ? simsFeitos[simsFeitos.length - 1] : null;
+  const ultimoPct = getSimPct(ultimo);
+  const media = simsFeitos.length ? roundTo(simsFeitos.reduce((acc, sim) => acc + Number(getSimPct(sim) || 0), 0) / simsFeitos.length, 1) : null;
+  const tendencia = simsFeitos.length >= 2 ? roundTo(Number(getSimPct(simsFeitos[simsFeitos.length - 1]) || 0) - Number(getSimPct(simsFeitos[simsFeitos.length - 2]) || 0), 1) : null;
+
+  document.getElementById('simSub').textContent = `${concurso.nome} — ${simsFeitos.length} realizado(s) • ${simsPendentes.length} pendente(s)`;
+
+  let diffMediaHtml = '';
+  if (ultimoPct != null && media != null) {
+    const diffMedia = roundTo(ultimoPct - media, 1);
+    const suffix = `<span style="font-size:10px;font-family:var(--sans);font-weight:600;color:var(--text3);margin-left:4px">em relação à média geral</span>`;
+    if (diffMedia > 0) diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--green);margin-top:6px;font-family:var(--mono)">↑ ${formatDiff(diffMedia)}${suffix}</div>`;
+    else if (diffMedia < 0) diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--red);margin-top:6px;font-family:var(--mono)">↓ ${String(roundTo(Math.abs(diffMedia), 1)).replace(/\.0$/, '')}%${suffix}</div>`;
+    else diffMediaHtml = `<div style="font-size:12px;font-weight:700;color:var(--text3);margin-top:6px;font-family:var(--mono)">=${suffix}</div>`;
+  }
+
+  document.getElementById('simStats').innerHTML = [
+    { icon: '🏆', val: melhor != null ? formatPercent(melhor) : '—', label: 'Melhor nota', color: melhor != null ? pctColor(melhor) : 'var(--text3)' },
+    { icon: '📊', val: ultimoPct != null ? formatPercent(ultimoPct) : '—', label: 'Último simulado', color: ultimoPct != null ? pctColor(ultimoPct) : 'var(--text3)', extra: diffMediaHtml },
+    { icon: '📈', val: media != null ? formatPercent(media) : '—', label: 'Média geral', color: media != null ? pctColor(media) : 'var(--text3)' },
+    { icon: '🎯', val: notaCorte != null ? formatPercent(notaCorte) : '—', label: 'Nota de corte <span style="font-size:11px;opacity:0.7">✏️</span>', color: 'var(--yellow)', action: 'abrirModalCorte()' }
+  ].map(stat => `
+    <div ${stat.action ? `onclick="${stat.action}"` : ''} class="stat-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;text-align:center;${stat.action ? 'cursor:pointer;transition:all 0.2s' : ''}" ${stat.action ? `onmouseover="this.style.borderColor='var(--yellow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'"` : ''}>
+      <div style="font-size:22px;margin-bottom:6px">${stat.icon}</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${stat.color}">${stat.val}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${stat.label}</div>
+      ${stat.extra || ''}
+    </div>
+  `).join('');
+
+  renderGraficoGeral(simsFeitos, tendencia, media, notaCorte);
+  renderGraficoMateria();
+  renderListaSimuladosDetalhada(sims, simsFeitos, simsPendentes);
+}
+function getModoInicialSimulado(sim, concluirPendente) {
+  const painelInfo = getPainelMateriaInfo();
+  if (!painelInfo.entries.length) return 'manual';
+  if (sim && sim.desempenhoPainel && Array.isArray(sim.desempenhoPainel.items) && sim.desempenhoPainel.items.length) return 'automatico';
+  if (sim && !concluirPendente) return 'manual';
+  return 'automatico';
+}
+function buildPainelAutoRowsHTML(sim, painelInfo) {
+  const snapMap = new Map(((sim && sim.desempenhoPainel && Array.isArray(sim.desempenhoPainel.items)) ? sim.desempenhoPainel.items : []).map(item => [item.key, item]));
+  return painelInfo.entries.map((entry, index) => {
+    const snap = snapMap.get(entry.key);
+    return `
+      <div style="border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg3);margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text);word-break:break-word">${entry.nome}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">${entry.groupName} • ${entry.questoes} questões • peso ${String(entry.peso).replace('.', ',')} • máximo ${formatPoints(entry.pontosMax)} pts</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="spaInput_${index}" type="number" min="0" max="${entry.questoes}" step="1" value="${snap ? snap.acertos : ''}" oninput="atualizarResumoPainelSimulado()"
+              style="width:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none">
+            <span style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.7px">acertos</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="font-size:11px;color:var(--text3)">Percentual <strong id="spaPct_${index}" style="color:var(--text2)">—</strong></div>
+          <div style="font-size:11px;color:var(--text3)">Pontuação <strong id="spaPts_${index}" style="color:var(--text2)">—</strong></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+alternarCamposSimulado = function() {
+  const tipo = document.getElementById('simTipo')?.value || 'realizado';
+  const modo = document.getElementById('simModoCalc')?.value || 'manual';
+  const pendente = tipo === 'pendente';
+  const baseGrid = document.getElementById('simBaseGrid');
+  const dataWrap = document.getElementById('simDataWrap');
+  const linkWrap = document.getElementById('simLinkWrap');
+  const notaWrap = document.getElementById('simNotaWrap');
+  const materiasWrap = document.getElementById('simMateriasWrap');
+  const painelWrap = document.getElementById('simPainelWrap');
+  const modoWrap = document.getElementById('simModoWrap');
+  const obsWrap = document.getElementById('simObsWrap');
+
+  if (baseGrid) baseGrid.style.gridTemplateColumns = pendente ? '1fr' : '1fr 1fr';
+  if (dataWrap) dataWrap.style.display = pendente ? 'none' : '';
+  if (linkWrap) linkWrap.style.display = pendente ? '' : 'none';
+  if (modoWrap) modoWrap.style.display = pendente ? 'none' : '';
+  if (obsWrap) obsWrap.style.display = pendente ? 'none' : '';
+  if (notaWrap) notaWrap.style.display = (!pendente && modo === 'manual') ? '' : 'none';
+  if (materiasWrap) materiasWrap.style.display = (!pendente && modo === 'manual') ? '' : 'none';
+  if (painelWrap) painelWrap.style.display = (!pendente && modo === 'automatico') ? '' : 'none';
+
+  if (!pendente && modo === 'automatico') atualizarResumoPainelSimulado();
+}
+function atualizarResumoPainelSimulado() {
+  const painelInfo = getPainelMateriaInfo();
+  const summary = document.getElementById('simPainelSummary');
+  if (!summary || !painelInfo.entries.length) return;
+
+  let preenchidos = 0;
+  let totalAcertos = 0;
+  let totalPontos = 0;
+
+  painelInfo.entries.forEach((entry, index) => {
+    const input = document.getElementById('spaInput_' + index);
+    const pctEl = document.getElementById('spaPct_' + index);
+    const ptsEl = document.getElementById('spaPts_' + index);
+    if (!input || !pctEl || !ptsEl) return;
+
+    const raw = String(input.value || '').trim();
+    if (!raw) {
+      pctEl.textContent = '—';
+      pctEl.style.color = 'var(--text2)';
+      ptsEl.textContent = '—';
+      ptsEl.style.color = 'var(--text2)';
+      return;
+    }
+
+    let acertos = Number(raw.replace(',', '.'));
+    if (!Number.isFinite(acertos)) {
+      pctEl.textContent = 'Inválido';
+      pctEl.style.color = 'var(--red)';
+      ptsEl.textContent = '—';
+      ptsEl.style.color = 'var(--text2)';
+      return;
+    }
+
+    acertos = Math.max(0, Math.min(entry.questoes, Math.round(acertos)));
+    input.value = String(acertos);
+
+    const pct = entry.questoes ? roundTo((acertos / entry.questoes) * 100, 1) : 0;
+    const pontos = roundTo(acertos * entry.peso, 1);
+    preenchidos += 1;
+    totalAcertos += acertos;
+    totalPontos += pontos;
+    pctEl.textContent = formatPercent(pct);
+    pctEl.style.color = pctColor(pct);
+    ptsEl.textContent = `${formatPoints(pontos)} pts`;
+    ptsEl.style.color = 'var(--text2)';
+  });
+
+  const faltando = painelInfo.entries.length - preenchidos;
+  const pctTotal = painelInfo.totalQuestoes > 0 ? roundTo((totalAcertos / painelInfo.totalQuestoes) * 100, 1) : 0;
+  const pctPonderada = painelInfo.totalPontos > 0 ? roundTo((totalPontos / painelInfo.totalPontos) * 100, 1) : 0;
+  summary.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Resumo automático</div>
+        <div style="font-size:18px;font-weight:800;color:${pctColor(pctTotal)}">${formatPercent(pctTotal)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">${totalAcertos}/${painelInfo.totalQuestoes} acertos • ${formatPoints(totalPontos)}/${formatPoints(painelInfo.totalPontos)} pts</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">Nota ponderada: ${formatPercent(pctPonderada)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.8px">Campos preenchidos</div>
+        <div style="font-size:16px;font-weight:700;color:${faltando === 0 ? 'var(--green)' : 'var(--text)'}">${preenchidos}/${painelInfo.entries.length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${faltando > 0 ? `${faltando} bloco(s) ainda sem acertos` : 'Tudo pronto para calcular'}</div>
+      </div>
+    </div>
+    ${painelInfo.ignoredBlocks ? `<div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6">Obs.: o cálculo automático considera apenas as matérias vinculadas no Painel da Prova. ${painelInfo.ignoredBlocks} bloco(s) sem matéria definida ou redação ficaram fora desta conta.</div>` : ''}
+  `;
+}
+function buildPainelSnapshotFromModal() {
+  const painelInfo = getPainelMateriaInfo();
+  const items = [];
+  const materiasMap = new Map();
+  const notasMaterias = {};
+  let totalAcertos = 0;
+  let totalPontos = 0;
+
+  for (let index = 0; index < painelInfo.entries.length; index++) {
+    const entry = painelInfo.entries[index];
+    const input = document.getElementById('spaInput_' + index);
+    const raw = String(input?.value || '').trim();
+    if (!raw) return { ok: false, field: input, motivo: 'Preencha os acertos de todas as matérias para usar o cálculo automático.' };
+
+    const acertos = Number(raw.replace(',', '.'));
+    if (!Number.isFinite(acertos) || acertos < 0 || acertos > entry.questoes) {
+      return { ok: false, field: input, motivo: `Os acertos de ${entry.nome} devem ficar entre 0 e ${entry.questoes}.` };
+    }
+
+    const acertosNormalizados = Math.round(acertos);
+    const erros = entry.questoes - acertosNormalizados;
+    const pct = entry.questoes ? roundTo((acertosNormalizados / entry.questoes) * 100, 1) : 0;
+    const pontosObtidos = roundTo(acertosNormalizados * entry.peso, 1);
+    items.push({
+      key: entry.key,
+      materiaId: entry.materiaId,
+      nome: entry.nome,
+      groupName: entry.groupName,
+      questoes: entry.questoes,
+      peso: entry.peso,
+      acertos: acertosNormalizados,
+      erros,
+      pct,
+      pontosObtidos,
+      pontosMax: entry.pontosMax
+    });
+    totalAcertos += acertosNormalizados;
+    totalPontos += pontosObtidos;
+
+    const agregado = materiasMap.get(entry.materiaId) || {
+      materiaId: entry.materiaId,
+      nome: entry.nome,
+      questoes: 0,
+      acertos: 0,
+      erros: 0,
+      pontosObtidos: 0,
+      pontosMax: 0
+    };
+    agregado.questoes += entry.questoes;
+    agregado.acertos += acertosNormalizados;
+    agregado.erros += erros;
+    agregado.pontosObtidos = roundTo(agregado.pontosObtidos + pontosObtidos, 1);
+    agregado.pontosMax = roundTo(agregado.pontosMax + entry.pontosMax, 1);
+    materiasMap.set(entry.materiaId, agregado);
+  }
+
+  const materias = Array.from(materiasMap.values()).map(item => {
+    const pct = item.questoes ? roundTo((item.acertos / item.questoes) * 100, 1) : 0;
+    notasMaterias[item.materiaId] = pct;
+    return { ...item, pct };
+  });
+  const pctTotal = painelInfo.totalQuestoes ? roundTo((totalAcertos / painelInfo.totalQuestoes) * 100, 1) : 0;
+  const pctPonderada = painelInfo.totalPontos ? roundTo((totalPontos / painelInfo.totalPontos) * 100, 1) : 0;
+
+  return {
+    ok: true,
+    pct: pctTotal,
+    notasMaterias,
+    snapshot: {
+      version: 1,
+      origem: 'painel-prova',
+      totalAcertos,
+      totalQuestoes: painelInfo.totalQuestoes,
+      totalPontosObtidos: roundTo(totalPontos, 1),
+      totalPontosMax: painelInfo.totalPontos,
+      pct: pctTotal,
+      pctPonderada,
+      ignoredBlocks: painelInfo.ignoredBlocks,
+      ignoredPontos: painelInfo.ignoredPontos,
+      items,
+      materias
+    }
+  };
+}
+abrirModalSimulado = function(simId, concluirPendente = false) {
+  _editandoSimId = simId;
+  const sim = simId ? CT.getSimulados(cId).find(item => item.id === simId) : null;
+  const old = document.getElementById('modalSim');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modalSim';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  const materias = CT.getMaterias(cId);
+  const painelInfo = getPainelMateriaInfo();
+  const tipoInicial = concluirPendente ? 'realizado' : (sim?.tipo || 'realizado');
+  const modoInicial = getModoInicialSimulado(sim, concluirPendente);
+  const notasMatHTML = materias.map(materia => {
+    const val = sim?.notasMaterias?.[materia.id] ?? '';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="flex:1;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${materia.nome}</div>
+      <input id="nm_${materia.id}" type="number" min="0" max="100" value="${val}" placeholder="—"
+        style="width:64px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;text-align:center;outline:none">
+      <span style="font-size:12px;color:var(--text3);width:16px">%</span>
+    </div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:620px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">${sim ? 'Editar' : 'Registrar'} simulado</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Cadastre um simulado realizado ou deixe um simulado pré-feito salvo para resolver depois.</div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Tipo</div>
+        <select id="simTipo" onchange="alternarCamposSimulado()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+          <option value="realizado" ${tipoInicial === 'realizado' ? 'selected' : ''}>Simulado já realizado</option>
+          <option value="pendente" ${tipoInicial === 'pendente' ? 'selected' : ''}>Simulado para fazer</option>
+        </select>
+      </div>
+
+      <div id="simBaseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nome / Fonte</div>
+          <input id="simNome" value="${sim?.nome || ''}" placeholder="Ex: Gran Cursos - Simulado 3"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+        <div id="simDataWrap">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Data</div>
+          <input id="simData" type="date" value="${sim?.criadoEm || CT._today()}"
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+        </div>
+      </div>
+
+      <div id="simLinkWrap" style="margin-bottom:14px;display:none">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Link do simulado</div>
+        <input id="simLink" value="${sim?.link || ''}" placeholder="https://..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+
+      ${painelInfo.entries.length ? `
+      <div id="simModoWrap" style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Modo de registro</div>
+        <select id="simModoCalc" onchange="alternarCamposSimulado()"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+          <option value="automatico" ${modoInicial === 'automatico' ? 'selected' : ''}>Registro completo com nota calculada</option>
+          <option value="manual" ${modoInicial === 'manual' ? 'selected' : ''}>Informar apenas % de acertos</option>
+        </select>
+      </div>` : ''}
+
+      <div id="simNotaWrap" style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nota geral (%)</div>
+        <input id="simNota" type="number" min="0" max="100" value="${sim?.pct ?? ''}" placeholder="Ex: 72"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--accent);font-family:var(--mono);font-size:20px;font-weight:700;text-align:center;outline:none;box-sizing:border-box">
+      </div>
+
+      ${painelInfo.entries.length ? `
+      <div id="simPainelWrap" style="margin-bottom:14px;display:none">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Raio-x automático por matéria</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.65;margin-bottom:12px">Preencha os acertos de cada matéria. O Track calcula automaticamente o percentual geral, a pontuação ponderada e salva um raio-x completo para os gráficos.</div>
+        <div id="simPainelSummary" style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.18);border-radius:12px;padding:14px 16px;margin-bottom:12px"></div>
+        <div>${buildPainelAutoRowsHTML(sim, painelInfo)}</div>
+      </div>` : ''}
+
+      ${materias.length ? `
+      <details id="simMateriasWrap" style="margin-bottom:14px">
+        <summary style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;margin-bottom:10px">
+          Percentuais por matéria (opcional)
+        </summary>
+        <div style="margin-top:10px">${notasMatHTML}</div>
+      </details>` : ''}
+
+      <div id="simObsWrap" style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Observações</div>
+        <input id="simObs" value="${sim?.obs || ''}" placeholder="Ex: Errei muito em RL, melhorar..."
+          style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modalSim').remove()"
+          style="padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button onclick="salvarSimulado()"
+          style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">
+          ✓ ${sim ? 'Salvar alterações' : 'Registrar simulado'}
+        </button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  alternarCamposSimulado();
+  setTimeout(() => {
+    const tipo = document.getElementById('simTipo')?.value || 'realizado';
+    const modo = document.getElementById('simModoCalc')?.value || 'manual';
+    const focusId = tipo === 'pendente' ? 'simLink' : (modo === 'automatico' ? 'spaInput_0' : 'simNota');
+    document.getElementById(focusId)?.focus();
+  }, 50);
+}
+salvarSimulado = function() {
+  const nome = document.getElementById('simNome')?.value.trim() || 'Simulado';
+  const data = document.getElementById('simData')?.value || CT._today();
+  const tipo = document.getElementById('simTipo')?.value || 'realizado';
+  const modo = document.getElementById('simModoCalc')?.value || 'manual';
+  const link = document.getElementById('simLink')?.value.trim() || '';
+  const obs = document.getElementById('simObs')?.value.trim() || '';
+  const anterior = _editandoSimId ? CT.getSimulados(cId).find(sim => sim.id === _editandoSimId) : null;
+
+  let pct = null;
+  let notasMaterias = null;
+  let desempenhoPainel = null;
+  let acertosTotal = null;
+  let questoesTotal = null;
+  let pontosObtidos = null;
+  let pontosMax = null;
+
+  if (tipo === 'pendente') {
+    if (!link) {
+      highlightInput(document.getElementById('simLink'));
+      return;
+    }
+  } else if (modo === 'automatico') {
+    const result = buildPainelSnapshotFromModal();
+    if (!result.ok) {
+      highlightInput(result.field);
+      if (result.motivo) alert(result.motivo);
+      return;
+    }
+    pct = result.pct;
+    notasMaterias = Object.keys(result.notasMaterias).length ? result.notasMaterias : null;
+    desempenhoPainel = result.snapshot;
+    acertosTotal = result.snapshot.totalAcertos;
+    questoesTotal = result.snapshot.totalQuestoes;
+    pontosObtidos = result.snapshot.totalPontosObtidos;
+    pontosMax = result.snapshot.totalPontosMax;
+  } else {
+    const notaEl = document.getElementById('simNota');
+    const pctManual = Number(notaEl?.value);
+    if (!Number.isFinite(pctManual) || pctManual < 0 || pctManual > 100) {
+      highlightInput(notaEl);
+      return;
+    }
+    pct = roundTo(pctManual, 1);
+
+    const materias = CT.getMaterias(cId);
+    const mapa = {};
+    materias.forEach(materia => {
+      const val = Number(document.getElementById('nm_' + materia.id)?.value);
+      if (Number.isFinite(val)) mapa[materia.id] = roundTo(Math.max(0, Math.min(100, val)), 1);
+    });
+    notasMaterias = Object.keys(mapa).length ? mapa : null;
+  }
+
+  const sim = {
+    id: _editandoSimId || undefined,
+    concursoId: cId,
+    nome,
+    criadoEm: data,
+    tipo,
+    link: tipo === 'pendente' ? link : (anterior?.link || ''),
+    pct: tipo === 'realizado' ? pct : null,
+    obs,
+    notasMaterias: tipo === 'realizado' ? notasMaterias : null,
+    desempenhoPainel: tipo === 'realizado' ? desempenhoPainel : null,
+    acertosTotal: tipo === 'realizado' ? acertosTotal : null,
+    questoesTotal: tipo === 'realizado' ? questoesTotal : null,
+    pontosObtidos: tipo === 'realizado' ? pontosObtidos : null,
+    pontosMax: tipo === 'realizado' ? pontosMax : null
+  };
+
+  CT.saveSimulado(sim);
+  document.getElementById('modalSim')?.remove();
+  render();
+}
+deletarSimulado = function(id) {
+  if (!confirm('Excluir este simulado?')) return;
+  localStorage.setItem('ct_simulados', JSON.stringify(CT.getSimulados().filter(sim => sim.id !== id)));
+  render();
+}
+
+function normalizePainelSimConfig(rawConfig) {
+  const config = rawConfig && typeof rawConfig === 'object' ? { ...rawConfig } : {};
+  if (config.geral || config.especifico) {
+    const groups = [];
+    if (Array.isArray(config.geral) && config.geral.length) groups.push({ id: 'mig_g', name: 'Conhecimentos Gerais', items: config.geral });
+    if (Array.isArray(config.especifico) && config.especifico.length) groups.push({ id: 'mig_e', name: 'Conhecimentos Específicos', items: config.especifico });
+    config.groups = groups;
+  }
+  config.groups = Array.isArray(config.groups) ? config.groups : [];
+  config.scoringMode = config.scoringMode === 'cebraspe' ? 'cebraspe' : 'tradicional';
+  const penalty = Number(config.errorPenalty);
+  config.errorPenalty = Number.isFinite(penalty) && penalty >= 0 ? roundTo(penalty, 1) : 1;
+  return config;
+}
+
+function loadPainelProvaConfig() {
+  try {
+    const saved = localStorage.getItem('ct_config_prova_' + cId);
+    if (!saved) return normalizePainelSimConfig({ groups: [] });
+    return normalizePainelSimConfig(JSON.parse(saved));
+  } catch (e) {
+    return normalizePainelSimConfig({ groups: [] });
+  }
+}
+
+function formatPainelPenaltyPt(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '0';
+  const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : roundTo(num, 1);
+  return ptText(String(rounded).replace(/\.0$/, ''));
+}
+
+function getPainelMateriaInfo() {
+  if (_painelMateriaInfoCache) return _painelMateriaInfoCache;
+
+  const config = loadPainelProvaConfig();
+  const materias = CT.getMaterias(cId);
+  const materiasMap = new Map(materias.map(m => [String(m.id), m]));
+  const entries = [];
+  const metaByMateria = new Map();
+  const isCespe = config.scoringMode === 'cebraspe';
+  const errorPenalty = Number(config.errorPenalty || 1);
+  let totalQuestoes = 0;
+  let totalPontos = 0;
+  let ignoredBlocks = 0;
+  let ignoredPontos = 0;
+
+  (config.groups || []).forEach((group, groupIndex) => {
+    if (group.type === 'redacao') {
+      const pts = Number(group.pts || 0);
+      if (!group.isClassificatoriaOnly && pts > 0) {
+        ignoredBlocks += 1;
+        ignoredPontos += pts;
+      }
+      return;
+    }
+
+    if (Array.isArray(group.items) && group.items.length) {
+      group.items.forEach((item, itemIndex) => {
+        const materia = materiasMap.get(String(item.id));
+        const questoes = Math.max(0, Number(item.q || 0));
+        const peso = Math.max(0, Number(item.w || 0));
+        if (!materia || questoes <= 0) return;
+
+        const pontosMax = roundTo(isCespe ? questoes : (questoes * peso), 1);
+        const key = `${group.id || 'g' + groupIndex}::${String(item.id)}::${itemIndex}`;
+        entries.push({
+          key,
+          materiaId: String(item.id),
+          nome: materia.nome,
+          groupName: group.name || 'Bloco',
+          questoes,
+          peso: isCespe ? 1 : peso,
+          pontosMax,
+          scoringMode: config.scoringMode,
+          errorPenalty
+        });
+        totalQuestoes += questoes;
+        totalPontos += pontosMax;
+
+        const atual = metaByMateria.get(String(item.id)) || {
+          materiaId: String(item.id),
+          nome: materia.nome,
+          questoes: 0,
+          pontosMax: 0,
+          scoringMode: config.scoringMode,
+          errorPenalty
+        };
+        atual.questoes += questoes;
+        atual.pontosMax = roundTo(atual.pontosMax + pontosMax, 1);
+        metaByMateria.set(String(item.id), atual);
+      });
+      return;
+    }
+
+    const blocoQuestoes = Math.max(0, Number(group.q || 0));
+    const blocoPeso = Math.max(0, Number(group.w || 0));
+    if (blocoQuestoes > 0) {
+      ignoredBlocks += 1;
+      ignoredPontos += isCespe ? blocoQuestoes : (blocoQuestoes * blocoPeso);
+    }
+  });
+
+  _painelMateriaInfoCache = {
+    hasConfig: !!((config.groups || []).length),
+    scoringMode: config.scoringMode,
+    errorPenalty,
+    entries,
+    totalQuestoes,
+    totalPontos: roundTo(totalPontos, 1),
+    ignoredBlocks,
+    ignoredPontos: roundTo(ignoredPontos, 1),
+    metaByMateria
+  };
+  return _painelMateriaInfoCache;
+}
+
+function readPainelAutoEntryState(entry, index) {
+  const isCespe = entry.scoringMode === 'cebraspe';
+  const acertosInput = document.getElementById('spaInput_' + index);
+  const brancosInput = document.getElementById('spaBlank_' + index);
+  const rawAcertos = String(acertosInput?.value || '').trim();
+  const rawBrancos = String(brancosInput?.value || '').trim();
+
+  if (isCespe) {
+    if (!rawAcertos && !rawBrancos) return { empty: true, acertosInput, brancosInput };
+    if (!rawAcertos || !rawBrancos) {
+      return {
+        ok: false,
+        field: !rawAcertos ? acertosInput : brancosInput,
+        motivo: `Preencha acertos e em branco de ${entry.nome}.`
+      };
+    }
+
+    const acertos = Number(rawAcertos.replace(',', '.'));
+    const emBranco = Number(rawBrancos.replace(',', '.'));
+    if (!Number.isFinite(acertos) || acertos < 0 || acertos > entry.questoes) {
+      return { ok: false, field: acertosInput, motivo: `Os acertos de ${entry.nome} devem ficar entre 0 e ${entry.questoes}.` };
+    }
+    if (!Number.isFinite(emBranco) || emBranco < 0 || emBranco > entry.questoes) {
+      return { ok: false, field: brancosInput, motivo: `As questões em branco de ${entry.nome} devem ficar entre 0 e ${entry.questoes}.` };
+    }
+
+    const acertosNormalizados = Math.round(acertos);
+    const emBrancoNormalizado = Math.round(emBranco);
+    if ((acertosNormalizados + emBrancoNormalizado) > entry.questoes) {
+      return {
+        ok: false,
+        field: brancosInput,
+        motivo: `Em ${entry.nome}, acertos + em branco não podem ultrapassar ${entry.questoes} questões.`
+      };
+    }
+
+    const erros = entry.questoes - acertosNormalizados - emBrancoNormalizado;
+    const pct = entry.questoes ? roundTo((acertosNormalizados / entry.questoes) * 100, 1) : 0;
+    const pontosObtidos = roundTo(acertosNormalizados - (erros * Number(entry.errorPenalty || 1)), 1);
+    return {
+      ok: true,
+      acertos: acertosNormalizados,
+      emBranco: emBrancoNormalizado,
+      erros,
+      pct,
+      pontosObtidos,
+      pontosMax: entry.pontosMax,
+      field: acertosInput
+    };
+  }
+
+  if (!rawAcertos) return { empty: true, acertosInput };
+  const acertos = Number(rawAcertos.replace(',', '.'));
+  if (!Number.isFinite(acertos) || acertos < 0 || acertos > entry.questoes) {
+    return { ok: false, field: acertosInput, motivo: `Os acertos de ${entry.nome} devem ficar entre 0 e ${entry.questoes}.` };
+  }
+
+  const acertosNormalizados = Math.round(acertos);
+  const erros = entry.questoes - acertosNormalizados;
+  const pct = entry.questoes ? roundTo((acertosNormalizados / entry.questoes) * 100, 1) : 0;
+  const pontosObtidos = roundTo(acertosNormalizados * entry.peso, 1);
+  return {
+    ok: true,
+    acertos: acertosNormalizados,
+    emBranco: 0,
+    erros,
+    pct,
+    pontosObtidos,
+    pontosMax: entry.pontosMax,
+    field: acertosInput
+  };
+}
+
+function buildMateriaOverviewState(metric) {
+  const painelInfo = getPainelMateriaInfo();
+  const ordemAtual = new Map(CT.getMaterias(cId).map((m, index) => [String(m.id), index]));
+  const opcoesMap = new Map(getMateriaOptionsFromData(_simuladosFeitosCache).map(item => [String(item.id), item.nome]));
+
+  painelInfo.metaByMateria.forEach((meta, id) => {
+    if (!opcoesMap.has(String(id))) opcoesMap.set(String(id), meta.nome || 'Matéria');
+  });
+
+  const items = Array.from(opcoesMap.entries())
+    .sort((a, b) => {
+      const orderA = ordemAtual.has(a[0]) ? ordemAtual.get(a[0]) : 9999;
+      const orderB = ordemAtual.has(b[0]) ? ordemAtual.get(b[0]) : 9999;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a[1]).localeCompare(String(b[1]), 'pt-BR');
+    })
+    .map(([materiaId, nome]) => {
+      const metaAtual = painelInfo.metaByMateria.get(String(materiaId)) || null;
+      const history = _simuladosFeitosCache
+        .map(sim => getMateriaMetricSnapshot(sim, materiaId, metric, metaAtual))
+        .filter(Boolean);
+
+      if (!history.length) return null;
+
+      const ultimo = history[history.length - 1];
+      const anterior = history.length >= 2 ? history[history.length - 2] : null;
+      const media = roundTo(history.reduce((acc, item) => acc + Number(item.value || 0), 0) / history.length, 1);
+      const deltaAnterior = anterior ? roundTo(Number(ultimo.value || 0) - Number(anterior.value || 0), 1) : null;
+      const deltaMedia = roundTo(Number(ultimo.value || 0) - Number(media || 0), 1);
+      const deltaPointsAnterior = anterior && ultimo.pointsValue != null && anterior.pointsValue != null
+        ? roundTo(Number(ultimo.pointsValue || 0) - Number(anterior.pointsValue || 0), 1)
+        : null;
+      const mediaPointsList = history.map(item => item.pointsValue).filter(value => value != null);
+      const mediaPoints = mediaPointsList.length ? roundTo(mediaPointsList.reduce((acc, value) => acc + Number(value || 0), 0) / mediaPointsList.length, 1) : null;
+      const deltaPointsMedia = ultimo.pointsValue != null && mediaPoints != null
+        ? roundTo(Number(ultimo.pointsValue || 0) - Number(mediaPoints || 0), 1)
+        : null;
+
+      return {
+        materiaId: String(materiaId),
+        nome,
+        ultimo,
+        anterior,
+        media,
+        deltaAnterior,
+        deltaMedia,
+        mediaPoints,
+        deltaPointsAnterior,
+        deltaPointsMedia,
+        pctRef: ultimo.pctRef,
+        targetValue: ultimo.targetValue ?? (metric === 'pct' ? 100 : null),
+        historyCount: history.length
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      const pctA = Number.isFinite(Number(a.pctRef)) ? Number(a.pctRef) : -1;
+      const pctB = Number.isFinite(Number(b.pctRef)) ? Number(b.pctRef) : -1;
+      if (pctB !== pctA) return pctB - pctA;
+      return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+    });
+
+  const numericValues = items
+    .flatMap(item => [item.ultimo?.value, item.anterior?.value])
+    .filter(value => Number.isFinite(Number(value)))
+    .map(Number);
+  const maxValue = numericValues.length ? Math.max(...numericValues, metric === 'pct' ? 100 : 0) : (metric === 'pct' ? 100 : 0);
+  const minValue = metric === 'pontos' && numericValues.length ? Math.min(...numericValues, 0) : 0;
+
+  return {
+    metric,
+    items,
+    hasData: !!items.length,
+    minAxis: metric === 'pontos' ? Math.min(0, roundTo(minValue * 1.18, 1)) : 0,
+    maxAxis: metric === 'pct' ? 100 : Math.max(5, roundTo((maxValue > 0 ? maxValue : 0) * 1.18, 1))
+  };
+}
+
+function renderGraficoMateria() {
+  const wrap = document.getElementById('simMateriaChartWrap');
+  const metricSelect = document.getElementById('simMateriaMetric');
+  const stage = document.getElementById('simMateriaChartStage');
+  const sub = document.getElementById('simMateriaChartSub');
+  const resumo = document.getElementById('simMateriaResumo');
+  if (!wrap || !metricSelect || !stage || !sub) return;
+
+  const metric = metricSelect.value || 'pct';
+  const chartState = buildMateriaOverviewState(metric);
+
+  wrap.style.display = '';
+  if (_chartMateria) {
+    _chartMateria.destroy();
+    _chartMateria = null;
+  }
+
+  if (!chartState.hasData) {
+    stage.style.height = '260px';
+    stage.innerHTML = '<div class="sim-chart-empty">Ainda não há dados detalhados por matéria nos simulados registrados.</div>';
+    sub.textContent = 'Registre acertos por matéria para liberar o raio-x completo.';
+    if (resumo) resumo.innerHTML = '';
+    return;
+  }
+
+  stage.style.height = Math.max(320, Math.min(620, 110 + (chartState.items.length * 48))) + 'px';
+  stage.innerHTML = '<canvas id="chartSimMateria"></canvas>';
+  const totalComAnterior = chartState.items.filter(item => item.deltaAnterior != null).length;
+  sub.textContent = [
+    `${chartState.items.length} matéria(s) analisadas`,
+    metric === 'pct' ? 'comparativo por percentual' : metric === 'acertos' ? 'comparativo por acertos' : 'comparativo por pontos',
+    `${totalComAnterior} com comparação ao simulado anterior`
+  ].join(' • ');
+
+  const theme = themePalette();
+  const ctx = document.getElementById('chartSimMateria').getContext('2d');
+  const labels = chartState.items.map(item => item.nome.length > 26 ? item.nome.slice(0, 26) + '...' : item.nome);
+  const temAnterior = chartState.items.some(item => item.anterior);
+  const valueLabelPlugin = {
+    id: 'simMateriaOverviewLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctx2 = chart.ctx;
+      ctx2.save();
+      ctx2.font = '700 10px Inter';
+      ctx2.textBaseline = 'middle';
+      meta.data.forEach((bar, index) => {
+        const item = chartState.items[index];
+        const rawValue = Number(item?.ultimo?.value);
+        if (!item || !Number.isFinite(rawValue)) return;
+        const chartArea = chart.chartArea;
+        const isNegative = rawValue < 0;
+        const x = isNegative
+          ? Math.max(bar.x - 10, chartArea.left + 10)
+          : Math.min(bar.x + 10, chartArea.right - 10);
+        ctx2.textAlign = isNegative ? 'right' : (x >= chartArea.right - 24 ? 'right' : 'left');
+        ctx2.fillStyle = scoreColorFromPct(item.pctRef, theme);
+        ctx2.fillText(formatMetricValue(metric, rawValue), x, bar.y);
+      });
+      ctx2.restore();
+    }
+  };
+
+  const datasets = [{
+    label: 'Último simulado',
+    data: chartState.items.map(item => item.ultimo.value),
+    backgroundColor: chartState.items.map(item => scoreFillFromPct(item.pctRef, theme, 0.82)),
+    borderColor: chartState.items.map(item => scoreColorFromPct(item.pctRef, theme)),
+    borderWidth: 1.5,
+    borderRadius: 8,
+    borderSkipped: false,
+    barThickness: 14
+  }];
+
+  if (temAnterior) {
+    datasets.push({
+      label: 'Simulado anterior',
+      data: chartState.items.map(item => item.anterior ? item.anterior.value : null),
+      backgroundColor: alphaColor(theme.accent2, 0.34),
+      borderColor: alphaColor(theme.accent2, 0.92),
+      borderWidth: 1.3,
+      borderRadius: 8,
+      borderSkipped: false,
+      barThickness: 12
+    });
+  }
+
+  _chartMateria = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    plugins: [valueLabelPlugin],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: theme.chartAxisStrong, font: { size: 11 }, usePointStyle: true, boxWidth: 10, boxHeight: 10 }
+        },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          padding: 12,
+          cornerRadius: 10,
+          callbacks: {
+            title(items) {
+              return chartState.items[items[0].dataIndex]?.nome || 'Matéria';
+            },
+            label(ctx2) {
+              return ` ${ctx2.dataset.label}: ${formatMetricValue(metric, ctx2.raw)}`;
+            },
+            afterBody(items) {
+              const item = chartState.items[items[0].dataIndex];
+              if (!item) return [];
+              const extra = [];
+              if (item.deltaAnterior != null) extra.push(`Último vs. anterior: ${formatMetricDelta(metric, item.deltaAnterior)}`);
+              if (item.pctRef != null && metric !== 'pct') extra.push(`Aproveitamento atual: ${formatPercent(item.pctRef)}`);
+              return extra;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: theme.chartAxis,
+            font: { size: 10 },
+            callback(value) {
+              if (metric === 'pct') return value + '%';
+              if (metric === 'pontos') return formatPlainNumber(value, 1);
+              return value;
+            }
+          },
+          grid: { display: false },
+          border: { display: false },
+          min: metric === 'pontos' ? chartState.minAxis : 0,
+          max: metric === 'pct' ? 100 : chartState.maxAxis
+        },
+        y: {
+          ticks: { color: theme.chartAxisStrong, font: { size: 11 } },
+          grid: { display: false },
+          border: { display: false }
+        }
+      }
+    }
+  });
+  renderMateriaResumo(chartState, metric);
+}
+
+function buildPainelAutoRowsHTML(sim, painelInfo) {
+  const snapMap = new Map(((sim && sim.desempenhoPainel && Array.isArray(sim.desempenhoPainel.items)) ? sim.desempenhoPainel.items : []).map(item => [item.key, item]));
+  const isCespe = painelInfo.scoringMode === 'cebraspe';
+
+  return painelInfo.entries.map((entry, index) => {
+    const snap = snapMap.get(entry.key);
+    return `
+      <div style="border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--bg3);margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text);word-break:break-word">${entry.nome}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">
+              ${entry.groupName} • ${entry.questoes} questões • ${isCespe ? `+1 / -${formatPainelPenaltyPt(entry.errorPenalty)} • máximo ${formatPoints(entry.pontosMax)} pts` : `peso ${formatPainelPenaltyPt(entry.peso)} • máximo ${formatPoints(entry.pontosMax)} pts`}
+            </div>
+          </div>
+          ${isCespe ? `
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:6px">
+                <input id="spaInput_${index}" type="number" min="0" max="${entry.questoes}" step="1" value="${snap ? snap.acertos : ''}" oninput="atualizarResumoPainelSimulado()"
+                  style="width:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none">
+                <span style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.7px">acertos</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <input id="spaBlank_${index}" type="number" min="0" max="${entry.questoes}" step="1" value="${snap ? (snap.emBranco ?? 0) : ''}" oninput="atualizarResumoPainelSimulado()"
+                  style="width:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text2);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none">
+                <span style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.7px">em branco</span>
+              </div>
+            </div>
+          ` : `
+            <div style="display:flex;align-items:center;gap:8px">
+              <input id="spaInput_${index}" type="number" min="0" max="${entry.questoes}" step="1" value="${snap ? snap.acertos : ''}" oninput="atualizarResumoPainelSimulado()"
+                style="width:78px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;text-align:center;outline:none">
+              <span style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.7px">acertos</span>
+            </div>
+          `}
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          ${isCespe ? `<div style="font-size:11px;color:var(--text3)">Erros <strong id="spaErr_${index}" style="color:var(--text2)">—</strong></div>` : ''}
+          <div style="font-size:11px;color:var(--text3)">Percentual <strong id="spaPct_${index}" style="color:var(--text2)">—</strong></div>
+          <div style="font-size:11px;color:var(--text3)">Pontuação <strong id="spaPts_${index}" style="color:var(--text2)">—</strong></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function atualizarResumoPainelSimulado() {
+  const painelInfo = getPainelMateriaInfo();
+  const summary = document.getElementById('simPainelSummary');
+  if (!summary || !painelInfo.entries.length) return;
+
+  const isCespe = painelInfo.scoringMode === 'cebraspe';
+  let preenchidos = 0;
+  let totalAcertos = 0;
+  let totalEmBranco = 0;
+  let totalErros = 0;
+  let totalPontos = 0;
+
+  painelInfo.entries.forEach((entry, index) => {
+    const pctEl = document.getElementById('spaPct_' + index);
+    const ptsEl = document.getElementById('spaPts_' + index);
+    const errEl = document.getElementById('spaErr_' + index);
+    if (!pctEl || !ptsEl) return;
+
+    const state = readPainelAutoEntryState(entry, index);
+    if (state.empty) {
+      pctEl.textContent = '—';
+      pctEl.style.color = 'var(--text2)';
+      ptsEl.textContent = '—';
+      ptsEl.style.color = 'var(--text2)';
+      if (errEl) {
+        errEl.textContent = '—';
+        errEl.style.color = 'var(--text2)';
+      }
+      return;
+    }
+
+    if (!state.ok) {
+      pctEl.textContent = 'Inválido';
+      pctEl.style.color = 'var(--red)';
+      ptsEl.textContent = '—';
+      ptsEl.style.color = 'var(--text2)';
+      if (errEl) {
+        errEl.textContent = '—';
+        errEl.style.color = 'var(--text2)';
+      }
+      return;
+    }
+
+    preenchidos += 1;
+    totalAcertos += state.acertos;
+    totalEmBranco += state.emBranco || 0;
+    totalErros += state.erros || 0;
+    totalPontos += state.pontosObtidos;
+    pctEl.textContent = formatPercent(state.pct);
+    pctEl.style.color = pctColor(state.pct);
+    ptsEl.textContent = `${formatPoints(state.pontosObtidos)} pts`;
+    ptsEl.style.color = state.pontosObtidos < 0 ? 'var(--red)' : 'var(--text2)';
+    if (errEl) {
+      errEl.textContent = `${state.erros}`;
+      errEl.style.color = state.erros > 0 ? 'var(--orange)' : 'var(--text2)';
+    }
+  });
+
+  const faltando = painelInfo.entries.length - preenchidos;
+  const pctTotal = painelInfo.totalQuestoes > 0 ? roundTo((totalAcertos / painelInfo.totalQuestoes) * 100, 1) : 0;
+  const pctPonderada = painelInfo.totalPontos > 0 ? roundTo((totalPontos / painelInfo.totalPontos) * 100, 1) : 0;
+
+  summary.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Resumo automático</div>
+        <div style="font-size:18px;font-weight:800;color:${pctColor(pctTotal)}">${formatPercent(pctTotal)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">
+          ${isCespe
+            ? `${totalAcertos}/${painelInfo.totalQuestoes} acertos • ${totalEmBranco} em branco • ${totalErros} erros`
+            : `${totalAcertos}/${painelInfo.totalQuestoes} acertos • ${formatPoints(totalPontos)}/${formatPoints(painelInfo.totalPontos)} pts`}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">
+          ${isCespe
+            ? `Nota CESPE: <span style="color:${totalPontos < 0 ? 'var(--red)' : 'var(--text2)'};font-weight:700">${formatPoints(totalPontos)}/${formatPoints(painelInfo.totalPontos)} pts</span>`
+            : `Nota ponderada: ${formatPercent(pctPonderada)}`}
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.8px">Campos preenchidos</div>
+        <div style="font-size:16px;font-weight:700;color:${faltando === 0 ? 'var(--green)' : 'var(--text)'}">${preenchidos}/${painelInfo.entries.length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${faltando > 0 ? `${faltando} matéria(s) ainda sem dados completos` : 'Tudo pronto para calcular'}</div>
+      </div>
+    </div>
+    ${painelInfo.ignoredBlocks ? `<div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6">Obs.: o cálculo automático considera apenas as matérias vinculadas no Painel da Prova. ${painelInfo.ignoredBlocks} bloco(s) sem matéria definida ou redação ficaram fora desta conta.</div>` : ''}
+  `;
+}
+
+function buildPainelSnapshotFromModal() {
+  const painelInfo = getPainelMateriaInfo();
+  const isCespe = painelInfo.scoringMode === 'cebraspe';
+  const items = [];
+  const materiasMap = new Map();
+  const notasMaterias = {};
+  let totalAcertos = 0;
+  let totalEmBranco = 0;
+  let totalErros = 0;
+  let totalPontos = 0;
+
+  for (let index = 0; index < painelInfo.entries.length; index++) {
+    const entry = painelInfo.entries[index];
+    const state = readPainelAutoEntryState(entry, index);
+    if (state.empty || !state.ok) {
+      return {
+        ok: false,
+        field: state.field || document.getElementById('spaInput_' + index),
+        motivo: state.motivo || `Preencha os dados de ${entry.nome} para usar o cálculo automático.`
+      };
+    }
+
+    items.push({
+      key: entry.key,
+      materiaId: entry.materiaId,
+      nome: entry.nome,
+      groupName: entry.groupName,
+      questoes: entry.questoes,
+      peso: entry.peso,
+      scoringMode: entry.scoringMode,
+      errorPenalty: entry.errorPenalty,
+      acertos: state.acertos,
+      emBranco: state.emBranco,
+      erros: state.erros,
+      pct: state.pct,
+      pontosObtidos: state.pontosObtidos,
+      pontosMax: entry.pontosMax
+    });
+
+    totalAcertos += state.acertos;
+    totalEmBranco += state.emBranco || 0;
+    totalErros += state.erros || 0;
+    totalPontos += state.pontosObtidos;
+
+    const agregado = materiasMap.get(entry.materiaId) || {
+      materiaId: entry.materiaId,
+      nome: entry.nome,
+      questoes: 0,
+      acertos: 0,
+      emBranco: 0,
+      erros: 0,
+      pontosObtidos: 0,
+      pontosMax: 0
+    };
+    agregado.questoes += entry.questoes;
+    agregado.acertos += state.acertos;
+    agregado.emBranco += state.emBranco || 0;
+    agregado.erros += state.erros || 0;
+    agregado.pontosObtidos = roundTo(agregado.pontosObtidos + state.pontosObtidos, 1);
+    agregado.pontosMax = roundTo(agregado.pontosMax + entry.pontosMax, 1);
+    materiasMap.set(entry.materiaId, agregado);
+  }
+
+  const materias = Array.from(materiasMap.values()).map(item => {
+    const pct = item.questoes ? roundTo((item.acertos / item.questoes) * 100, 1) : 0;
+    notasMaterias[item.materiaId] = pct;
+    return { ...item, pct };
+  });
+  const pctTotal = painelInfo.totalQuestoes ? roundTo((totalAcertos / painelInfo.totalQuestoes) * 100, 1) : 0;
+  const pctPonderada = painelInfo.totalPontos ? roundTo((totalPontos / painelInfo.totalPontos) * 100, 1) : 0;
+
+  return {
+    ok: true,
+    pct: pctTotal,
+    notasMaterias,
+    snapshot: {
+      version: 2,
+      origem: 'painel-prova',
+      scoringMode: painelInfo.scoringMode,
+      errorPenalty: painelInfo.errorPenalty,
+      totalAcertos,
+      totalEmBranco,
+      totalErros,
+      totalQuestoes: painelInfo.totalQuestoes,
+      totalPontosObtidos: roundTo(totalPontos, 1),
+      totalPontosMax: painelInfo.totalPontos,
+      pct: pctTotal,
+      pctPonderada,
+      ignoredBlocks: painelInfo.ignoredBlocks,
+      ignoredPontos: painelInfo.ignoredPontos,
+      items,
+      materias
+    }
+  };
+}
+
+alternarCamposSimulado = function() {
+  const tipo = document.getElementById('simTipo')?.value || 'realizado';
+  const modo = document.getElementById('simModoCalc')?.value || 'manual';
+  const pendente = tipo === 'pendente';
+  const baseGrid = document.getElementById('simBaseGrid');
+  const dataWrap = document.getElementById('simDataWrap');
+  const linkWrap = document.getElementById('simLinkWrap');
+  const notaWrap = document.getElementById('simNotaWrap');
+  const materiasWrap = document.getElementById('simMateriasWrap');
+  const painelWrap = document.getElementById('simPainelWrap');
+  const modoWrap = document.getElementById('simModoWrap');
+  const obsWrap = document.getElementById('simObsWrap');
+  const painelInfo = getPainelMateriaInfo();
+
+  if (baseGrid) baseGrid.style.gridTemplateColumns = pendente ? '1fr' : '1fr 1fr';
+  if (dataWrap) dataWrap.style.display = pendente ? 'none' : '';
+  if (linkWrap) linkWrap.style.display = pendente ? '' : 'none';
+  if (modoWrap) modoWrap.style.display = pendente ? 'none' : '';
+  if (obsWrap) obsWrap.style.display = pendente ? 'none' : '';
+  if (notaWrap) notaWrap.style.display = (!pendente && modo === 'manual') ? '' : 'none';
+  if (materiasWrap) materiasWrap.style.display = (!pendente && modo === 'manual') ? '' : 'none';
+  if (painelWrap) painelWrap.style.display = (!pendente && modo === 'automatico') ? '' : 'none';
+
+  if (painelWrap) {
+    const divChildren = Array.from(painelWrap.children).filter(node => node && node.tagName === 'DIV');
+    const descEl = divChildren[1] || null;
+    if (descEl) {
+      descEl.textContent = painelInfo.scoringMode === 'cebraspe'
+        ? 'Preencha os acertos e as questões em branco de cada matéria. O Track deduz os erros automaticamente, calcula a nota CESPE/CEBRASPE e salva um raio-x completo para os gráficos.'
+        : 'Preencha os acertos de cada matéria. O Track calcula automaticamente o percentual geral, a pontuação ponderada e salva um raio-x completo para os gráficos.';
+    }
+  }
+
+  if (!pendente && modo === 'automatico') atualizarResumoPainelSimulado();
+}
+
+document.getElementById('simMateriaMetric')?.addEventListener('change', renderGraficoMateria);
+
+render();
+</script>
+
+
+
+<script src="timer-popup.js"></script>
+</body>
+</html>

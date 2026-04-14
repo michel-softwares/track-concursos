@@ -1,0 +1,800 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="theme.js"></script>
+<title>Track Concursos — Métricas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
+    --border:#252836; --border2:#2e3347;
+    --accent:#4f8ef7; --accent2:#7c5cfc;
+    --text:#e8eaf2; --text2:#f1f2f6; --text3:#a1a6c2;
+    --green:#3ecf8e; --green2:#27a06b; --yellow:#FFD700; --orange:#f5874a; --red:#f55a5a;
+    --mono:'Inter',sans-serif; --sans:'Inter',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;}
+  .sidebar-logo {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    height: 36px;
+    max-width: 180px;
+    width: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .brand-logo:hover {
+    transform: scale(1.04);
+  }
+  .nav{padding:16px 12px;flex:1;}
+  .nav-label{font-size:12px;font-weight:600;letter-spacing:1.5px;color:var(--text3);padding:0 8px;margin-bottom:8px;text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--bg3);color:var(--text);}
+  .nav-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-concurso{margin:0 12px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .concurso-nome{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .concurso-banca{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .timer-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;}
+  .timer-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1;}
+  .timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+  .main{margin-left:220px;min-height:100vh;padding:32px;}
+
+  /* HEADER */
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+  .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+  .page-sub{font-size:12px;color:var(--text3);}
+  .header-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  /* FILTROS */
+  .filtro-chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .filtro-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .filtro-chip.active{background:rgba(79,142,247,0.12);border-color:var(--accent);color:var(--accent);}
+  .filtro-sep{width:1px;height:20px;background:var(--border);margin:0 4px;}
+
+  /* STATS TOPO */
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s;}
+  .stat-card:hover{border-color:var(--border2);}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .stat-card.blue::before{background:var(--accent);}
+  .stat-card.purple::before{background:var(--accent2);}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.yellow::before{background:var(--yellow);}
+  .stat-card.orange::before{background:var(--orange);}
+  .stat-icon{font-size:18px;margin-bottom:10px;display:block;}
+  .stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);line-height:1;}
+  .stat-label{font-size:12px;color:var(--text3);margin-top:5px;}
+  .stat-delta{font-size:12px;font-weight:700;margin-top:3px;}
+  .stat-delta.up{color:var(--green);}
+  .stat-delta.down{color:var(--red);}
+
+  /* CARDS DE GRÁFICO */
+  .chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+  .chart-grid-3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+  .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;overflow:hidden;}
+  .chart-card.full{grid-column:1/-1;}
+  .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .chart-title{font-size:14px;font-weight:700;color:var(--text);}
+  .chart-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .chart-legend{display:flex;gap:12px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .chart-wrap{position:relative;}
+
+  /* HEATMAP */
+  .heatmap-wrap{overflow-x:auto;padding-bottom:4px;}
+  .heatmap{display:flex;gap:3px;}
+  .heatmap-col{display:flex;flex-direction:column;gap:3px;}
+  .heatmap-cell{width:13px;height:13px;border-radius:2px;cursor:pointer;transition:transform 0.1s;}
+  .heatmap-cell:hover{transform:scale(1.3);}
+  .heatmap-cell.l0{background:var(--bg3);border:1px solid var(--border);}
+  .heatmap-cell.l1{background:rgba(79,142,247,0.2);}
+  .heatmap-cell.l2{background:rgba(79,142,247,0.45);}
+  .heatmap-cell.l3{background:rgba(79,142,247,0.7);}
+  .heatmap-cell.l4{background:var(--accent);}
+  .heatmap-months{display:flex;gap:0;margin-bottom:4px;padding-left:2px;}
+  .heatmap-month{font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+  .heatmap-days{display:flex;flex-direction:column;gap:3px;margin-right:6px;padding-top:1px;}
+  .heatmap-day{font-size:8px;color:var(--text3);height:13px;display:flex;align-items:center;}
+  .heatmap-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end;}
+  .heatmap-legend span{font-size:12px;color:var(--text3);}
+
+  /* PROGRESSO POR MATÉRIA */
+  .materias-list{display:flex;flex-direction:column;gap:10px;}
+  .mat-prog-row{display:flex;align-items:center;gap:10px;}
+  .mat-prog-nome{font-size:12px;font-weight:600;color:var(--text2);width:160px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mat-prog-bar-wrap{flex:1;}
+  .mat-prog-bar{height:8px;background:var(--bg3);border-radius:8px;overflow:hidden;}
+  .mat-prog-fill{height:100%;border-radius:8px;transition:width 0.8s ease;}
+  .mat-prog-pct{font-family:var(--mono);font-size:12px;font-weight:700;width:36px;text-align:right;flex-shrink:0;}
+  .mat-prog-topicos{font-size:12px;color:var(--text3);width:60px;text-align:right;flex-shrink:0;}
+
+  /* MELHORES DIAS */
+  .best-days{display:flex;flex-direction:column;gap:8px;}
+  .best-day-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .best-day-row:last-child{border-bottom:none;}
+  .best-day-rank{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text3);width:20px;flex-shrink:0;}
+  .best-day-rank.gold{color:var(--yellow);}
+  .best-day-rank.silver{color:var(--text2);}
+  .best-day-rank.bronze{color:var(--orange);}
+  .best-day-date{font-size:12px;color:var(--text2);flex:1;}
+  .best-day-hours{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);}
+  .best-day-q{font-size:12px;color:var(--text3);width:50px;text-align:right;}
+  /* Esconder botões nativos de scroll numérico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo" onclick="location.href='concursos.html'">
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Menu</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+    <div class="nav-item active" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
+    <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span> Simulados</div>
+    <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span> Ajuda</div>
+  </nav>
+  <div style="margin:0 12px 8px;text-align:center">
+        <a href="ajuda.html" style="text-decoration:none">
+          <div style="font-size:12px;color:var(--text3);line-height:1.6">
+      <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png?v=1" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+            <span style="opacity:0.7">powered by Antigravity Gemini</span>
+          </div>
+        </a>
+      </div>
+      <div class="sidebar-concurso">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="sideLogoImg" style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📋</div>
+      <div style="min-width:0">
+        <div class="concurso-nome" id="sideNome">—</div>
+        <div class="concurso-banca" id="sideBanca">—</div>
+      </div>
+    </div>
+    <div class="timer-box">
+      <div class="timer-num" id="sideTimer">—</div>
+      <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">📈 Métricas</div>
+      <div class="page-sub" id="histSub">Carregando...</div>
+    </div>
+    <div class="header-controls">
+      <div class="filtro-chip active" onclick="setJanela(7,this)">7 dias</div>
+      <div class="filtro-chip" onclick="setJanela(14,this)">14 dias</div>
+      <div class="filtro-chip" onclick="setJanela(30,this)">30 dias</div>
+      <div class="filtro-chip" onclick="setJanela(0,this)">Desde o início</div>
+    </div>
+  </div>
+
+  <!-- STATS GLOBAIS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px" id="statsGlobais"></div>
+
+  <!-- GRÁFICOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px">
+    <!-- Horas por dia -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">⏱ Horas estudadas</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblHoras"></div>
+      <div id="chartHoras"></div>
+    </div>
+    <!-- Análise por matéria -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">🎯 Análise por matéria</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblQuestoes"></div>
+      <canvas id="chartQuestoes" height="140"></canvas>
+      <div id="analiseMateriasResumo" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- RANKING DE MATÉRIAS + ATIVIDADE RECENTE -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- Distribuição por Matéria (Pizza) -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">📚 Distribuição por Matéria</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="lblPizza">Tempo estudado</div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="flex-shrink:0;width:200px;height:200px"><canvas id="chartPizza"></canvas></div>
+        <div id="pizzaLegend" style="flex:1;max-height:210px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- Atividade recente -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">🕐 Atividade recente</div>
+      <div id="atividadeRecente"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="data.js"></script>
+<script>
+// â”€â”€ SIDEBAR CONCURSO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+(function() {
+  const cId = sessionStorage.getItem('ct_concurso_ativo');
+  if (!cId) return;
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+  const nomeEl  = document.getElementById('sideNome');
+  const bancaEl = document.getElementById('sideBanca');
+  const timerEl = document.getElementById('sideTimer');
+  const timerLb = document.getElementById('sideTimerLabel');
+  const logoEl  = document.getElementById('sideLogoImg');
+  if (nomeEl)  nomeEl.textContent  = c.nome;
+  if (bancaEl) bancaEl.textContent = c.banca || '—';
+  if (logoEl) {
+    let logoHtml = '';
+    if (c.logoPath) logoHtml = `<img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoBase64) logoHtml = `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:5px">`;
+    else if (c.logoEmoji) logoHtml = c.logoEmoji;
+    logoEl.innerHTML = logoHtml;
+  }
+  if (c.preEdital) {
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '12px 12px 10px';
+      box.innerHTML = '<div style="display:flex; flex-direction:column; align-items:center; gap:6px">'
+          + '<div style="font-size:12px; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:1.5px">✦ PRÉ-EDITAL</div>'
+          + '<div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 30, 'vertical-align:0;') : '🚀')+' <span style="color:var(--text)">coberto</span> <span style="color:var(--accent2); font-weight:800">×'+(c.coberto||0)+'</span></div>'
+          + '</div>';
+    }
+  } else {
+    const dias = CT.diasRestantes(c);
+    if (timerEl) {
+      const box = timerEl.parentElement;
+      box.style.padding = '8px 10px';
+      var cobHtml = (c.coberto > 0)
+        ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+          + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+          + '<div style="font-size:11px; font-weight:600; color:var(--text3)">'+(CT.renderCoverageRocket ? CT.renderCoverageRocket(c, 18) : '🚀')+' Coberto <span style="color:var(--accent2)">×'+c.coberto+'</span></div>'
+          + '</div>'
+        : '';
+      box.innerHTML = '<div class="timer-num" id="sideTimer">'+(dias!=null?dias:'—')+'</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+      document.getElementById('sideTimer').style.color = dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)';
+    }
+  }
+  // Rev badge
+  const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
+  if (rev) {
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const b = document.getElementById('revBadge');
+    if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
+  }
+})();
+</script>
+<script>
+const cId = sessionStorage.getItem('ct_concurso_ativo');
+if (!cId) location.href = 'concursos.html';
+
+let _janela = 7;
+let _chartHoras = null, _chartQuestoes = null, _chartPizza = null;
+
+const PIZZA_COLORS = [
+  '#4f8ef7','#7c5cfc','#3ecf8e','#f5874a','#f55a5a',
+  '#FFD700','#e056a0','#56c4e0','#a78bfa','#f97316',
+  '#06b6d4','#8b5cf6','#ec4899','#14b8a6','#f43f5e',
+  '#6366f1','#22c55e','#eab308','#ef4444','#0ea5e9'
+];
+
+function themePalette() {
+  return window.TrackTheme ? TrackTheme.palette() : {
+    accent: '#4f8ef7',
+    accent2: '#7c5cfc',
+    green: '#3ecf8e',
+    yellow: '#FFD700',
+    orange: '#f5874a',
+    red: '#f55a5a',
+    text: '#e8eaf2',
+    text3: '#a1a6c2',
+    chartGrid: 'rgba(255,255,255,0.04)',
+    chartAxis: '#555a72',
+    chartAxisStrong: '#c8cde2',
+    tooltipBg: '#1a1e2a',
+    tooltipBorder: 'rgba(255,255,255,0.08)',
+    tooltipTitle: '#e8eaf2',
+    tooltipBody: '#a1a6c2',
+    chartSurfaceBorder: '#0d0f14',
+    heatOut: 'rgba(255,255,255,0.02)',
+    heatEmpty: 'rgba(255,255,255,0.035)',
+    heat1: '#3f2435',
+    heat2: '#6e365a',
+    heat3: '#a74482',
+    heat4: '#d65db1',
+    heat5: '#fe7bd0'
+  };
+}
+
+function getPizzaColors() {
+  const theme = themePalette();
+  return [
+    theme.accent, theme.accent2, theme.green, theme.orange, theme.red,
+    theme.yellow, '#e056a0', '#56c4e0', '#a78bfa', '#f97316',
+    '#06b6d4', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e',
+    '#6366f1', '#22c55e', '#eab308', '#ef4444', '#0ea5e9'
+  ];
+}
+
+function setJanela(dias, el) {
+  _janela = dias;
+  document.querySelectorAll('.filtro-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+
+function formatHeatmapDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function renderHorasHeatmap(container, datas, horasPorDia) {
+  const theme = themePalette();
+  const horasMap = new Map(datas.map((d, i) => [d, parseFloat((horasPorDia[i] || 0).toFixed(2))]));
+  const maxHoras = Math.max(...horasPorDia, 0);
+
+  if (!datas.length) {
+    container.innerHTML = '<div style="padding:20px;border:1px dashed var(--border);border-radius:14px;color:var(--text3);text-align:center">Nenhum estudo registrado no periodo.</div>';
+    return;
+  }
+
+  const first = new Date(datas[0] + 'T00:00:00');
+  const last = new Date(datas[datas.length - 1] + 'T00:00:00');
+  const totalDiasComEstudo = horasPorDia.filter(h => h > 0).length;
+  const maiorCarga = Math.max(...horasPorDia, 0);
+  const monthLabels = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  const weekLabels = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+
+  function heatColor(horas, inRange) {
+    if (!inRange) return theme.heatOut;
+    if (horas <= 0) return theme.heatEmpty;
+    const ratio = maxHoras > 0 ? horas / maxHoras : 0;
+    if (ratio >= 0.9) return theme.heat5;
+    if (ratio >= 0.72) return theme.heat4;
+    if (ratio >= 0.5) return theme.heat3;
+    if (ratio >= 0.28) return theme.heat2;
+    return theme.heat1;
+  }
+
+  const months = [];
+  let monthCursor = new Date(first.getFullYear(), first.getMonth(), 1);
+  const finalMonth = new Date(last.getFullYear(), last.getMonth(), 1);
+  while (monthCursor <= finalMonth) {
+    const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+    const monthEnd = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 0);
+    const leading = (monthStart.getDay() + 6) % 7;
+    const trailing = 6 - ((monthEnd.getDay() + 6) % 7);
+    const gridStart = new Date(monthStart);
+    gridStart.setDate(gridStart.getDate() - leading);
+    const gridEnd = new Date(monthEnd);
+    gridEnd.setDate(gridEnd.getDate() + trailing);
+
+    const cells = [];
+    const dayCursor = new Date(gridStart);
+    while (dayCursor <= gridEnd) {
+      const key = CT._dateString(dayCursor);
+      const horas = horasMap.get(key) || 0;
+      const inCurrentMonth = dayCursor.getMonth() === monthCursor.getMonth();
+      const inRange = key >= datas[0] && key <= datas[datas.length - 1];
+      cells.push({
+        key,
+        horas,
+        day: dayCursor.getDate(),
+        inCurrentMonth,
+        inRange
+      });
+      dayCursor.setDate(dayCursor.getDate() + 1);
+    }
+
+    months.push({
+      title: monthLabels[monthCursor.getMonth()],
+      year: monthCursor.getFullYear(),
+      cells
+    });
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
+  }
+
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">
+      ${months.map(month => `
+        <div style="background:linear-gradient(180deg, var(--surface-soft), var(--surface-subtle));border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;min-height:238px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text)">${month.title}</div>
+            <div style="font-size:11px;color:var(--text3)">${month.year}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+            ${weekLabels.map(label => `
+              <div style="font-size:10px;color:var(--text3);text-align:center;font-weight:700;letter-spacing:.4px;padding-bottom:2px">${label}</div>
+            `).join('')}
+            ${month.cells.map(day => `
+              <div
+                title="${formatHeatmapDate(day.key)} - ${day.horas.toFixed(1)}h"
+                style="
+                  min-height:30px;
+                  border-radius:10px;
+                  padding:4px 4px 3px;
+                  border:1px solid ${day.horas > 0 && day.inCurrentMonth && day.inRange ? (window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.24) : 'rgba(254,123,208,0.22)') : 'var(--border)'};
+                  background:${day.inCurrentMonth ? heatColor(day.horas, day.inRange) : 'var(--surface-subtle)'};
+                  color:${day.inCurrentMonth ? 'var(--text)' : 'var(--text3)'};
+                  box-shadow:${day.horas > 0 && day.inCurrentMonth && day.inRange ? 'inset 0 1px 0 var(--surface-strong), 0 10px 20px ' + (window.TrackTheme ? TrackTheme.alpha(theme.heat4, 0.12) : 'rgba(214,93,177,0.08)') : 'none'};
+                  display:flex;
+                  flex-direction:column;
+                  justify-content:space-between;
+                "
+              >
+                <div style="font-size:10px;font-weight:700;line-height:1">${day.day}</div>
+                <div style="font-size:9px;line-height:1;text-align:left;color:${day.horas > 0 && day.inCurrentMonth && day.inRange ? (theme.theme === 'light' ? 'var(--text)' : 'rgba(255,240,250,0.92)') : 'transparent'}">${day.horas > 0 && day.inCurrentMonth && day.inRange ? day.horas.toFixed(1).replace('.', ',') + 'h' : '&nbsp;'}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text3);font-size:11px">
+        <span>${totalDiasComEstudo} dias com estudo</span>
+        <span>Maior carga: ${maiorCarga.toFixed(1)}h</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px">
+        <span>Menos</span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heatEmpty};border:1px solid var(--border)"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat1};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat2};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat3};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat5};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
+        <span>Mais</span>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const c = CT.getConcurso(cId);
+  if (!c) return;
+
+  if (_janela === 0) {
+    document.getElementById('histSub').textContent = c.nome + ' — todos os dias';
+  } else {
+    document.getElementById('histSub').textContent = c.nome + ' — últimos ' + _janela + ' dias';
+  }
+  document.querySelector('.concurso-nome').textContent = c.nome;
+  document.querySelector('.concurso-banca').textContent = c.banca || '—';
+
+  // Gera array de datas
+  const datas = [];
+  if (_janela === 0) {
+    // Todos: encontra a data mais antiga entre sessões e questões
+    const todasS = CT.getSessoes({ concursoId: cId });
+    const todasQ = CT.getQuestoes({ concursoId: cId });
+    const allDates = [...todasS.map(s => s.data), ...todasQ.map(q => q.data)].filter(Boolean).sort();
+    if (allDates.length > 0) {
+      const inicio = new Date(allDates[0] + 'T12:00:00');
+      const hoje = new Date(); hoje.setHours(12,0,0,0);
+      for (let d = new Date(inicio); d <= hoje; d.setDate(d.getDate() + 1)) {
+        datas.push(CT._dateString(d));
+      }
+    }
+  } else {
+    for (let i = _janela - 1; i >= 0; i--) {
+      const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() - i);
+      datas.push(CT._dateString(d));
+    }
+  }
+  const labels = datas.map(d => { const p=d.split('-'); return p[2]+'/'+p[1]; });
+
+  // Sessões e questões por dia
+  const todasSessoes  = CT.getSessoes({ concursoId: cId });
+  const todasQuestoes = CT.getQuestoes({ concursoId: cId });
+
+  const horasPorDia    = datas.map(d => CT.totalSegundos(todasSessoes.filter(s=>s.data===d))/3600);
+  const questoesPorDia = datas.map(d => CT.calcStats(todasQuestoes.filter(q=>q.data===d)).resolvidas || 0);
+  const datasSet = new Set(datas);
+
+  const totalHorasPeriodo   = horasPorDia.reduce((a,b)=>a+b,0);
+  const totalQuestoesPeriodo = questoesPorDia.reduce((a,b)=>a+b,0);
+  const diasAtivos = horasPorDia.filter(h=>h>0).length;
+
+  // Stats globais
+  const topicos   = CT.getTopicos().filter(t=>t.concursoId===cId);
+  const estudados = topicos.filter(t=>t.estudado).length;
+  const qAll      = CT.calcStats(todasQuestoes);
+  const segTotal  = CT.totalSegundos(todasSessoes);
+
+  document.getElementById('statsGlobais').innerHTML = [
+    { icon:'⏱', val: CT.formatarTempo(segTotal)||'0h',    label:'Horas totais',        color:'var(--accent)' },
+    { icon:'📝', val: qAll.resolvidas||0,                  label:'Questões no total',   color:'var(--yellow)' },
+    { icon:'🎯', val: qAll.pct!=null?qAll.pct+'%':'—',    label:'Taxa de acertos',     color:pctColor(qAll.pct) },
+    { icon:'✅', val: estudados+'/'+topicos.length,        label:'Tópicos concluídos',  color:'var(--accent2)' },
+  ].map(s=>`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;text-align:center">
+      <div style="font-size:22px;margin-bottom:6px">${s.icon}</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:${s.color}">${s.val}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${s.label}</div>
+    </div>`).join('');
+
+  // Labels subheader
+  document.getElementById('lblHoras').textContent =
+    totalHorasPeriodo.toFixed(1) + 'h em ' + diasAtivos + ' dias ativos';
+  document.getElementById('lblQuestoes').textContent =
+    totalQuestoesPeriodo + ' questões no período';
+
+  // Heatmap de horas
+  if (_chartHoras) _chartHoras.destroy();
+  _chartHoras = null;
+  renderHorasHeatmap(document.getElementById('chartHoras'), datas, horasPorDia);
+
+  // Chart questões
+  const ctxQ = document.getElementById('chartQuestoes').getContext('2d');
+  if (_chartQuestoes) _chartQuestoes.destroy();
+  _chartQuestoes = null;
+
+  // Gráfico Pizza — distribuição por matéria
+  const materias = CT.getMaterias(cId);
+  const desempenhoMaterias = materias.map(m => {
+    const questoesMateriaPeriodo = todasQuestoes.filter(q => q.materiaId === m.id && datasSet.has(q.data));
+    const stats = CT.calcStats(questoesMateriaPeriodo);
+    return {
+      id: m.id,
+      nome: m.nome,
+      resolvidas: stats.resolvidas || 0,
+      acertos: stats.acertos || 0,
+      pct: stats.pct
+    };
+  }).filter(m => m.resolvidas > 0);
+
+  document.getElementById('lblQuestoes').textContent = desempenhoMaterias.length
+      ? desempenhoMaterias.length + ' matérias com questões no período'
+      : 'Sem questões suficientes no período';
+
+  const rankingChart = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((b.pct || 0) !== (a.pct || 0)) return (b.pct || 0) - (a.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 6);
+  const theme = themePalette();
+
+  if (rankingChart.length) {
+    _chartQuestoes = new Chart(ctxQ, {
+      type: 'bar',
+      data: {
+        labels: rankingChart.map(m => m.nome.length > 22 ? m.nome.slice(0, 22) + '...' : m.nome),
+        datasets: [{
+          data: rankingChart.map(m => m.pct),
+          backgroundColor: rankingChart.map(m => {
+            const pct = m.pct || 0;
+            if (pct >= 93) return 'rgba(52,245,141,0.82)';
+            if (pct >= 80) return 'rgba(156,247,204,0.82)';
+            if (pct >= 75) return 'rgba(255,228,92,0.82)';
+            if (pct >= 50) return 'rgba(245,135,74,0.82)';
+            return 'rgba(245,90,90,0.82)';
+          }),
+          borderColor: rankingChart.map(m => pctColor(m.pct)),
+          borderWidth: 1.5,
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 16
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: theme.tooltipBg,
+            borderColor: theme.tooltipBorder,
+            borderWidth: 1,
+            titleColor: theme.tooltipTitle,
+            bodyColor: theme.tooltipBody,
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(ctx) {
+                const item = rankingChart[ctx.dataIndex];
+                return ' ' + item.pct + '% | ' + item.acertos + '/' + item.resolvidas + ' acertos';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: {
+              color: theme.chartAxis,
+              font:{size:10},
+              callback: function(value) { return value + '%'; }
+            },
+            grid: { color: theme.chartGrid }
+          },
+          y: {
+            ticks: { color: theme.chartAxisStrong, font:{size:11, weight:'600'} },
+            grid: { display:false }
+          }
+        }
+      }
+    });
+  } else {
+    ctxQ.clearRect(0, 0, ctxQ.canvas.width, ctxQ.canvas.height);
+    _chartQuestoes = null;
+  }
+
+  const topFacilidade = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((b.pct || 0) !== (a.pct || 0)) return (b.pct || 0) - (a.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 3);
+
+  const topDificuldade = [...desempenhoMaterias]
+    .sort((a,b) => {
+      if ((a.pct || 0) !== (b.pct || 0)) return (a.pct || 0) - (b.pct || 0);
+      return b.resolvidas - a.resolvidas;
+    })
+    .slice(0, 3);
+
+  function renderResumoMaterias(titulo, color, items, emptyText) {
+    return `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:${color};margin-bottom:10px">${titulo}</div>
+        ${items.length ? items.map(item => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nome}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${item.acertos}/${item.resolvidas} acertos</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:15px;font-weight:800;color:${pctColor(item.pct)}">${item.pct}%</div>
+          </div>
+        `).join('') : `<div style="font-size:12px;color:var(--text3);padding:8px 0">${emptyText}</div>`}
+      </div>
+    `;
+  }
+
+  document.getElementById('analiseMateriasResumo').innerHTML = [
+    renderResumoMaterias('Maior facilidade', '#9cf7cc', topFacilidade, 'Resolva questões no período para aparecer aqui.'),
+    renderResumoMaterias('Maior dificuldade', 'var(--orange)', topDificuldade, 'Resolva questões no período para aparecer aqui.')
+  ].join('');
+  const ranking = materias.map(m => {
+    const seg = CT.totalSegundos(CT.getSessoes({ concursoId: cId, materiaId: m.id }));
+    const q   = CT.calcStats(CT.getQuestoes({ materiaId: m.id }));
+    const tops = CT.getTopicos(m.id);
+    const est  = tops.filter(t=>t.estudado).length;
+    return { nome: m.nome, seg, q, est, total: tops.length };
+  }).sort((a,b)=>b.seg-a.seg);
+
+  const totalSeg = ranking.reduce((a,m)=>a+m.seg,0);
+  const pizzaLabels = ranking.map(m => m.nome);
+  const pizzaData   = ranking.map(m => parseFloat((m.seg/3600).toFixed(2)));
+  const paletteColors = getPizzaColors();
+  const pizzaColors   = ranking.map((_,i) => paletteColors[i % paletteColors.length]);
+
+  document.getElementById('lblPizza').textContent = totalSeg > 0
+    ? CT.formatarTempo(totalSeg) + ' no total'
+    : 'Nenhuma sessão registrada';
+
+  const ctxP = document.getElementById('chartPizza').getContext('2d');
+  if (_chartPizza) _chartPizza.destroy();
+
+  if (totalSeg > 0) {
+    _chartPizza = new Chart(ctxP, {
+      type: 'doughnut',
+      data: {
+        labels: pizzaLabels,
+        datasets: [{
+          data: pizzaData,
+          backgroundColor: pizzaColors,
+          borderColor: theme.chartSurfaceBorder,
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '55%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: theme.tooltipBg,
+            borderColor: window.TrackTheme ? TrackTheme.alpha(theme.accent, 0.3) : 'rgba(79,142,247,0.3)',
+            borderWidth: 1,
+            titleColor: theme.tooltipTitle,
+            bodyColor: theme.tooltipBody,
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(ctx) {
+                const hrs = ctx.parsed;
+                const pct = totalSeg > 0 ? Math.round((ranking[ctx.dataIndex].seg / totalSeg) * 100) : 0;
+                return ' ' + hrs.toFixed(1) + 'h (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  } else {
+    // Limpa o canvas se não houver dados
+    ctxP.clearRect(0, 0, ctxP.canvas.width, ctxP.canvas.height);
+    _chartPizza = null;
+  }
+
+  // Legenda customizada ao lado da pizza
+  document.getElementById('pizzaLegend').innerHTML = ranking.length > 0
+    ? ranking.map((m, i) => {
+        const pct = totalSeg > 0 ? Math.round((m.seg / totalSeg) * 100) : 0;
+        return `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+          <div style="width:10px;height:10px;border-radius:3px;flex-shrink:0;background:${paletteColors[i % paletteColors.length]}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome}</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0">${CT.formatarTempo(m.seg)||'0min'}</div>
+          <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${paletteColors[i % paletteColors.length]};flex-shrink:0;width:32px;text-align:right">${pct}%</div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão registrada ainda.</div>';
+
+  // Atividade recente — últimas sessões
+  const recentes = [...todasSessoes].sort((a,b)=>b.data.localeCompare(a.data)).slice(0,10);
+  document.getElementById('atividadeRecente').innerHTML = recentes.length
+    ? recentes.map(s => {
+        const mat = s.materiaId ? CT.getMateria(s.materiaId) : null;
+        const d   = s.data.split('-'); const dFmt = d[2]+'/'+d[1];
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:38px">${dFmt}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mat?mat.nome:'Sessão livre'}</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">${CT.formatarTempo(s.duracaoSegundos)}</div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão registrada ainda.</div>';
+}
+
+render();
+</script>
+
+
+
+<script src="timer-popup.js"></script>
+</body>
+</html>
+

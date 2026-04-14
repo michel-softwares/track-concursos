@@ -1,0 +1,1681 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Concursos - Meus Concursos</title>
+<script src="theme.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;--border:#252836;--border2:#2e3347;--accent:#4f8ef7;--accent2:#7c5cfc;--text:#e8eaf2;--text2:#f1f2f6;--text3:#a1a6c2;--green:#3ecf8e;--green2:#27a06b;--yellow:#FFD700;--orange:#f5874a;--red:#f55a5a;--mono:'Inter',sans-serif;--sans:'Inter',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:tabular-nums;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+  .bg-decoration{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .bg-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.045;}
+  .bg-blob.b1{width:600px;height:600px;background:var(--accent);top:-200px;left:-100px;}
+  .bg-blob.b2{width:500px;height:500px;background:var(--accent2);bottom:-150px;right:-100px;}
+  .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(79,142,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,0.03) 1px,transparent 1px);background-size:40px 40px;}
+  .wrapper{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:48px 32px 80px;}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;gap:18px;flex-wrap:wrap;}
+  .logo{display:flex;align-items:center;cursor:pointer;transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);}
+  .logo:hover{transform:scale(1.04);}
+  .brand-logo{height:56px;width:auto;object-fit:contain;}
+  .top-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;}
+  .btn-outline{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.05);}
+  .btn-outline.premium-import{
+    border-color:rgba(124,92,252,0.4);
+    background:linear-gradient(180deg, rgba(124,92,252,0.12), rgba(79,142,247,0.06));
+    box-shadow:0 0 0 1px rgba(124,92,252,0.12), 0 0 18px rgba(124,92,252,0.14);
+  }
+  .btn-outline.premium-import:hover{
+    border-color:#8d73ff;
+    color:#d9ccff;
+    background:linear-gradient(180deg, rgba(124,92,252,0.2), rgba(79,142,247,0.1));
+    box-shadow:0 0 0 1px rgba(141,115,255,0.18), 0 0 26px rgba(124,92,252,0.22);
+  }
+  .hero{margin-bottom:40px;}
+  .hero-label{display:inline-flex;align-items:center;gap:6px;background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+  .hero-title{font-size:38px;font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:10px;}
+  .hero-title span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .hero-sub{font-size:15px;color:var(--text3);max-width:540px;line-height:1.6;}
+  .backup-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);font-size:12px;color:var(--text3);white-space:nowrap;}
+  .backup-chip strong{color:var(--text2);font-weight:600;}
+  .global-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:36px;padding:28px 20px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;position:relative;align-items:center;}
+  .global-stats::before{content:'ESTATÍSTICAS GERAIS';position:absolute;top:10px;left:20px;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--text3);}
+  .global-stat{text-align:center;}
+  .global-stat-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text);line-height:1;}
+  .global-stat-val.accent{color:var(--accent);}
+  .global-stat-val.green{color:var(--green);}
+  .global-stat-val.purple{color:var(--accent2);}
+  .global-stat-val.yellow{color:var(--yellow);}
+  .global-stat-val.sim-last{color:var(--green);font-size:26px;}
+  .global-stat-label{font-size:12px;color:var(--text3);margin-top:5px;}
+  .simulado-stat{background:rgba(62,207,142,0.05);border:1px solid rgba(62,207,142,0.15);border-radius:10px;padding:10px 6px 8px;margin-top:-2px;}
+  .sim-avg{font-size:9.5px;color:var(--text3);margin-top:5px;line-height:1.4;}
+  .sim-avg strong{color:var(--text2);font-weight:600;}
+  
+  .stat-sub-grid { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .stat-sub-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; font-weight: 600; opacity: 0.9; }
+  .stat-sub-num { font-family: var(--mono); font-weight: 700; }
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .section-left{display:flex;align-items:center;gap:10px;}
+  .section-title{font-size:16px;font-weight:600;color:var(--text);}
+  .section-count{font-family:var(--mono);font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+  .btn-new{display:flex;align-items:center;gap:7px;padding:9px 18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(79,142,247,0.3);}
+  .btn-new:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(79,142,247,0.4);}
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;}
+  .concurso-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;animation:cardIn 0.4s ease both;display:flex;flex-direction:column;height:100%;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .concurso-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.3);}
+  .concurso-card.aprovado{border-color:var(--green);box-shadow:0 0 0 1px rgba(62,207,142,0.3),0 8px 32px rgba(62,207,142,0.15);}
+  .concurso-card.cr{border-color:var(--yellow);box-shadow:0 0 0 1px rgba(255,215,0,0.3),0 8px 32px rgba(255,215,0,0.15);}
+  .card-top-stripe{height:3px;}
+  .card-body{padding:20px;flex:1;}
+  .card-inst{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .card-logo{width:84px;height:84px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;border:1px solid var(--border);background:var(--bg3);}
+  .card-inst-info{flex:1;min-width:0;}
+  .card-nome{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.02em;}
+  .card-banca{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;}
+  .card-cargo{font-size:13px;color:var(--text2);font-weight:500;}
+  .card-timer{text-align:right;flex-shrink:0;}
+  .card-timer-num{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
+  .card-timer-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;}
+  .card-pre-edital{text-align:right;flex-shrink:0;}
+  .card-pre-tag{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--accent2);text-transform:uppercase;margin-bottom:4px;}
+  .card-rocket-row{display:flex;align-items:center;justify-content:flex-end;gap:4px;}
+  .card-coberto{font-family:var(--mono);font-size:12px;font-weight:700;}
+  .card-coberto span{color:var(--accent2);}
+  .cover-rocket-icon{width:18px;height:18px;object-fit:contain;display:block;flex-shrink:0;}
+  .card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .card-stat{background:var(--bg3);border-radius:8px;padding:8px 10px;text-align:center;}
+  .card-stat-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);line-height:1;}
+  .card-stat-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+  .card-prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px;}
+  .card-prog-label span{font-family:var(--mono);color:var(--text2);}
+  .card-prog-bar{height:5px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-bottom:14px;}
+  .card-prog-fill{height:100%;border-radius:5px;}
+  .card-toggle-row{display:flex;align-items:center;justify-content:space-between;}
+  .card-toggle-label{font-size:12px;color:var(--text3);}
+  .toggle-switch{position:relative;width:32px;height:18px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:var(--bg);border:1px solid var(--border);border-radius:18px;cursor:pointer;transition:0.2s;}
+  .toggle-slider::before{content:'';position:absolute;width:12px;height:12px;left:2px;top:2px;background:var(--text3);border-radius:50%;transition:0.2s;}
+  .toggle-switch input:checked+.toggle-slider{background:rgba(79,142,247,0.2);border-color:var(--accent);}
+  .toggle-switch input:checked+.toggle-slider::before{transform:translateX(14px);background:var(--accent);}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);background:rgba(255,255,255,0.01);margin-top:auto;}
+  .card-last-study{font-size:12px;color:var(--text3);}
+  .card-last-study strong{color:var(--text2);font-weight:500;}
+  .card-enter{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--accent);transition:gap 0.15s;}
+  .concurso-card:hover .card-enter{gap:8px;}
+  .stamp-wrap{position:absolute;top:0;right:0;width:160px;height:160px;overflow:hidden;pointer-events:none;z-index:10;}
+  .stamp{position:absolute;top:32px;right:-38px;width:180px;padding:6px 0;text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transform:rotate(45deg);transform-origin:center;}
+  .stamp.reprovado{background:rgba(200,40,40,0.92);color:#fff;}
+  .stamp.cr{background:linear-gradient(90deg,#FFD700,#FFE55E,#FFD700);color:#000;box-shadow:0 2px 10px rgba(255,215,0,0.3);}
+  .stamp.aprovado{background:linear-gradient(90deg,#1a7a3a,#3ecf8e,#1a7a3a);color:#fff;font-size:12px;}
+  .nomeado-belt-wrap{
+    position:relative;
+    margin:18px -20px 8px;
+    isolation:isolate;
+  }
+  .nomeado-belt-wrap::before{
+    content:'';
+    position:absolute;
+    inset:-10px -6px;
+    border-radius:8px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.82), rgba(255,255,255,0.22) 48%, transparent 74%);
+    filter:blur(16px);
+    opacity:0.92;
+    z-index:0;
+    pointer-events:none;
+  }
+  .nomeado-belt-wrap::after{
+    content:'';
+    position:absolute;
+    inset:-2px -4px;
+    border-radius:8px;
+    background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.88) 20%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.88) 80%, transparent 100%);
+    filter:blur(10px);
+    opacity:0.42;
+    animation:nomeadoGlowPulse 2.8s ease-in-out infinite;
+    z-index:0;
+    pointer-events:none;
+  }
+  .nomeado-belt{
+    position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:12px;
+    width:100%;padding:12px 28px;overflow:hidden;
+    background:linear-gradient(180deg,#ffffff 0%,#f9fbff 46%,#edf1f8 100%);
+    border-radius:4px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.92),
+      0 10px 18px rgba(0,0,0,0.14),
+      0 0 0 1px rgba(214,221,234,0.95),
+      0 0 22px rgba(255,255,255,0.60),
+      0 0 42px rgba(255,255,255,0.26);
+    color:#101726;text-align:center;
+  }
+  .nomeado-belt::before{
+    content:'';position:absolute;inset:-12% auto -12% -24%;width:38%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,0.98), rgba(255,255,255,0.72), transparent);
+    transform:skewX(-18deg);
+    opacity:0.92;
+    filter:blur(0.5px);
+    animation:diamondShine 3.4s linear infinite;
+  }
+  .nomeado-belt::after{
+    content:'';position:absolute;inset:1px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.46), transparent 34%, rgba(255,255,255,0.14));
+    border-radius:3px;
+    pointer-events:none;
+  }
+  .nomeado-belt .belt-title{
+    position:relative;z-index:2;font-size:13px;font-weight:1000;letter-spacing:3.2px;text-transform:uppercase;
+    color:#111827;text-shadow:0 1px 0 rgba(255,255,255,0.9);
+  }
+  .nomeado-belt .belt-date{
+    position:relative;z-index:2;font-size:10px;font-weight:800;color:#4d5a72;letter-spacing:0.7px;text-transform:uppercase;
+  }
+  @keyframes diamondShine{
+    0%{transform:translateX(-150%) skewX(-18deg);}
+    100%{transform:translateX(360%) skewX(-18deg);}
+  }
+  @keyframes nomeadoGlowPulse{
+    0%,100%{opacity:0.34;transform:scaleX(0.98);}
+    50%{opacity:0.62;transform:scaleX(1);}
+  }
+  .crown-badge{position:absolute;top:10px;left:14px;font-size:20px;z-index:11;filter:drop-shadow(0 2px 4px rgba(255,215,0,0.6));animation:crownFloat 2.5s ease-in-out infinite;}
+  @keyframes crownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  .card-timestamp{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--text3);margin-bottom:12px;font-family:var(--mono);}
+  .add-card{
+    background:transparent;border:2px dashed var(--border);border-radius:16px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:7px;padding:18px 16px;cursor:pointer;transition:all 0.2s;
+    min-height:122px;max-width:220px;width:100%;justify-self:start;
+  }
+  .add-card:hover{border-color:var(--accent);background:rgba(79,142,247,0.04);transform:translateY(-2px);}
+  .add-icon{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;transition:all 0.2s;}
+  .add-card:hover .add-icon{background:rgba(79,142,247,0.1);border-color:var(--accent);}
+  .add-text{font-size:11px;font-weight:700;color:var(--text3);transition:color 0.2s;}
+  .add-card:hover .add-text{color:var(--accent);}
+  .add-sub{font-size:10px;color:var(--text3);opacity:0.72;text-align:center;line-height:1.35;max-width:150px;}
+  .section-divider{display:flex;align-items:center;gap:14px;margin:44px 0 24px;}
+  .divider-line{flex:1;height:1px;background:var(--border);}
+  .divider-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);white-space:nowrap;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text3);grid-column:1/-1;}
+  .empty-icon{font-size:48px;margin-bottom:16px;}
+  .empty-title{font-size:18px;font-weight:700;color:var(--text2);margin-bottom:8px;}
+  .empty-sub{font-size:14px;line-height:1.6;margin-bottom:24px;}
+  /* Esconder botoes nativos de scroll numerico */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
+  input[type="number"] { -moz-appearance:textfield; appearance: textfield; }
+
+  /* Tooltip moderno para botoes */
+  .btn-tooltip-wrap { position:relative; display:inline-flex; }
+  .btn-tooltip-wrap .btn-tooltip {
+    position:absolute; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(4px);
+    background:#1a1e2a; border:1px solid rgba(79,142,247,0.35); color:#c8cde8;
+    font-size:11px; font-weight:500; line-height:1.5; white-space:nowrap;
+    padding:7px 12px; border-radius:8px; pointer-events:none;
+    opacity:0; transition:opacity 0.18s, transform 0.18s;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5); z-index:9999;
+  }
+  .btn-tooltip-wrap .btn-tooltip kbd {
+    display:inline-block; background:rgba(79,142,247,0.15); border:1px solid rgba(79,142,247,0.3);
+    border-radius:4px; padding:1px 5px; font-family:monospace; font-size:11px; color:var(--accent);
+  }
+  .btn-tooltip-wrap .btn-tooltip::after {
+    content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border:5px solid transparent; border-top-color:#1a1e2a;
+  }
+  .btn-tooltip-wrap:hover .btn-tooltip { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* Modal Detalhes Report */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:20px;opacity:0;pointer-events:none;transition:all 0.3s ease;}
+  .modal-overlay.visible{opacity:1;pointer-events:auto;}
+  .modal-content.report-modal{background:var(--bg2);border:1px solid var(--border);border-radius:24px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 30px 60px rgba(0,0,0,0.6);transform:translateY(20px);transition:all 0.3s ease;padding:0;}
+  .modal-overlay.visible .modal-content.report-modal{transform:translateY(0);}
+  .report-header{padding:40px;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+  .report-logo-bg{position:absolute;top:-20px;right:-20px;width:180px;height:180px;display:flex;align-items:center;justify-content:center;opacity:0.06;pointer-events:none;z-index:1;overflow:visible;}
+  .report-logo-bg img{width:160%;height:160%;object-fit:contain;filter:grayscale(1);transform:rotate(-15deg) scale(1.2);}
+  .report-logo-bg .emoji-bg{font-size:160px;transform:rotate(-15deg);filter:grayscale(1);}
+  .report-title-row{display:flex;align-items:center;gap:20px;position:relative;z-index:2;}
+  .report-logo-circle{width:110px;height:110px;border-radius:28px;background:var(--bg3);border:2px solid var(--border);padding:4px;overflow:hidden;flex-shrink:0;box-shadow:0 10px 30px rgba(0,0,0,0.4);}
+  .report-logo-circle img{width:100%;height:100%;object-fit:cover;border-radius:22px;}
+  .report-logo-circle .emoji{font-size:50px;display:flex;align-items:center;justify-content:center;height:100%;}
+  .report-main-info h2{font-size:32px;font-weight:700;letter-spacing:-0.5px;color:var(--text);margin-bottom:4px;}
+  .report-main-info .banca{font-size:14px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+  .report-status-badge{margin-top:12px;display:inline-flex;padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+  
+  .report-body{padding:40px;}
+  .report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin-bottom:40px;}
+  .report-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;}
+  .report-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent);opacity:0.5;}
+  .report-card.gold::before{background:var(--yellow);}
+  .report-card.red::before{background:var(--red);}
+  .report-card-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;}
+  .report-card-val{font-size:28px;font-weight:700;color:var(--text);font-family:var(--mono);}
+  
+  .report-stats-box{background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:16px;padding:24px;margin-bottom:40px;}
+  .report-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;}
+  .report-sub-stat{padding:12px;}
+  .report-sub-label{font-size:11px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;}
+  .report-sub-val{font-size:20px;font-weight:700;color:var(--text);font-family:var(--mono);}
+
+  .report-footer{padding:30px 40px;background:var(--bg3);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .btn-modal{padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:var(--sans);display:flex;align-items:center;gap:8px;}
+  .btn-modal.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;box-shadow:0 8px 16px rgba(124,92,252,0.25);}
+  .btn-modal.secondary{background:transparent;color:var(--text2);border:1px solid var(--border);}
+  .btn-modal:hover{transform:translateY(-2px);filter:brightness(1.1);}
+  .modal-close-btn{position:absolute;top:20px;right:20px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;z-index:10;border:1px solid var(--border);font-size:20px;transition:all 0.2s;}
+  .modal-close-btn:hover{background:var(--red);color:#fff;border-color:transparent;}
+
+  .obs-box{margin-top:20px;padding:20px;background:rgba(0,0,0,0.2);border-radius:12px;font-size:14px;line-height:1.6;color:var(--text2);border:1px solid var(--border);}
+  .obs-box label{display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;opacity:0.6;}
+  .profile-modal-card{max-width:720px;}
+  .profile-modal-head{padding:32px 32px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(79,142,247,0.12),rgba(124,92,252,0.06) 60%,transparent);}
+  .profile-modal-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.18);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+  .profile-modal-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;color:var(--text);margin-bottom:8px;}
+  .profile-modal-sub{font-size:14px;line-height:1.65;color:var(--text3);max-width:420px;}
+  .profile-modal-body{padding:26px 32px 32px;display:grid;grid-template-columns:1.15fr 0.85fr;gap:20px;}
+  .profile-panel{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:18px;padding:18px;}
+  .profile-field-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+  .profile-input-wrap{position:relative;}
+  .profile-input{
+    width:100%;padding:16px 18px;border-radius:14px;border:1px solid var(--border2);
+    background:rgba(255,255,255,0.03);color:var(--text);font-size:16px;font-weight:600;
+    outline:none;transition:border-color .18s, box-shadow .18s, background .18s;
+  }
+  .profile-input:focus{
+    border-color:rgba(79,142,247,0.65);
+    box-shadow:0 0 0 4px rgba(79,142,247,0.14), 0 12px 32px rgba(0,0,0,0.28);
+    background:rgba(255,255,255,0.045);
+  }
+  .profile-modal-help{font-size:12px;line-height:1.6;color:var(--text3);}
+  .profile-modal-error{
+    display:none;padding:12px 14px;border-radius:12px;border:1px solid rgba(245,90,90,0.28);
+    background:rgba(245,90,90,0.08);color:#ffb4b4;font-size:12px;font-weight:600;
+  }
+  .profile-modal-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:4px;}
+  .profile-chip-action{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--text3);}
+  .profile-section{display:flex;flex-direction:column;gap:14px;}
+  .profile-gender-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .profile-gender-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;
+    border:1px solid var(--border2);background:rgba(255,255,255,0.03);color:var(--text2);
+    font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;
+  }
+  .profile-gender-btn:hover{border-color:rgba(79,142,247,0.45);background:rgba(79,142,247,0.08);}
+  .profile-gender-btn.active{border-color:rgba(79,142,247,0.7);background:rgba(79,142,247,0.14);box-shadow:0 0 0 1px rgba(79,142,247,0.14) inset;color:#fff;}
+  .profile-list{display:flex;flex-direction:column;gap:10px;max-height:270px;overflow:auto;padding-right:4px;}
+  .profile-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 14px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,0.025);}
+  .profile-item.active{border-color:rgba(79,142,247,0.45);background:rgba(79,142,247,0.08);box-shadow:0 0 0 1px rgba(79,142,247,0.12) inset;}
+  .profile-item-main{min-width:0;display:flex;flex-direction:column;gap:5px;}
+  .profile-item-name{font-size:14px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:8px;min-width:0;}
+  .profile-item-name span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .profile-item-meta{font-size:11px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap;}
+  .profile-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:rgba(62,207,142,0.12);border:1px solid rgba(62,207,142,0.22);color:var(--green);font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;}
+  .profile-empty{padding:18px;border-radius:14px;border:1px dashed var(--border2);text-align:center;font-size:12px;line-height:1.6;color:var(--text3);}
+  .profile-inline-actions{display:flex;gap:10px;align-items:center;}
+  .profile-btn-small{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;}
+  .profile-btn-small:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.06);}
+  .profile-btn-small.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;box-shadow:0 10px 20px rgba(79,142,247,0.22);}
+  .profile-btn-small.primary:hover{filter:brightness(1.06);color:#fff;}
+  .profile-btn-small.danger{border-color:rgba(245,90,90,0.3);color:var(--red);background:rgba(245,90,90,0.05);}
+  .profile-btn-small.danger:hover{border-color:rgba(245,90,90,0.48);color:#fff;background:linear-gradient(135deg,rgba(245,90,90,0.92),rgba(214,57,57,0.95));}
+  .profile-stack{display:flex;flex-direction:column;gap:16px;}
+  .profile-actions-footer{display:flex;justify-content:flex-end;gap:12px;padding-top:6px;}
+  .premium-import-card{max-width:760px;}
+  .premium-import-head{padding:32px 32px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,252,0.16),rgba(79,142,247,0.08) 55%,transparent);}
+  .premium-import-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.2);color:var(--accent2);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+  .premium-import-title{font-size:28px;font-weight:700;letter-spacing:-0.6px;color:var(--text);margin-bottom:8px;}
+  .premium-import-sub{font-size:14px;line-height:1.7;color:var(--text3);max-width:560px;}
+  .premium-import-body{padding:26px 32px 32px;display:flex;flex-direction:column;gap:18px;}
+  .premium-import-panel{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:18px;padding:20px;}
+  .premium-import-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+  .premium-import-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  .premium-import-point{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);min-height:100%;}
+  .premium-import-step{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;box-shadow:0 10px 22px rgba(79,142,247,0.18);}
+  .premium-import-point strong{display:block;font-size:12px;line-height:1.38;color:var(--text);margin-bottom:0;}
+  .premium-import-point span{display:block;font-size:11.5px;line-height:1.55;color:var(--text3);}
+  .premium-import-contact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
+  .premium-import-contact-card{
+    display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:15px;border:1px solid var(--border);
+    appearance:none;background:var(--bg3);text-decoration:none;color:inherit;text-align:left;cursor:pointer;font:inherit;
+    transition:border-color .18s, transform .18s, box-shadow .18s, background .18s;
+  }
+  .premium-import-contact-card:hover{
+    border-color:rgba(79,142,247,0.42);transform:translateY(-1px);box-shadow:0 14px 28px rgba(79,142,247,0.12);
+    background:rgba(79,142,247,0.06);
+  }
+  .premium-import-contact-card.whatsapp{
+    border-color:rgba(37,211,102,0.52);
+    background:linear-gradient(180deg,rgba(20,64,44,0.96),rgba(14,49,34,0.94));
+    box-shadow:0 14px 28px rgba(37,211,102,0.14);
+  }
+  .premium-import-contact-card:focus-visible{outline:none;border-color:rgba(79,142,247,0.6);box-shadow:0 0 0 3px rgba(79,142,247,0.16);}
+  .premium-import-contact-card.whatsapp:hover{
+    border-color:rgba(37,211,102,0.68);box-shadow:0 18px 34px rgba(37,211,102,0.18);
+    background:linear-gradient(180deg,rgba(24,78,53,0.98),rgba(17,57,40,0.96));
+  }
+  .premium-import-contact-card.whatsapp:focus-visible{border-color:rgba(37,211,102,0.78);box-shadow:0 0 0 3px rgba(37,211,102,0.18);}
+  .premium-import-contact-icon{
+    width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:0 0 42px;
+    background:linear-gradient(135deg,rgba(79,142,247,0.16),rgba(124,92,252,0.16));border:1px solid rgba(79,142,247,0.22);font-size:19px;
+  }
+  .premium-import-contact-icon svg{width:20px;height:20px;display:block;}
+  .premium-import-contact-card.whatsapp .premium-import-contact-icon{
+    background:linear-gradient(135deg,#27d366,#1fa855);border-color:rgba(37,211,102,0.45);color:#fff;box-shadow:0 12px 26px rgba(37,211,102,0.22);
+  }
+  .premium-import-contact-card.whatsapp .premium-import-contact-title{color:#f4fff8;}
+  .premium-import-contact-card.whatsapp .premium-import-contact-sub{color:#c0f0d0;}
+  .premium-import-contact-card.whatsapp .premium-import-contact-action{color:#1fa855;}
+  .premium-import-contact-text{min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .premium-import-contact-title{font-size:13px;font-weight:700;color:var(--text);}
+  .premium-import-contact-sub{font-size:12px;line-height:1.55;color:var(--text3);word-break:break-word;}
+  .premium-import-contact-action{font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--accent);}
+  .premium-dropzone{position:relative;padding:28px 22px;border-radius:20px;border:1.5px dashed rgba(124,92,252,0.35);background:linear-gradient(180deg,rgba(124,92,252,0.08),rgba(79,142,247,0.05));cursor:pointer;transition:border-color .18s, transform .18s, box-shadow .18s, background .18s;text-align:center;overflow:hidden;}
+  .premium-dropzone::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(124,92,252,0.14),transparent 42%);pointer-events:none;}
+  .premium-dropzone:hover{border-color:#9e87ff;transform:translateY(-1px);box-shadow:0 18px 42px rgba(79,142,247,0.12);}
+  .premium-dropzone.dragover{border-color:#b8a7ff;background:linear-gradient(180deg,rgba(124,92,252,0.14),rgba(79,142,247,0.08));box-shadow:0 20px 46px rgba(124,92,252,0.16);}
+  .premium-dropzone-icon{position:relative;z-index:1;width:58px;height:58px;margin:0 auto 14px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;box-shadow:0 12px 30px rgba(79,142,247,0.2);}
+  .premium-dropzone-title{position:relative;z-index:1;font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .premium-dropzone-sub{position:relative;z-index:1;font-size:13px;line-height:1.7;color:var(--text3);max-width:470px;margin:0 auto;}
+  .premium-dropzone-sub strong{color:var(--text2);}
+  .premium-import-file{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .premium-import-file-name{font-size:13px;font-weight:700;color:var(--text2);}
+  .premium-import-file-meta{font-size:12px;color:var(--text3);}
+  .premium-import-file.empty .premium-import-file-name{color:var(--text3);}
+  .premium-import-file-main{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .premium-import-error{
+    display:none;padding:12px 14px;border-radius:12px;border:1px solid rgba(245,90,90,0.28);
+    background:rgba(245,90,90,0.08);color:var(--red);font-size:12px;font-weight:600;line-height:1.6;
+  }
+  .premium-import-tip{
+    font-size:12px;line-height:1.65;color:var(--text3);margin-top:14px;
+  }
+  .premium-import-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;}
+  .premium-success-card{max-width:520px;}
+  .premium-success-head{
+    padding:30px 30px 18px;border-bottom:1px solid var(--border);
+    background:
+      radial-gradient(circle at top right, rgba(62,207,142,0.18), transparent 34%),
+      radial-gradient(circle at top left, rgba(79,142,247,0.12), transparent 36%),
+      linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+  }
+  .premium-success-badge{
+    display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+    background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.2);color:var(--green);
+    font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
+  }
+  .premium-success-title{font-size:26px;font-weight:800;letter-spacing:-0.6px;color:var(--text);margin-bottom:8px;}
+  .premium-success-sub{font-size:14px;line-height:1.7;color:var(--text3);}
+  .premium-success-body{padding:22px 30px 28px;display:flex;flex-direction:column;gap:16px;}
+  .premium-success-highlight{
+    display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:16px;
+    background:rgba(62,207,142,0.06);border:1px solid rgba(62,207,142,0.16);
+  }
+  .premium-success-icon{
+    width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,rgba(62,207,142,0.22),rgba(79,142,247,0.2));
+    border:1px solid rgba(62,207,142,0.22);font-size:20px;flex-shrink:0;
+  }
+  .premium-success-copy{font-size:13px;line-height:1.75;color:var(--text2);}
+  .premium-success-footer{display:flex;justify-content:flex-end;padding-top:2px;}
+  :root[data-theme="light"] .premium-success-head{
+    background:
+      radial-gradient(circle at top right, rgba(21,107,82,0.14), transparent 34%),
+      radial-gradient(circle at top left, rgba(31,95,209,0.1), transparent 36%),
+      linear-gradient(135deg, rgba(255,255,255,0.98), rgba(244,247,252,0.98));
+  }
+  :root[data-theme="light"] .premium-success-highlight{
+    background:rgba(21,107,82,0.05);border-color:rgba(21,107,82,0.14);
+  }
+  .btn-modal:disabled{opacity:0.48;cursor:not-allowed;filter:none;transform:none;box-shadow:none;}
+  @media (max-width:640px){
+    .profile-modal-head{padding:24px 22px 16px;}
+    .profile-modal-body{padding:22px;grid-template-columns:1fr;}
+    .profile-modal-title{font-size:22px;}
+    .profile-modal-actions,.profile-actions-footer{flex-direction:column-reverse;}
+    .profile-modal-actions .btn-modal,.profile-actions-footer .btn-modal,.profile-inline-actions .profile-btn-small{width:100%;justify-content:center;}
+    .profile-inline-actions{flex-direction:column;}
+    .premium-import-head{padding:24px 22px 16px;}
+    .premium-import-title{font-size:22px;}
+    .premium-import-body{padding:22px;}
+    .premium-import-points{grid-template-columns:1fr;}
+    .premium-import-contact-grid{grid-template-columns:1fr;}
+    .premium-import-actions{flex-direction:column-reverse;}
+    .premium-import-actions .btn-modal{width:100%;justify-content:center;}
+  }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div id="modalDetalhes" class="modal-overlay">
+    <div class="modal-content report-modal">
+      <div class="modal-close-btn" onclick="fecharModalDetalhes()">X</div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="modalPerfil" class="modal-overlay">
+    <div class="modal-content report-modal profile-modal-card">
+      <div class="modal-close-btn" onclick="fecharModalPerfil()">X</div>
+      <div class="profile-modal-head">
+        <div class="profile-modal-eyebrow">Perfil</div>
+        <div class="profile-modal-title">Gerenciar Perfis</div>
+        <div class="profile-modal-sub">Crie novos perfis, renomeie o atual e troque de ambiente sem misturar dados entre usuários do mesmo computador.</div>
+      </div>
+      <div class="profile-modal-body">
+        <div class="profile-panel profile-section">
+          <div class="profile-field-label">Perfis Disponíveis</div>
+          <div id="listaPerfis" class="profile-list"></div>
+          <div class="profile-modal-help">Cada perfil possui arquivo principal e snapshots próprios. Ao trocar, o app passa a salvar apenas no perfil ativo.</div>
+        </div>
+        <div class="profile-stack">
+          <div class="profile-panel profile-section">
+            <div class="profile-field-label">Renomear perfil atual</div>
+            <div class="profile-input-wrap">
+              <input id="perfilNomeInput" class="profile-input" type="text" maxlength="80" placeholder="Ex.: Michel - Área Fiscal">
+            </div>
+            <div class="profile-field-label">Identificação do perfil</div>
+            <div class="profile-gender-grid">
+              <button id="perfilGeneroMasc" class="profile-gender-btn" type="button" onclick="selecionarGeneroPerfilAtual('masculino')">Masculino</button>
+              <button id="perfilGeneroFem" class="profile-gender-btn" type="button" onclick="selecionarGeneroPerfilAtual('feminino')">Feminino</button>
+            </div>
+            <div id="perfilNomeErro" class="profile-modal-error"></div>
+            <div class="profile-modal-actions">
+              <button id="btnSalvarPerfilNome" class="btn-modal primary" type="button" onclick="confirmarRenomeacaoPerfil()">Salvar Perfil</button>
+            </div>
+          </div>
+          <div class="profile-panel profile-section">
+            <div class="profile-field-label">Criar novo perfil</div>
+            <div class="profile-input-wrap">
+              <input id="novoPerfilInput" class="profile-input" type="text" maxlength="80" placeholder="Ex.: Ana - Tribunais">
+            </div>
+            <div class="profile-field-label">Identificação do novo perfil</div>
+            <div class="profile-gender-grid">
+              <button id="novoPerfilGeneroMasc" class="profile-gender-btn active" type="button" onclick="selecionarGeneroNovoPerfil('masculino')">Masculino</button>
+              <button id="novoPerfilGeneroFem" class="profile-gender-btn" type="button" onclick="selecionarGeneroNovoPerfil('feminino')">Feminino</button>
+            </div>
+            <div class="profile-modal-help">
+              <span class="profile-chip-action">Dica</span>
+              Ideal para separar totalmente os estudos de pessoas diferentes.
+            </div>
+            <div id="novoPerfilErro" class="profile-modal-error"></div>
+            <div class="profile-modal-actions">
+              <button id="btnCriarPerfil" class="btn-modal primary" type="button" onclick="criarNovoPerfil()">Criar Perfil</button>
+            </div>
+          </div>
+          <div class="profile-actions-footer">
+            <button class="btn-modal secondary" type="button" onclick="fecharModalPerfil()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalImportPremium" class="modal-overlay">
+    <div class="modal-content report-modal premium-import-card">
+      <div class="modal-close-btn" onclick="fecharModalImportPremium()">X</div>
+      <div class="premium-import-head">
+        <div class="premium-import-eyebrow">Edital Premium</div>
+        <div class="premium-import-title">Solicitar ou importar Edital Premium</div>
+        <div class="premium-import-sub">Entenda como funciona o Edital Premium, fale comigo para solicitar o seu e, quando o arquivo estiver pronto, carregue-o aqui para criar um novo concurso no Track Concursos.</div>
+      </div>
+      <div class="premium-import-body">
+        <div class="premium-import-panel">
+          <div class="premium-import-label">Como funciona</div>
+          <div class="premium-import-points">
+            <div class="premium-import-point">
+              <div class="premium-import-step">1</div>
+              <div>
+                <strong>Pré ou pós-edital pronto</strong>
+                <span>Eu monto e te envio um pré ou pós-edital já pronto, com tópicos, subtópicos, sugestão de ciclo de estudos, painel da prova com quantidade de questões e seus pesos, simulados linkados etc.</span>
+              </div>
+            </div>
+            <div class="premium-import-point">
+              <div class="premium-import-step">2</div>
+              <div>
+                <strong>Simples ou Premium</strong>
+                <span>Você escolhe entre edital básico ou edital premium, com ciclo de estudos, cadernos de questões por matéria e 5 simulados prontos. Requer assinatura TEC CONCURSOS para acessá-los.</span>
+              </div>
+            </div>
+            <div class="premium-import-point">
+              <div class="premium-import-step">3</div>
+              <div>
+                <strong>Fale diretamente comigo</strong>
+                <span>Entre em contato comigo pelo WhatsApp ou e-mail para saber valores e solicitar seu edital premium.</span>
+              </div>
+            </div>
+          </div>
+          <div class="premium-import-contact-grid">
+            <a class="premium-import-contact-card whatsapp" href="https://api.whatsapp.com/send?phone=5589981383459&text=Ol%C3%A1,%20estou%20interessado%20em%20um%20Edital%20Premium%20para%20o%20Track%20Concursos" target="_blank" rel="noopener noreferrer">
+              <div class="premium-import-contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="WhatsApp">
+                  <path d="M20.52 3.48A11.86 11.86 0 0 0 12.07 0C5.5 0 .15 5.35.15 11.92c0 2.1.55 4.15 1.6 5.95L0 24l6.3-1.65a11.9 11.9 0 0 0 5.77 1.48h.01c6.57 0 11.92-5.35 11.92-11.92 0-3.18-1.24-6.17-3.48-8.43Zm-8.45 18.33h-.01a9.9 9.9 0 0 1-5.05-1.39l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.52-5.25c0-5.48 4.45-9.93 9.93-9.93 2.65 0 5.13 1.03 7 2.9a9.83 9.83 0 0 1 2.9 7c0 5.48-4.45 9.92-9.91 9.92Zm5.44-7.4c-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.08-.3-.15-1.28-.47-2.43-1.5-.9-.8-1.5-1.8-1.67-2.1-.18-.3-.02-.46.13-.6.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.48-.5-.67-.51h-.57c-.2 0-.52.08-.8.37-.27.3-1.05 1.02-1.05 2.48s1.08 2.88 1.23 3.08c.15.2 2.12 3.25 5.13 4.55.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.69.25-1.29.17-1.42-.08-.12-.28-.2-.58-.35Z"/>
+                </svg>
+              </div>
+              <div class="premium-import-contact-text">
+                <div class="premium-import-contact-title">WhatsApp</div>
+                <div class="premium-import-contact-sub">+55 89 98138-3459</div>
+                <div class="premium-import-contact-action">Abrir conversa</div>
+              </div>
+            </a>
+            <button class="premium-import-contact-card" type="button" onclick="copiarEmailEditalPremium()">
+              <div class="premium-import-contact-icon">📧</div>
+              <div class="premium-import-contact-text">
+                <div class="premium-import-contact-title">E-mail</div>
+                <div class="premium-import-contact-sub">michel.araujo.py@gmail.com</div>
+                <div class="premium-import-contact-action">Clique para copiar</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="premium-import-panel">
+          <div class="premium-import-label">Carregar arquivo</div>
+          <div id="premiumDropzone" class="premium-dropzone" role="button" tabindex="0" onclick="abrirSeletorEditalPremium()">
+            <div class="premium-dropzone-icon">📦</div>
+            <div class="premium-dropzone-title">Arraste para aqui o Edital Premium</div>
+            <div class="premium-dropzone-sub">ou <strong>clique para carregá-lo</strong> e trazer a estrutura pronta para dentro do Track Concursos.</div>
+          </div>
+          <div id="premiumImportFile" class="premium-import-file empty">
+            <div class="premium-import-file-main">
+              <div id="premiumImportFileName" class="premium-import-file-name">Nenhum arquivo selecionado</div>
+              <div id="premiumImportFileMeta" class="premium-import-file-meta">Use um JSON exportado do Edital Premium.</div>
+            </div>
+            <button class="profile-btn-small" type="button" onclick="abrirSeletorEditalPremium()">Escolher arquivo</button>
+          </div>
+          <div id="premiumImportError" class="premium-import-error"></div>
+        </div>
+
+        <div class="premium-import-actions">
+          <button class="btn-modal secondary" type="button" onclick="fecharModalImportPremium()">Cancelar</button>
+          <button id="btnConfirmarImportPremium" class="btn-modal primary" type="button" onclick="confirmarImportacaoEditalPremium()" disabled>Importar Edital</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalPremiumSuccess" class="modal-overlay">
+    <div class="modal-content report-modal premium-success-card">
+      <div class="modal-close-btn" onclick="fecharModalPremiumSuccess()">X</div>
+      <div class="premium-success-head">
+        <div class="premium-success-badge">✨ Edital Premium</div>
+        <div class="premium-success-title">Importação concluída</div>
+        <div class="premium-success-sub">Seu novo concurso já foi criado dentro do Track Concursos.</div>
+      </div>
+      <div class="premium-success-body">
+        <div class="premium-success-highlight">
+          <div class="premium-success-icon">🎉</div>
+          <div class="premium-success-copy">
+            <strong style="display:block;color:var(--text);margin-bottom:6px">Edital Premium importado com sucesso!</strong>
+            A estrutura do concurso foi criada com as estatísticas zeradas para você começar a estudar do seu jeito.<br><br>
+            Bons estudos e boa sorte nessa jornada!
+          </div>
+        </div>
+        <div class="premium-success-footer">
+          <button class="btn-modal primary" type="button" onclick="fecharModalPremiumSuccess()">Perfeito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrapper">
+  <div class="top-bar">
+    <div class="logo" onclick="location.href='concursos.html'">
+      <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo">
+    </div>
+    <div class="top-actions">
+      <button class="btn-outline theme-toggle" type="button" data-theme-toggle>
+        <span class="theme-toggle-indicator" aria-hidden="true"></span>
+        <span class="theme-toggle-copy">Tema</span>
+        <span class="theme-toggle-value" data-theme-label>Escuro</span>
+      </button>
+      <div id="backupInfo" class="backup-chip" style="display:none"></div>
+      <div class="btn-tooltip-wrap">
+        <button class="btn-outline" onclick="CT.exportarBackup()">Salvar Alterações</button>
+        <div class="btn-tooltip">Salva o perfil ativo atual e cria um backup de segurança sem sobrescrever os anteriores.<br>Atalho rápido: <kbd>Ctrl</kbd> + <kbd>S</kbd></div>
+      </div>
+      <button class="btn-outline" id="btnImport" title="Restaurar o perfil principal a partir de um backup de segurança">Restaurar Backup</button>
+      <button class="btn-outline premium-import" onclick="importarEditalUnico()" title="Importar um template premium de concurso sem trazer estatísticas do usuário">📦 Importar Edital Premium</button>
+      <input type="file" id="fileBackup" accept=".json" style="display:none">
+      <input type="file" id="filePremiumImport" accept=".json,application/json" style="display:none">
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">Mural de Concursos</div>
+    <h1 class="hero-title">Meus <span>Concursos</span></h1>
+    <p class="hero-sub">Cada concurso é uma batalha. Guarde cada reprovação, cada aprovação: essa é a história da sua jornada.</p>
+  </div>
+
+  <div class="global-stats">
+    <div class="global-stat"><div class="global-stat-val accent" id="sHoras">0h</div><div class="global-stat-label">Horas totais</div></div>
+    <div class="global-stat"><div class="global-stat-val yellow" id="sQuestoes">0</div><div class="global-stat-label">Questões resolvidas</div></div>
+    <div class="global-stat"><div class="global-stat-val green" id="sAcertos">-</div><div class="global-stat-label">Taxa média de acertos</div></div>
+    <div class="global-stat simulado-stat">
+      <div class="global-stat-val sim-last" id="sUltSim">-</div>
+      <div class="global-stat-label">Último Simulado</div>
+      <div class="sim-avg">média geral: <strong id="sMediaSim">-</strong></div>
+    </div>
+    <div class="global-stat">
+      <div class="global-stat-val purple" id="sConcursos">0</div>
+      <div class="global-stat-label">Concursos realizados</div>
+      <div id="sConcursosDetalhes" class="stat-sub-grid"></div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-left">
+      <div class="section-title">Em andamento</div>
+      <div class="section-count" id="cntAtivos">0 concursos</div>
+    </div>
+    <button class="btn-new" onclick="location.href='cadastro_edital.html'">+ Cadastrar Novo Concurso</button>
+  </div>
+  <div class="cards-grid" id="gridAtivos"></div>
+
+  <div id="secRealizados" style="display:none">
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <div class="divider-label">Concursos Realizados</div>
+      <div class="divider-line"></div>
+    </div>
+    <div class="cards-grid" id="gridRealizados"></div>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+let _perfilGeneroAtual = 'masculino';
+let _novoPerfilGenero = 'masculino';
+let _premiumImportConteudo = '';
+let _premiumImportNome = '';
+let _premiumImportTamanho = 0;
+
+function generoAtualPerfil(){
+  const genero = (CT.getProfileGenero && CT.getProfileGenero()) || localStorage.getItem('ct_profile_genero') || 'masculino';
+  return genero === 'feminino' ? 'feminino' : 'masculino';
+}
+function flexGenero(masc, fem){
+  return generoAtualPerfil() === 'feminino' ? fem : masc;
+}
+function resultadoTexto(tipo, opts = {}){
+  const colocacao = opts.colocacao ? ` · ${opts.colocacao}º` : '';
+  switch (tipo) {
+    case 'aprovado':
+      return `${flexGenero('Aprovado', 'Aprovada')}${colocacao}`;
+    case 'cr':
+      return `${flexGenero('Classificado CR', 'Classificada CR')}${colocacao}`;
+    case 'aguardando':
+      return 'Aguardando Resultado';
+    case 'reprovado':
+      return `${flexGenero('Reprovado', 'Reprovada')}${colocacao}`;
+    case 'eliminado':
+      return flexGenero('Eliminado', 'Eliminada');
+    case 'aprovado_detalhe':
+      return flexGenero('Aprovado dentro das vagas', 'Aprovada dentro das vagas');
+    case 'nomeado':
+      return flexGenero('Nomeado', 'Nomeada');
+    case 'fui_nomeado':
+      return flexGenero('Sim, fui nomeado!', 'Sim, fui nomeada!');
+    case 'foi_nomeado':
+      return flexGenero('Você foi nomeado neste concurso?', 'Você foi nomeada neste concurso?');
+    case 'remover_nomeacao':
+      return 'Remover nomeação';
+    default:
+      return tipo || '';
+  }
+}
+function syncGeneroButtons(prefix, genero){
+  const masc = document.getElementById(`${prefix}GeneroMasc`);
+  const fem = document.getElementById(`${prefix}GeneroFem`);
+  if (masc) masc.classList.toggle('active', genero === 'masculino');
+  if (fem) fem.classList.toggle('active', genero === 'feminino');
+}
+function selecionarGeneroPerfilAtual(genero){
+  _perfilGeneroAtual = genero === 'feminino' ? 'feminino' : 'masculino';
+  syncGeneroButtons('perfil', _perfilGeneroAtual);
+}
+function selecionarGeneroNovoPerfil(genero){
+  _novoPerfilGenero = genero === 'feminino' ? 'feminino' : 'masculino';
+  syncGeneroButtons('novoPerfil', _novoPerfilGenero);
+}
+function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+function stripe(c){
+  if(c.resultado==='aprovado')return'linear-gradient(90deg,#1a7a3a,#3ecf8e,#1a7a3a)';
+  if(c.resultado==='cr')return'linear-gradient(90deg,#FFD700,#FFE55E,#FFD700)';
+  if(c.resultado==='aguardando')return'linear-gradient(90deg,#e8eaf2,#8b90a8,#e8eaf2)';
+  if(c.resultado==='reprovado')return'linear-gradient(90deg,var(--red),#c43030)';
+  if(c.resultado==='eliminado')return'linear-gradient(90deg,var(--red),#c43030)';
+  const d=CT.diasRestantes(c);
+  if(d!=null&&d<=7)return'linear-gradient(90deg,var(--red),#c43030)';
+  if(d!=null&&d<=30)return'linear-gradient(90deg,var(--orange),var(--yellow))';
+  return'linear-gradient(90deg,var(--accent),var(--accent2))';
+}
+function lastStudy(c){
+  const s=CT.getSessoes({concursoId:c.id}).sort((a,b)=>b.data.localeCompare(a.data));
+  if(!s.length)return'nenhum estudo';
+  const hoje=CT._today();
+  const ontem=new Date();ontem.setHours(12,0,0,0);ontem.setDate(ontem.getDate()-1);
+  if(s[0].data===hoje)return'hoje';
+  if(s[0].data===CT._dateString(ontem))return'ontem';
+  return 'há ' + Math.floor((new Date(hoje)-new Date(s[0].data))/86400000) + ' dias';
+}
+function logoHTML(c, size='84px') {
+  if (c.logoPath) return `<div class="card-logo" style="width:${size};height:${size};padding:0;overflow:hidden"><img src="${c.logoPath}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover"></div>`;
+  if (c.logoBase64) return `<div class="card-logo" style="width:${size};height:${size};padding:0;overflow:hidden"><img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover"></div>`;
+  return `<div class="card-logo">${c.logoEmoji||'🏛️'}</div>`;
+}
+function cardAtivo(c){
+  const top=CT.getTopicos().filter(t=>t.concursoId===c.id);
+  const est=top.filter(t=>t.estudado).length;
+  const pProg=top.length?Math.round(est/top.length*100):0;
+  const sess=CT.getSessoes({concursoId:c.id});
+  const segundos=CT.totalSegundos(sess);
+  const horas=CT.formatarTempo(segundos);
+  const q=CT.calcStats(CT.getQuestoes({concursoId:c.id}));
+  const dias=CT.diasRestantes(c);
+
+  // Faixa
+  const FAIXAS = [
+    { nome:'Faixa Branca', imagem:'assets/faixas/faixabranca.png', semanas:0, questoes:0, sims80:0 },
+    { nome:'Faixa Amarela', imagem:'assets/faixas/faixaamarela.png', semanas:2, questoes:250, sims80:1 },
+    { nome:'Faixa Vermelha', imagem:'assets/faixas/faixavermelha.png', semanas:4, questoes:500, sims80:2 },
+    { nome:'Faixa Laranja', imagem:'assets/faixas/faixalaranja.png', semanas:8, questoes:1000, sims80:3 },
+    { nome:'Faixa Verde', imagem:'assets/faixas/faixaverde.png', semanas:12, questoes:2000, sims80:4 },
+    { nome:'Faixa Roxa', imagem:'assets/faixas/faixaroxa.png', semanas:16, questoes:3000, sims80:5 },
+    { nome:'Faixa Marrom', imagem:'assets/faixas/faixamarrom.png', semanas:20, questoes:5000, sims80:6 },
+    { nome:'Faixa Preta', imagem:'assets/faixas/faixapreta.png', semanas:24, questoes:8000, sims80:7 }
+  ];
+  const semanas = parseInt(localStorage.getItem('ct_semanas_completas_'+c.id)||'0');
+  const sims80 = CT.getSimulados(c.id).filter(s=>s.pct>=80).length;
+  let fIdx = 0;
+  for(let i=FAIXAS.length-1; i>=0; i--){
+    if(semanas>=FAIXAS[i].semanas || q.resolvidas>=FAIXAS[i].questoes || sims80>=FAIXAS[i].sims80){ fIdx = i; break; }
+  }
+  const faixa = FAIXAS[fIdx];
+
+  const rocketSrc = CT.getPreEditalRocketAsset ? CT.getPreEditalRocketAsset(c) : ((c.coberto || 0) > 0 ? 'assets/mascots/pre-edital-rocket.gif' : 'assets/mascots/pre-edital-rocket-still.png');
+  const rocketImg = `<img src="${rocketSrc}" class="cover-rocket-icon" alt="Foguete da cobertura">`;
+  const cobertoPos = (!c.preEdital && c.coberto > 0)
+    ? `<div style="margin-top:2px; text-align:right">
+        <div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">Pós-edital</div>
+        <div style="font-size:11px; font-weight:600; color:var(--text3);display:inline-flex;align-items:center;gap:4px">${rocketImg} Coberto <span style="color:var(--accent2)">x${c.coberto}</span></div>
+      </div>`
+    : '';
+
+  const timerEl=c.preEdital
+    ?`<div class="card-pre-edital"><div class="card-pre-tag">Pré-edital</div><div class="card-rocket-row">${rocketImg}<div class="card-coberto">coberto <span>x${c.coberto||0}</span></div></div></div>`
+    :`<div class="card-timer"><div class="card-timer-num" style="color:${dias==null?'var(--accent)':dias<=7?'var(--red)':dias<=30?'var(--orange)':'var(--accent)'}">${dias??'-'}</div><div class="card-timer-label">dias p/ prova</div>${cobertoPos}</div>`;
+
+  return `<div class="concurso-card" onclick="abrirDash('${c.id}')" style="cursor:pointer">
+    <div class="card-top-stripe" style="background:${stripe(c)}"></div>
+    <div class="card-body">
+      <div class="card-inst">
+        ${logoHTML(c)}
+        <div class="card-inst-info">
+          <div class="card-nome">${c.nome}</div>
+          <div class="card-banca">${c.banca||'Banca não definida'}</div>
+          ${c.cargo?`<div class="card-cargo">${c.cargo}</div>`:''}
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+            <img src="${faixa.imagem}" style="width:16px;height:16px;object-fit:contain">
+            <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px">${faixa.nome}</span>
+          </div>
+        </div>
+        ${timerEl}
+      </div>
+      <div class="card-stats">
+        <div class="card-stat"><div class="card-stat-val">${segundos>0?horas:'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Horas</div></div>
+        <div class="card-stat"><div class="card-stat-val">${q.resolvidas>0?q.resolvidas:'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Questões</div></div>
+        <div class="card-stat"><div class="card-stat-val" style="color:${pctColor(q.pct)}">${q.pct!=null?q.pct+'%':'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Acertos</div></div>
+      </div>
+      <div class="card-prog-label">Progresso <span>${est} / ${top.length} (${pProg}%)</span></div>
+      <div class="card-prog-bar"><div class="card-prog-fill" style="width:${pProg}%;background:${stripe(c)}"></div></div>
+      <div class="card-toggle-row">
+        <span class="card-toggle-label">Contar nas estatísticas gerais</span>
+        <label class="toggle-switch" onclick="event.stopPropagation()">
+          <input type="checkbox" ${c.contarEstatisticas!==false?'checked':''} onchange="toggleStat('${c.id}',this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="card-last-study">Último estudo: <strong>${lastStudy(c)}</strong></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="event.stopPropagation();editarRealizado('${c.id}')" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Editar</button>
+        <button data-del="${c.id}" onclick="event.stopPropagation();deletarConcurso(this.dataset.del)" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Excluir</button>
+        <div class="card-enter">Abrir -></div>
+      </div>
+    </div>
+  </div>`;
+}
+function cardRealizado(c){
+  const q=CT.calcStats(CT.getQuestoes({concursoId:c.id}));
+  const _sess=CT.getSessoes({concursoId:c.id});
+  const segundos=CT.totalSegundos(_sess);
+  const horas=CT.formatarTempo(segundos);
+  const isAp=c.resultado==='aprovado',isCR=c.resultado==='cr',isRep=c.resultado==='reprovado',isAgu=c.resultado==='aguardando',isElim=c.resultado==='eliminado';
+  const sColor=isAp?'var(--green)':isCR?'var(--yellow)':isAgu?'var(--text)':isRep?'var(--red)':'var(--red)';
+  const sLabel=resultadoTexto(isAp?'aprovado':isCR?'cr':isAgu?'aguardando':isRep?'reprovado':'eliminado',{colocacao:c.colocacao});
+  
+  const isNom = c.nomeado && c.nomeado.ativo;
+  const nomeadoHtml = isNom ? `<div class="nomeado-belt-wrap"><div class="nomeado-belt"><span class="belt-title">🎉 ${resultadoTexto('nomeado').toUpperCase()} 🎉</span>${c.nomeado.data?`<span class="belt-date">${c.nomeado.data}</span>`:''}</div></div>` : '';
+  const stamp=isAp?`<div class="crown-badge">👑</div><div class="stamp-wrap"><div class="stamp aprovado">${flexGenero('APROVADO','APROVADA')}</div></div>`:isCR?`<div class="stamp-wrap"><div class="stamp cr">CLASS. CR</div></div>`:isRep?`<div class="stamp-wrap"><div class="stamp reprovado">${flexGenero('REPROVADO','REPROVADA')}</div></div>`:isElim?`<div class="stamp-wrap"><div class="stamp reprovado">${flexGenero('ELIMINADO','ELIMINADA')}</div></div>`:isAgu?`<div class="stamp-wrap"><div class="stamp" style="background:rgba(232,234,242,0.92);color:#111;box-shadow:0 0 10px rgba(255,255,255,0.2)">AGUARDANDO</div></div>`:'';
+  
+  return`<div class="concurso-card ${isAp?'aprovado':isCR?'cr':''}" onclick="abrirRelatorio('${c.id}')" style="cursor:pointer">
+    <div class="card-top-stripe" style="background:${stripe(c)}"></div>
+    ${stamp}
+    <div class="card-body">
+      ${c.dataProva?`<div class="card-timestamp">📅 ${c.dataProva.split('-').reverse().join('/')}</div>`:''}
+      <div class="card-inst">
+        ${logoHTML(c)}
+        <div class="card-inst-info">
+          <div class="card-nome">${c.nome}</div>
+          <div class="card-banca">${c.banca||'Banca não definida'}</div>
+          ${c.cargo?`<div class="card-cargo">${c.cargo}</div>`:''}
+          ${c.colocacao?`<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:2px 10px;margin-top:8px">
+            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${sColor}">${c.colocacao}º ${flexGenero('colocado','colocada')}</span>
+          </div>`:''}
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="card-stat"><div class="card-stat-val">${segundos>0?horas:'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Horas</div></div>
+        <div class="card-stat"><div class="card-stat-val">${q.resolvidas>0?q.resolvidas:'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Questões</div></div>
+        <div class="card-stat"><div class="card-stat-val" style="color:${pctColor(q.pct)}">${q.pct!=null?q.pct+'%':'<span style="color:var(--text3);font-size:12px">-</span>'}</div><div class="card-stat-label">Acertos</div></div>
+      </div>
+      ${nomeadoHtml}
+      <div class="card-toggle-row">
+        <span class="card-toggle-label">Contar nas estatísticas gerais</span>
+        <label class="toggle-switch" onclick="event.stopPropagation()">
+          <input type="checkbox" ${c.contarEstatisticas?'checked':''} onchange="toggleStat('${c.id}',this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="card-last-study" style="color:${sColor};font-weight:600">${sLabel}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="event.stopPropagation();editarRealizado('${c.id}')" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Editar</button>
+        <button data-del="${c.id}" onclick="event.stopPropagation();deletarConcurso(this.dataset.del)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Excluir</button>
+        <div class="card-enter" style="color:${sColor};cursor:pointer" onclick="event.stopPropagation();abrirRelatorio('${c.id}')">Ver -></div>
+      </div>
+    </div>
+  </div>`;
+}
+function deletarConcurso(id) {
+  const todos = CT.getConcursos();
+  const c = todos.find(x => String(x.id) === String(id));
+  const nome = c ? c.nome : 'este concurso';
+  if (confirm('Tem certeza que deseja excluir "' + nome + '"?\n\nEsta ação não pode ser desfeita. Todos os dados de estudo, questões e revisões serão apagados permanentemente.')) {
+    CT.deleteConcurso(id);
+    
+    // Remove o logo fisico se houver
+    if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.remover_logo(id);
+    }
+
+    render();
+  }
+}
+function editarRealizado(id) {
+  location.href = 'cadastro_edital.html?editar=' + encodeURIComponent(id);
+}
+function importarEditalUnico() {
+  abrirModalImportPremium();
+}
+function formatarTamanhoArquivo(bytes){
+  const num = Number(bytes || 0);
+  if (!num || num < 1) return '';
+  if (num < 1024) return `${num} B`;
+  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1).replace('.0', '')} KB`;
+  return `${(num / (1024 * 1024)).toFixed(1).replace('.0', '')} MB`;
+}
+function definirErroImportPremium(msg){
+  const el = document.getElementById('premiumImportError');
+  if (!el) return;
+  if (msg) {
+    el.textContent = msg;
+    el.style.display = 'block';
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+}
+function atualizarEstadoImportPremium(){
+  const wrapper = document.getElementById('premiumImportFile');
+  const nameEl = document.getElementById('premiumImportFileName');
+  const metaEl = document.getElementById('premiumImportFileMeta');
+  const confirmBtn = document.getElementById('btnConfirmarImportPremium');
+  if (wrapper) wrapper.classList.toggle('empty', !_premiumImportConteudo);
+  if (nameEl) nameEl.textContent = _premiumImportNome || 'Nenhum arquivo selecionado';
+  if (metaEl) {
+    metaEl.textContent = _premiumImportConteudo
+      ? `Arquivo carregado com sucesso${_premiumImportTamanho ? ` • ${formatarTamanhoArquivo(_premiumImportTamanho)}` : ''}`
+      : 'Use um JSON exportado do Edital Premium.';
+  }
+  if (confirmBtn) confirmBtn.disabled = !_premiumImportConteudo;
+}
+function limparImportPremium(){
+  _premiumImportConteudo = '';
+  _premiumImportNome = '';
+  _premiumImportTamanho = 0;
+  const input = document.getElementById('filePremiumImport');
+  if (input) input.value = '';
+  definirErroImportPremium('');
+  atualizarEstadoImportPremium();
+}
+function preencherImportPremium(conteudo, nome = 'Edital Premium.json', tamanho = 0){
+  _premiumImportConteudo = String(conteudo || '');
+  _premiumImportNome = nome || 'Edital Premium.json';
+  _premiumImportTamanho = tamanho || (_premiumImportConteudo ? new Blob([_premiumImportConteudo]).size : 0);
+  definirErroImportPremium('');
+  atualizarEstadoImportPremium();
+}
+function abrirModalImportPremium(){
+  const overlay = document.getElementById('modalImportPremium');
+  if (!overlay) return;
+  limparImportPremium();
+  overlay.classList.add('visible');
+  setTimeout(() => {
+    const dropzone = document.getElementById('premiumDropzone');
+    if (dropzone) dropzone.focus();
+  }, 40);
+}
+function fecharModalImportPremium(){
+  const overlay = document.getElementById('modalImportPremium');
+  if (overlay) overlay.classList.remove('visible');
+  limparImportPremium();
+}
+function abrirModalPremiumSuccess(){
+  const overlay = document.getElementById('modalPremiumSuccess');
+  if (overlay) overlay.classList.add('visible');
+}
+function fecharModalPremiumSuccess(){
+  const overlay = document.getElementById('modalPremiumSuccess');
+  if (overlay) overlay.classList.remove('visible');
+}
+async function abrirSeletorEditalPremium(){
+  definirErroImportPremium('');
+  if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.selecionar_arquivo_json === 'function') {
+    const res = await window.pywebview.api.selecionar_arquivo_json();
+    if (res && res.ok && res.conteudo) {
+      const caminho = String(res.caminho || '');
+      const nome = caminho ? caminho.split(/[\\/]/).pop() : 'Edital Premium.json';
+      preencherImportPremium(res.conteudo, nome, new Blob([res.conteudo]).size);
+    } else if (res && res.motivo && res.motivo !== 'cancelado') {
+      definirErroImportPremium('Não foi possível carregar o arquivo selecionado. Tente novamente.');
+    }
+    return;
+  }
+  const input = document.getElementById('filePremiumImport');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+function processarArquivoEditalPremium(file){
+  if (!file) return;
+  if (!/\.json$/i.test(file.name || '')) {
+    definirErroImportPremium('Selecione um arquivo JSON válido do Edital Premium.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    preencherImportPremium(ev.target.result, file.name, file.size || 0);
+  };
+  reader.onerror = () => {
+    definirErroImportPremium('Não foi possível ler o arquivo selecionado. Tente novamente.');
+  };
+  reader.readAsText(file);
+}
+function copiarTextoPremium(valor, mensagemSucesso){
+  const sucesso = () => {
+    if (window.CT && typeof CT.toast === 'function') {
+      CT.toast(mensagemSucesso, '📧');
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(valor).then(sucesso).catch(() => copiarTextoPremiumFallback(valor, sucesso));
+    return;
+  }
+  copiarTextoPremiumFallback(valor, sucesso);
+}
+function copiarTextoPremiumFallback(valor, onSuccess){
+  const temp = document.createElement('textarea');
+  temp.value = valor;
+  temp.setAttribute('readonly', '');
+  temp.style.position = 'absolute';
+  temp.style.left = '-9999px';
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand('copy');
+  document.body.removeChild(temp);
+  if (typeof onSuccess === 'function') onSuccess();
+}
+function copiarEmailEditalPremium(){
+  copiarTextoPremium('michel.araujo.py@gmail.com', 'E-mail copiado para a área de transferência.');
+}
+async function confirmarImportacaoEditalPremium(){
+  const btn = document.getElementById('btnConfirmarImportPremium');
+  if (!_premiumImportConteudo) {
+    definirErroImportPremium('Carregue um Edital Premium antes de importar.');
+    return;
+  }
+  definirErroImportPremium('');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Importando...';
+  }
+  try {
+    const r = CT.importarConcurso(_premiumImportConteudo);
+    if (btn) btn.textContent = 'Importar Edital';
+    if (r && r.ok) {
+      fecharModalImportPremium();
+      render();
+      abrirModalPremiumSuccess();
+      return;
+    }
+    if (btn) btn.disabled = false;
+    definirErroImportPremium('Não foi possível importar esse arquivo: ' + ((r && r.erro) || 'erro desconhecido'));
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Importar Edital';
+    }
+    definirErroImportPremium('O arquivo não pode ser importado. Verifique se ele é um JSON válido do Edital Premium.');
+  }
+}
+function render(){
+  renderBackupInfo();
+  const todos=CT.getConcursos();
+  const ativos=todos.filter(c=>!c.realizado);
+  const realizados=todos.filter(c=>c.realizado).sort((a,b) => (b.dataProva||'').localeCompare(a.dataProva||''));
+  const s=CT.estatisticasGerais();
+  document.getElementById('sHoras').textContent=s.horasTotais||'0h';
+  document.getElementById('sQuestoes').textContent=s.questoesTotal||0;
+  document.getElementById('sAcertos').textContent=s.taxaAcertos!=null?s.taxaAcertos+'%':'-';
+  document.getElementById('sUltSim').textContent=s.ultimoSimulado!=null?s.ultimoSimulado+'%':'-';
+  document.getElementById('sMediaSim').textContent=s.mediaSimulados!=null?s.mediaSimulados+'%':'-';
+  document.getElementById('sConcursos').textContent=realizados.length;
+  
+  // Sub-estatísticas de resultados
+  const nAp = realizados.filter(c => c.resultado === 'aprovado').length;
+  const nCR = realizados.filter(c => c.resultado === 'cr').length;
+  const nRep = realizados.filter(c => c.resultado === 'reprovado').length;
+  const nElim = realizados.filter(c => c.resultado === 'eliminado').length;
+  const nAgu = realizados.filter(c => c.resultado === 'aguardando').length;
+  
+  document.getElementById('sConcursosDetalhes').innerHTML = `
+    ${nAp > 0 ? `<div class="stat-sub-row" style="color:var(--green)"><span class="stat-sub-num">${nAp}</span> Aprovação [VAGAS]</div>` : ''}
+    ${nCR > 0 ? `<div class="stat-sub-row" style="color:var(--yellow);text-shadow:0 0 8px rgba(255,215,0,0.3)"><span class="stat-sub-num">${nCR}</span> ${flexGenero('Classificado [CR]','Classificada [CR]')}</div>` : ''}
+    ${nRep > 0 ? `<div class="stat-sub-row" style="color:var(--red)"><span class="stat-sub-num">${nRep}</span> Reprovações</div>` : ''}
+    ${nElim > 0 ? `<div class="stat-sub-row" style="color:var(--red)"><span class="stat-sub-num">${nElim}</span> Eliminados</div>` : ''}
+    ${nAgu > 0 ? `<div class="stat-sub-row" style="color:var(--text)"><span class="stat-sub-num">${nAgu}</span> Aguardando Resultado</div>` : ''}
+  `;
+
+  document.getElementById('cntAtivos').textContent=ativos.length+' concurso'+(ativos.length!==1?'s':'');
+  const gA=document.getElementById('gridAtivos');
+  if(!ativos.length){
+    gA.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Nenhum concurso ainda</div><div class="empty-sub">Adicione seu primeiro concurso para começar!</div></div>`;
+  }else{
+    gA.innerHTML=ativos.map(cardAtivo).join('')+`<div class="add-card" onclick="location.href='cadastro_edital.html'"><div class="add-icon">+</div><div class="add-text">Novo concurso</div><div class="add-sub">Importe JSON ou cadastre manualmente</div></div>`;
+  }
+  const secR=document.getElementById('secRealizados');
+  if(realizados.length){secR.style.display='';document.getElementById('gridRealizados').innerHTML=realizados.map(cardRealizado).join('');}
+  else secR.style.display='none';
+}
+function abrirDash(id){sessionStorage.setItem('ct_concurso_ativo',id);location.href='dashboard.html';}
+function toggleStat(id,v){const c=CT.getConcurso(id);if(!c)return;c.contarEstatisticas=v;CT.saveConcurso(c);render();}
+function renderBackupInfo(){
+  const el=document.getElementById('backupInfo');
+  const nome=CT.getBackupNome().replace(/\.json$/i,'');
+  if(!el)return;
+  if(nome){
+    el.style.display='inline-flex';
+    el.style.cursor='pointer';
+    el.title='Clique para gerenciar perfis';
+    el.innerHTML=`<span>Perfil ativo:</span><strong>${nome}</strong>`;
+  }else{
+    el.style.display='none';
+    el.style.cursor='';
+    el.title='';
+    el.textContent='';
+  }
+}
+function resetErrosPerfil(){
+  ['perfilNomeErro','novoPerfilErro'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display='none';
+    el.textContent='';
+  });
+}
+function escapeHtmlPerfil(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function escapeJsPerfil(value){
+  return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+function renderListaPerfis(items = [], ativoId = ''){
+  const list = document.getElementById('listaPerfis');
+  if (!list) return;
+  if (!items.length) {
+    list.innerHTML = `<div class="profile-empty">Nenhum perfil encontrado ainda.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(profile => {
+    const ativo = profile.id === ativoId;
+    const concursos = Number(profile.total_concursos || 0);
+    const snapshots = Number(profile.total_snapshots || 0);
+    const nomeSeguro = escapeHtmlPerfil(profile.nome);
+    const idJs = escapeJsPerfil(profile.id);
+    const nomeJs = escapeJsPerfil(profile.nome);
+    const generoLabel = profile.genero === 'feminino' ? 'Feminino' : 'Masculino';
+    return `
+      <div class="profile-item ${ativo ? 'active' : ''}">
+        <div class="profile-item-main">
+          <div class="profile-item-name">
+            ${ativo ? '<span class="profile-pill">Ativo</span>' : '<span style="font-size:14px">Perfil</span>'}
+            <span>${nomeSeguro}</span>
+          </div>
+          <div class="profile-item-meta">
+            <span>${generoLabel}</span>
+            <span>${concursos} concurso${concursos === 1 ? '' : 's'}</span>
+            <span>${snapshots} backup${snapshots === 1 ? '' : 's'}</span>
+          </div>
+        </div>
+        <div class="profile-inline-actions">
+          <button class="profile-btn-small ${ativo ? '' : 'primary'}" type="button" ${ativo ? 'disabled' : `onclick="solicitarTrocaPerfil('${idJs}', '${nomeJs}')"`}>
+            ${ativo ? 'Perfil Atual' : 'Entrar'}
+          </button>
+          ${ativo ? '' : `<button class="profile-btn-small danger" type="button" onclick="solicitarExclusaoPerfil('${idJs}', '${nomeJs}')">Excluir</button>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+async function carregarPerfisModal(){
+  const list = document.getElementById('listaPerfis');
+  if (list) list.innerHTML = `<div class="profile-empty">Carregando perfis...</div>`;
+  if (!(window.pywebview && window.pywebview.api && typeof window.pywebview.api.listar_perfis === 'function')) {
+    renderListaPerfis([], '');
+    return;
+  }
+  const res = await window.pywebview.api.listar_perfis();
+  if (res && res.ok) {
+    renderListaPerfis(res.profiles || [], res.ativo_id || '');
+  } else {
+    if (list) list.innerHTML = `<div class="profile-empty">Não foi possível carregar os perfis.</div>`;
+  }
+}
+function abrirModalPerfil(){
+  const overlay = document.getElementById('modalPerfil');
+  const input = document.getElementById('perfilNomeInput');
+  const nomeAtual = CT.getBackupNome().replace(/\.json$/i,'') || 'Perfil Principal';
+  const createInput = document.getElementById('novoPerfilInput');
+  if (!overlay || !input) return;
+  resetErrosPerfil();
+  input.value = nomeAtual;
+  _perfilGeneroAtual = generoAtualPerfil();
+  _novoPerfilGenero = 'masculino';
+  syncGeneroButtons('perfil', _perfilGeneroAtual);
+  syncGeneroButtons('novoPerfil', _novoPerfilGenero);
+  if (createInput) createInput.value = '';
+  overlay.classList.add('visible');
+  carregarPerfisModal();
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 40);
+}
+function fecharModalPerfil(){
+  const overlay = document.getElementById('modalPerfil');
+  if (overlay) overlay.classList.remove('visible');
+  resetErrosPerfil();
+}
+function exibirErroPerfil(msg, targetId='perfilNomeErro'){
+  const error = document.getElementById(targetId);
+  if (!error) return;
+  error.textContent = msg;
+  error.style.display = 'block';
+}
+async function confirmarRenomeacaoPerfil(){
+  const input = document.getElementById('perfilNomeInput');
+  const btn = document.getElementById('btnSalvarPerfilNome');
+  const nomeAtual = CT.getBackupNome().replace(/\.json$/i,'') || 'Perfil Principal';
+  const generoAtual = generoAtualPerfil();
+  if (!input || !btn) return;
+  const nomeLimpo = String(input.value || '').trim();
+  if (!nomeLimpo) {
+    exibirErroPerfil('O nome do perfil não pode ficar vazio.', 'perfilNomeErro');
+    input.focus();
+    return;
+  }
+  if (nomeLimpo.length > 80) {
+    exibirErroPerfil('O nome do perfil deve ter no máximo 80 caracteres.', 'perfilNomeErro');
+    input.focus();
+    return;
+  }
+  if (nomeLimpo === nomeAtual && _perfilGeneroAtual === generoAtual) {
+    fecharModalPerfil();
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.atualizar_perfil_ativo === 'function') {
+    const res = await window.pywebview.api.atualizar_perfil_ativo(nomeLimpo, _perfilGeneroAtual);
+    if (res && res.ok) {
+      CT.setBackupNome(res.nome || nomeLimpo);
+      CT.setProfileGenero(res.genero || _perfilGeneroAtual);
+      renderBackupInfo();
+      await carregarPerfisModal();
+      fecharModalPerfil();
+      render();
+      CT.toast('Perfil atualizado com sucesso!', 'OK');
+    } else {
+      exibirErroPerfil('Não foi possível atualizar o perfil: ' + ((res && res.motivo) || 'erro desconhecido'), 'perfilNomeErro');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Salvar Perfil';
+    return;
+  }
+
+  exibirErroPerfil('Não foi possível acessar a rotina de renomear perfil do app. Feche e abra novamente o Track Concursos para aplicar esta função.', 'perfilNomeErro');
+  btn.disabled = false;
+  btn.textContent = 'Salvar Perfil';
+}
+async function criarNovoPerfil(){
+  const input = document.getElementById('novoPerfilInput');
+  const btn = document.getElementById('btnCriarPerfil');
+  if (!input || !btn) return;
+  const nome = String(input.value || '').trim();
+  if (!nome) {
+    exibirErroPerfil('Informe um nome para o novo perfil.', 'novoPerfilErro');
+    input.focus();
+    return;
+  }
+  if (nome.length > 80) {
+    exibirErroPerfil('O nome do novo perfil deve ter no máximo 80 caracteres.', 'novoPerfilErro');
+    input.focus();
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+  if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.criar_perfil === 'function') {
+    const res = await window.pywebview.api.criar_perfil(nome, _novoPerfilGenero);
+    if (res && res.ok) {
+      input.value = '';
+      resetErrosPerfil();
+      _novoPerfilGenero = 'masculino';
+      syncGeneroButtons('novoPerfil', _novoPerfilGenero);
+      await carregarPerfisModal();
+      CT.toast('Novo perfil criado com sucesso!', 'OK');
+    } else {
+      exibirErroPerfil('Não foi possível criar o perfil: ' + ((res && res.motivo) || 'erro desconhecido'), 'novoPerfilErro');
+    }
+  }
+  btn.disabled = false;
+  btn.textContent = 'Criar Perfil';
+}
+function confirmarTrocaPerfilVisual(nomePerfil){
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay visible';
+    overlay.innerHTML = `
+      <div class="modal-content report-modal profile-modal-card" style="max-width:560px">
+        <div class="profile-modal-head">
+          <div class="profile-modal-eyebrow">Troca de Perfil</div>
+          <div class="profile-modal-title">Entrar em "${nomePerfil}"?</div>
+          <div class="profile-modal-sub">Se houver alterações não salvas no perfil atual, salve antes de trocar para não perder nada.</div>
+        </div>
+        <div class="profile-modal-body" style="display:flex;flex-direction:column;gap:18px;padding:24px 28px 28px">
+          <div class="profile-modal-help">Escolha como deseja continuar com o perfil atual antes da troca.</div>
+          <div class="profile-actions-footer" style="justify-content:flex-end">
+            <button class="btn-modal secondary" type="button" id="perfilTrocaCancelar">Cancelar</button>
+            <button class="btn-modal secondary" type="button" id="perfilTrocaSemSalvar">Trocar sem Salvar</button>
+            <button class="btn-modal primary" type="button" id="perfilTrocaSalvar">Salvar e Trocar</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const finish = value => {
+      overlay.remove();
+      resolve(value);
+    };
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) finish('cancel');
+    });
+    overlay.querySelector('#perfilTrocaCancelar').onclick = () => finish('cancel');
+    overlay.querySelector('#perfilTrocaSemSalvar').onclick = () => finish('discard');
+    overlay.querySelector('#perfilTrocaSalvar').onclick = () => finish('save');
+  });
+}
+function confirmarExclusaoPerfilVisual(nomePerfil){
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay visible';
+    overlay.innerHTML = `
+      <div class="modal-content report-modal profile-modal-card" style="max-width:580px">
+        <div class="profile-modal-head">
+          <div class="profile-modal-eyebrow">Excluir Perfil</div>
+          <div class="profile-modal-title">Excluir "${escapeHtmlPerfil(nomePerfil)}"?</div>
+          <div class="profile-modal-sub">Essa ação remove apenas os dados, backups e histórico desse perfil. Os demais perfis continuarão intactos.</div>
+        </div>
+        <div class="profile-modal-body" style="display:flex;flex-direction:column;gap:18px;padding:24px 28px 28px">
+          <div class="profile-modal-help">Por segurança, o perfil ativo não pode ser excluído e o app sempre mantém pelo menos um perfil disponível.</div>
+          <div class="profile-actions-footer" style="justify-content:flex-end">
+            <button class="btn-modal secondary" type="button" id="perfilExcluirCancelar">Cancelar</button>
+            <button class="btn-modal primary" type="button" id="perfilExcluirConfirmar" style="background:linear-gradient(135deg,#f55a5a,#d63939);box-shadow:0 10px 24px rgba(245,90,90,0.24)">Excluir Perfil</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const finish = value => {
+      overlay.remove();
+      resolve(value);
+    };
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) finish(false);
+    });
+    overlay.querySelector('#perfilExcluirCancelar').onclick = () => finish(false);
+    overlay.querySelector('#perfilExcluirConfirmar').onclick = () => finish(true);
+  });
+}
+async function solicitarTrocaPerfil(profileId, profileName){
+  if (!profileId) return;
+  let acao = 'discard';
+  if (window.CT && typeof CT.hasUnsavedChanges === 'function' && CT.hasUnsavedChanges()) {
+    acao = await confirmarTrocaPerfilVisual(profileName);
+    if (acao === 'cancel') return;
+    if (acao === 'save') {
+      const saveRes = await CT.autoBackup({ reason: 'antes-troca-perfil' });
+      if (!saveRes || !saveRes.ok) {
+        alert('Não foi possível salvar o perfil atual antes da troca.\n\nTente salvar as alterações e repetir.');
+        return;
+      }
+    }
+  }
+  if (window.pywebview && window.pywebview.api && typeof window.pywebview.api.trocar_perfil_ativo === 'function') {
+    const res = await window.pywebview.api.trocar_perfil_ativo(profileId);
+    if (res && res.ok && res.conteudo) {
+      const importRes = await CT.importarBackup(res.conteudo, res.nome || profileName || 'Perfil');
+      if (importRes && importRes.ok) {
+        CT.setProfileGenero(res.genero || 'masculino');
+        render();
+        fecharModalPerfil();
+        await carregarPerfisModal();
+        CT.toast(`Agora você está no perfil "${res.nome || profileName}".`, 'OK');
+      } else {
+        alert('Não foi possível carregar os dados do perfil selecionado.');
+      }
+    } else {
+      alert('Não foi possível trocar de perfil: ' + ((res && res.motivo) || 'erro desconhecido'));
+    }
+  }
+}
+async function solicitarExclusaoPerfil(profileId, profileName){
+  if (!profileId) return;
+  const confirmar = await confirmarExclusaoPerfilVisual(profileName);
+  if (!confirmar) return;
+  if (!(window.pywebview && window.pywebview.api && typeof window.pywebview.api.excluir_perfil === 'function')) {
+    alert('A função de exclusão de perfil não está disponível nesta versão do app.');
+    return;
+  }
+  const res = await window.pywebview.api.excluir_perfil(profileId);
+  if (res && res.ok) {
+    await carregarPerfisModal();
+    CT.toast(`Perfil "${res.nome || profileName}" excluído com sucesso.`, 'OK');
+    return;
+  }
+  alert('Não foi possível excluir o perfil: ' + ((res && res.motivo) || 'erro desconhecido'));
+}
+document.getElementById('backupInfo').onclick=()=>{abrirModalPerfil();};
+document.getElementById('modalPerfil').addEventListener('click', e => {
+  if (e.target.id === 'modalPerfil') fecharModalPerfil();
+});
+document.getElementById('modalImportPremium').addEventListener('click', e => {
+  if (e.target.id === 'modalImportPremium') fecharModalImportPremium();
+});
+document.getElementById('modalPremiumSuccess').addEventListener('click', e => {
+  if (e.target.id === 'modalPremiumSuccess') fecharModalPremiumSuccess();
+});
+document.getElementById('perfilNomeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    confirmarRenomeacaoPerfil();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    fecharModalPerfil();
+  }
+});
+document.getElementById('novoPerfilInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    criarNovoPerfil();
+  }
+});
+document.getElementById('btnImport').onclick=()=>{
+  if(window.pywebview && window.pywebview.api){
+    const confirmacao = confirm('Restaurar um backup de segurança vai substituir o estado atual do perfil principal.\n\nAntes da restauração, o app criará automaticamente um snapshot do estado atual para você poder voltar se precisar.\n\nDeseja continuar?');
+    if(!confirmacao) return;
+    (async () => {
+      if (window.CT && typeof CT.hasUnsavedChanges === 'function' && CT.hasUnsavedChanges()) {
+        const preSave = await CT.autoBackup({ reason: 'antes-restauracao' });
+        if (!preSave || !preSave.ok) {
+          alert('Não foi possível salvar um snapshot de segurança antes da restauração.\n\nTente salvar o perfil e repetir a operação.');
+          return;
+        }
+      }
+      return window.pywebview.api.selecionar_backup();
+    })().then(async res=>{
+      if(res && res.ok && res.caminho){
+        const restore = await window.pywebview.api.restaurar_backup_seguranca(res.caminho);
+        if(restore && restore.ok && restore.conteudo){
+          const result = await CT.importarBackup(restore.conteudo, restore.rotulo || 'Perfil Principal');
+          if(result.ok){ alert('Backup restaurado com sucesso!\n\nO estado anterior do perfil também foi guardado em um novo snapshot de segurança.'); render(); }
+          else alert('Erro ao restaurar: ' + result.erro);
+        } else if(restore && restore.motivo){
+          alert('Erro ao restaurar: ' + restore.motivo);
+        }
+      } else if(res && res.motivo && res.motivo !== 'cancelado'){
+        alert('Erro: ' + res.motivo);
+      }
+    });
+  } else {
+    document.getElementById('fileBackup').click();
+  }
+};
+document.getElementById('fileBackup').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async ev=>{const res=await CT.importarBackup(ev.target.result, 'Perfil Principal');if(res.ok){alert('Backup restaurado!');render();}else alert('Erro: '+res.erro);};
+  r.readAsText(f);
+};
+document.getElementById('filePremiumImport').onchange=e=>{
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  processarArquivoEditalPremium(f);
+};
+document.getElementById('premiumDropzone').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    abrirSeletorEditalPremium();
+  }
+});
+['dragenter','dragover'].forEach(eventName => {
+  document.getElementById('premiumDropzone').addEventListener(eventName, e => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.add('dragover');
+  });
+});
+['dragleave','drop'].forEach(eventName => {
+  document.getElementById('premiumDropzone').addEventListener(eventName, e => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('dragover');
+  });
+});
+document.getElementById('premiumDropzone').addEventListener('drop', e => {
+  const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+  const file = files.find(item => /\.json$/i.test(item.name || '')) || files[0];
+  if (!file) {
+    definirErroImportPremium('Nenhum arquivo foi detectado no arrastar e soltar.');
+    return;
+  }
+  processarArquivoEditalPremium(file);
+});
+render();
+renderBackupInfo();
+atualizarEstadoImportPremium();
+function abrirRelatorio(id) {
+  const c = CT.getConcurso(id);
+  if (!c) return;
+  const q = CT.calcStats(CT.getQuestoes({ concursoId: id }));
+  const sess = CT.getSessoes({ concursoId: id });
+  const horas = CT.formatarTempo(CT.totalSegundos(sess));
+
+  const isAp = c.resultado === 'aprovado', isCR = c.resultado === 'cr', isAgu = c.resultado === 'aguardando', isRep = c.resultado === 'reprovado', isElim = c.resultado === 'eliminado';
+  const color = isAp ? 'var(--green)' : isCR ? 'var(--yellow)' : isAgu ? 'var(--text)' : isRep ? 'var(--red)' : 'var(--red)';
+  const bg = isAp ? 'rgba(62,207,142,0.1)' : isCR ? 'rgba(218,165,32,0.1)' : isAgu ? 'rgba(200,200,200,0.1)' : isRep ? 'rgba(245,90,90,0.1)' : 'rgba(245,90,90,0.1)';
+  const label = isAp ? resultadoTexto('aprovado_detalhe') : isCR ? resultadoTexto('cr') : isAgu ? resultadoTexto('aguardando') : isRep ? resultadoTexto('reprovado') : `Eliminado`;
+
+  const logoSrc = c.logoBase64 || (c.logoPath ? c.logoPath + '?t=' + Date.now() : null);
+  const logoS = logoSrc ? `<img src="${logoSrc}">` : `<div class="emoji">${c.logoEmoji || '🏛️'}</div>`;
+  const logoBg = logoSrc ? `<img src="${logoSrc}">` : `<div class="emoji-bg">${c.logoEmoji || '🏛️'}</div>`;
+
+  const temEstudo = CT.getMaterias(c.id).length > 0;
+
+  let detailsHtml = `
+    <div class="report-header">
+      <div class="report-logo-bg">${logoBg}</div>
+      <div class="report-title-row">
+        <div class="report-logo-circle">${logoS}</div>
+        <div class="report-main-info">
+          <div class="banca">${c.banca || 'BANCA NÃO INFORMADA'}</div>
+          <h2>${c.nome}</h2>
+          <div class="report-status-badge" style="background:${bg};color:${color};border:1px solid ${color}44">${label}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-body">
+      <div class="report-grid">
+        <div class="report-card ${isAp || isCR ? 'gold' : isRep ? 'red' : ''}">
+          <div class="report-card-label">Colocação Final</div>
+          <div class="report-card-val">${c.colocacao ? c.colocacao + 'º' : '-'} <span style="font-size:14px;color:var(--text3);font-weight:400">/ ${c.totalCand || '-'} cand.</span></div>
+        </div>
+        <div class="report-card">
+          <div class="report-card-label">Pontuação Líquida</div>
+          <div class="report-card-val">${c.pontuacao != null ? c.pontuacao : '-'} <span style="font-size:14px;color:var(--text3);font-weight:400">${c.pontuacaoMax ? '/ ' + c.pontuacaoMax + ' max. ' : ''}${c.notaCorte ? '(Corte: ' + c.notaCorte + ')' : ''}</span></div>
+        </div>
+      </div>
+
+      <div class="report-stats-box">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:15px;letter-spacing:1px;text-align:center">Resumo da Prova</div>
+        <div class="report-stats-grid">
+          <div class="report-sub-stat"><div class="report-sub-label">Acertos</div><div class="report-sub-val" style="color:var(--green)">${c.certas || q.acertos || '-'}</div></div>
+          <div class="report-sub-stat"><div class="report-sub-label">Erros</div><div class="report-sub-val" style="color:var(--red)">${c.erradas || q.erros || '-'}</div></div>
+          <div class="report-sub-stat"><div class="report-sub-label">Brancos</div><div class="report-sub-val">${c.branco || '-'}</div></div>
+        </div>
+      </div>
+
+      ${c.redacao ? `
+      <div class="report-stats-box" style="margin-top:-20px; border-color:var(--accent2); background:rgba(124,92,252,0.03)">
+        <div class="report-stats-grid" style="grid-template-columns:1fr">
+          <div class="report-sub-stat" style="padding:10px">
+            <div class="report-sub-label" style="color:var(--accent2)">Nota da Redação / Discursiva</div>
+            <div class="report-sub-val" style="color:var(--accent2); font-size:32px">${c.redacao}</div>
+          </div>
+        </div>
+      </div>` : ''}
+
+      ${((c.coberto || 0) > 0 || (c.cobertoPre || 0) > 0) ? `
+      <div class="report-stats-box" style="margin-top:0px; border-color:var(--green); background:rgba(62,207,142,0.03)">
+         <div style="font-size:10px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:15px; text-align:center">Retrospectiva do Edital</div>
+         <div style="display:flex; justify-content:center; gap:60px">
+            ${(c.cobertoPre || 0) > 0 ? `<div style="text-align:center"><div style="font-size:28px; font-weight:700; color:var(--text); font-family:var(--mono)">${c.cobertoPre}x</div><div style="font-size:11px; color:var(--text3); text-transform:uppercase; margin-top:4px">Pré-edital coberto</div></div>` : ''}
+            ${(c.coberto || 0) > 0 ? `<div style="text-align:center"><div style="font-size:28px; font-weight:700; color:var(--green); font-family:var(--mono)">${c.coberto}x</div><div style="font-size:11px; color:var(--text3); text-transform:uppercase; margin-top:4px">Pós-edital coberto</div></div>` : ''}
+         </div>
+         <div style="text-align:center; margin-top:15px; font-size:12px; color:var(--text3); font-style:italic">Parabéns! Você concluiu o edital completo ${(c.coberto||0) + (c.cobertoPre||0)} vezes nestas etapas.</div>
+      </div>` : ''}
+
+      <div class="report-grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="report-card">
+          <div class="report-card-label">Horas Estudadas</div>
+          <div class="report-card-val">${horas}</div>
+        </div>
+        <div class="report-card">
+          <div class="report-card-label">Questões Feitas</div>
+            <div class="report-card-val">${c.questoesTotal || q.resolvidas || '-'} <span style="font-size:14px;color:${pctColor(q.pct)}">(${q.pct || '0'}%)</span></div>
+        </div>
+      </div>
+
+      ${c.obs ? `<div class="obs-box"><label>Observações do Candidato</label>${c.obs}</div>` : ''}
+      
+      ${(isAp || isCR) ? `
+       <div style="margin-top:24px;background:${(c.nomeado && c.nomeado.ativo)?'rgba(76,161,255,0.1)':'var(--bg3)'};border:1px solid ${(c.nomeado && c.nomeado.ativo)?'#4ca1ff':'var(--border)'};border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between">
+         <div>
+           <div style="font-size:14px;font-weight:700;color:${(c.nomeado && c.nomeado.ativo)?'#4ca1ff':'var(--text2)'}">${resultadoTexto('foi_nomeado')}</div>
+           <div style="font-size:12px;color:var(--text3);margin-top:4px">Adicione a faixa da vitória no seu card.</div>
+         </div>
+         <button onclick="toggleNomeado('${c.id}')" style="padding:8px 16px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;border:none;background:${(c.nomeado && c.nomeado.ativo)?'#f55a5a':'#4ca1ff'};color:#fff">
+            ${(c.nomeado && c.nomeado.ativo)?resultadoTexto('remover_nomeacao'):resultadoTexto('fui_nomeado')}
+         </button>
+       </div>
+      ` : ''}
+    </div>
+
+    <div class="report-footer">
+      <button class="btn-modal secondary" onclick="fecharModalDetalhes()">Fechar</button>
+      <div style="display:flex;gap:12px">
+        ${(c.cobertoPre || 0) > 0 ? `<button class="btn-modal secondary" onclick="abrirDash('${c.id}')" title="Ver estatísticas filtradas por Pré-edital">Verificar Concurso Pré-edital</button>` : ''}
+        ${temEstudo ? `<button class="btn-modal primary" onclick="abrirDash('${c.id}')">Verificar Concurso Pós-edital</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalBody').innerHTML = detailsHtml;
+  document.getElementById('modalDetalhes').classList.add('visible');
+}
+
+function fecharModalDetalhes() {
+  document.getElementById('modalDetalhes').classList.remove('visible');
+}
+
+function toggleNomeado(id) {
+  const c = CT.getConcurso(id);
+  if (!c) return;
+  if (c.nomeado && c.nomeado.ativo) {
+    if (confirm(`Remover a faixa de ${resultadoTexto('nomeado').toLowerCase()} deste concurso?`)) {
+       c.nomeado = { ativo: false };
+       CT.saveConcurso(c);
+       fecharModalDetalhes();
+       render();
+    }
+  } else {
+    const data = prompt(`Parabéns! Qual foi a data da ${resultadoTexto('nomeado').toLowerCase()}? (Opcional, deixe em branco se não quiser informar)`);
+    if (data !== null) {
+       c.nomeado = { ativo: true, data: data.trim() };
+       CT.saveConcurso(c);
+       fecharModalDetalhes();
+       render();
+    }
+  }
+}
+
+</script>
+</body>
+</html>
+

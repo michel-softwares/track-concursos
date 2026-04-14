@@ -1,0 +1,2425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+<title>Track Concursos — Cadastrar Edital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --bg4: #1f2330;
+      --border: #252836;
+      --border2: #2e3347;
+      --accent: #4f8ef7;
+      --accent2: #7c5cfc;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --green: #3ecf8e;
+      --yellow: #FFD700;
+      --orange: #f5874a;
+      --red: #f55a5a;
+      --mono: 'Inter', sans-serif;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-variant-numeric: tabular-nums;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    .bg-decoration {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.04;
+    }
+
+    .bg-blob.b1 {
+      width: 700px;
+      height: 700px;
+      background: var(--accent);
+      top: -300px;
+      left: -200px;
+    }
+
+    .bg-blob.b2 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent2);
+      bottom: -200px;
+      right: -100px;
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(79, 142, 247, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 142, 247, 0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* LAYOUT */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--text3);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 32px;
+      transition: color 0.15s;
+      border: none;
+      background: none;
+      font-family: var(--sans);
+      padding: 0;
+    }
+
+    .back-btn:hover {
+      color: var(--accent);
+    }
+
+    .left-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 24px;
+    }
+
+    /* STEPS */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 52px;
+      width: 2px;
+      height: calc(100% - 30px);
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .step-item.active::after {
+      background: linear-gradient(180deg, var(--accent), transparent);
+    }
+
+    .step-item.done::after {
+      background: var(--green);
+    }
+
+    .step-item.active {
+      background: rgba(79, 142, 247, 0.08);
+    }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      font-family: var(--sans);
+      border: 2px solid var(--border);
+      background: #13161e !important;
+      color: var(--text3);
+      transition: all 0.2s;
+      z-index: 2;
+      position: relative;
+    }
+
+    .step-item.active .step-dot {
+      border-color: var(--accent);
+      background: #13161e !important;
+      color: var(--accent);
+    }
+
+    .step-item.done .step-dot {
+      border-color: var(--green);
+      background: #13161e !important;
+      color: var(--green);
+    }
+
+    .step-item.done:hover .step-dot {
+      border-color: var(--green);
+      background: #13161e !important;
+    }
+
+    .step-item:not(.done):not(.active) {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .step-info {
+      padding-top: 4px;
+    }
+
+    .step-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      transition: color 0.15s;
+    }
+
+    .step-item.active .step-name {
+      color: var(--text);
+    }
+
+    .step-item.done .step-name {
+      color: var(--text2);
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* PREVIEW */
+    .preview-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 24px;
+    }
+
+    .preview-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .preview-inst {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .preview-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1a3a6e, #0d2040);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: 1px solid #2a4080;
+      flex-shrink: 0;
+    }
+
+    .preview-nome {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .preview-banca {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .preview-timer {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+    }
+
+    .preview-timer-num {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .preview-timer-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    /* RIGHT CONTENT */
+    .right-content {
+      padding: 48px 56px;
+      overflow-y: auto;
+    }
+
+    .step-header {
+      margin-bottom: 36px;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(79, 142, 247, 0.08);
+      border: 1px solid rgba(79, 142, 247, 0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .step-subtitle {
+      font-size: 14px;
+      color: var(--text3);
+      line-height: 1.6;
+    }
+
+    /* FORM */
+    .form-section {
+      margin-bottom: 36px;
+    }
+
+    .form-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-row {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-row.cols-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-row.cols-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.3px;
+    }
+
+    .form-label span {
+      color: var(--red);
+      margin-left: 2px;
+    }
+
+    .form-input {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      transition: all 0.15s;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      background: rgba(79, 142, 247, 0.05);
+      box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text3);
+    }
+
+    /* UPLOAD AREA */
+    .upload-area {
+      border: 2px dashed var(--border2);
+      border-radius: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      background: var(--bg3);
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: rgba(79, 142, 247, 0.04);
+    }
+
+    .upload-icon {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+
+    .upload-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+
+    .upload-sub {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .upload-size {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .upload-preview {
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg3);
+    }
+
+    .upload-preview-img {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1a3a6e, #0d2040);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .upload-preview-info {
+      flex: 1;
+    }
+
+    .upload-preview-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .upload-preview-size {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .upload-remove {
+      font-size: 12px;
+      color: var(--red);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--sans);
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .upload-remove:hover {
+      background: rgba(245, 90, 90, 0.1);
+    }
+
+    /* TOGGLE ROW */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .toggle-info {
+      flex: 1;
+    }
+
+    .toggle-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .toggle-desc {
+      font-size: 12px;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: var(--text3);
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+      background: rgba(79, 142, 247, 0.2);
+      border-color: var(--accent);
+    }
+
+    .toggle-switch input:checked+.toggle-slider::before {
+      transform: translateX(20px);
+      background: var(--accent);
+    }
+
+    /* DATE PICKER AREA */
+    .date-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .date-option {
+      border: 2px solid var(--border2);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg3);
+    }
+
+    .date-option:hover {
+      border-color: var(--accent);
+    }
+
+    .date-option.selected {
+      border-color: var(--accent);
+      background: rgba(79, 142, 247, 0.06);
+    }
+
+    .date-option-icon {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .date-option-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .date-option-desc {
+      font-size: 12px;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    .date-option.selected .date-option-title {
+      color: var(--accent);
+    }
+
+    .date-input-wrap {
+      margin-top: 16px;
+      display: none;
+    }
+
+    .date-input-wrap.visible {
+      display: block;
+    }
+
+    /* JSON IMPORT */
+    .json-area {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .json-area-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .json-area-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .json-tag {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(79, 142, 247, 0.12);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .json-area-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .json-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all 0.15s;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text2);
+    }
+
+    .json-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .json-btn.primary {
+      background: rgba(79, 142, 247, 0.12);
+      border-color: rgba(79, 142, 247, 0.3);
+      color: var(--accent);
+    }
+
+    .json-btn.primary:hover {
+      background: rgba(79, 142, 247, 0.2);
+    }
+
+    textarea.json-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 16px;
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      resize: vertical;
+      min-height: 220px;
+      outline: none;
+    }
+
+    /* MATERIAS LIST */
+    .materias-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .materia-item {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .materia-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+
+    .materia-handle {
+      color: var(--text3);
+      font-size: 14px;
+      cursor: grab;
+    }
+
+    .materia-expand {
+      font-size: 12px;
+      color: var(--text3);
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .materia-item.open .materia-expand {
+      transform: rotate(90deg);
+    }
+
+    .materia-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .materia-name-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .materia-count {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono);
+      background: var(--bg2);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .materia-remove {
+      font-size: 16px;
+      color: var(--text3);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .materia-remove:hover {
+      color: var(--red);
+    }
+
+    .topicos-wrap {
+      padding: 0 14px 12px 42px;
+      display: none;
+    }
+
+    .materia-item.open .topicos-wrap {
+      display: block;
+    }
+
+    .topico-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topico-row:last-child {
+      border-bottom: none;
+    }
+
+    .topico-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text3);
+      flex-shrink: 0;
+    }
+
+    .topico-name {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .topico-subs {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+
+    .add-materia-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      padding: 10px;
+      border: 2px dashed var(--border2);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text3);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-materia-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(79, 142, 247, 0.04);
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text2);
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-back:hover {
+      border-color: var(--text2);
+      color: var(--text);
+    }
+
+    .btn-next {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(79, 142, 247, 0.3);
+    }
+
+    .btn-next:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(79, 142, 247, 0.4);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, var(--green), #27a06b);
+      box-shadow: 0 4px 16px rgba(62, 207, 142, 0.3);
+    }
+
+    .btn-save:hover {
+      box-shadow: 0 6px 22px rgba(62, 207, 142, 0.4);
+    }
+
+    .step-counter {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* STEP PANELS */
+    .step-panel {
+      display: none;
+      animation: fadeStep 0.3s ease;
+    }
+
+    .step-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeStep {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* PROMPT BOX */
+    .prompt-box {
+      background: rgba(79, 142, 247, 0.05);
+      border: 1px solid rgba(79, 142, 247, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+
+    .prompt-box-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .prompt-text {
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.7;
+      font-family: var(--mono);
+      background: var(--bg3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    .prompt-copy {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--sans);
+      padding: 0;
+      margin-top: 8px;
+      transition: opacity 0.15s;
+    }
+
+    .prompt-copy:hover {
+      opacity: 0.7;
+    }
+
+    /* Esconder botões nativos de scroll numérico */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      appearance: none;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+  </style>
+  <link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+
+  <div class="bg-decoration">
+    <div class="bg-blob b1"></div>
+    <div class="bg-blob b2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <div class="page">
+
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+      <button class="back-btn" onclick="location.href='concursos.html'">← Voltar aos concursos</button>
+      <div class="left-title" id="leftTitle">Etapas do cadastro</div>
+
+      <!-- STEPS ATIVO -->
+      <div class="steps" id="stepsAtivo">
+        <div class="step-item active" onclick="goStep(1)">
+          <div class="step-dot">1</div>
+          <div class="step-info">
+            <div class="step-name">Informações gerais</div>
+            <div class="step-desc">Nome, logos e banca</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStep(2)">
+          <div class="step-dot">2</div>
+          <div class="step-info">
+            <div class="step-name">Data da prova</div>
+            <div class="step-desc">Timer ou modo pré-edital</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStep(3)">
+          <div class="step-dot">3</div>
+          <div class="step-info">
+            <div class="step-name">Importar edital</div>
+            <div class="step-desc">JSON ou cadastro manual</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStep(4)">
+          <div class="step-dot">4</div>
+          <div class="step-info">
+            <div class="step-name">Revisar matérias</div>
+            <div class="step-desc">Confirmar tópicos importados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEPS REALIZADO -->
+      <div class="steps" id="stepsRealizado" style="display:none">
+        <div class="step-item active" onclick="goStepR(1)">
+          <div class="step-dot">1</div>
+          <div class="step-info">
+            <div class="step-name">Informações básicas</div>
+            <div class="step-desc">Nome, banca e data</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStepR(2)">
+          <div class="step-dot">2</div>
+          <div class="step-info">
+            <div class="step-name">Resultado</div>
+            <div class="step-desc">Aprovado, CR ou reprovado</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStepR(3)">
+          <div class="step-dot">3</div>
+          <div class="step-info">
+            <div class="step-name">Gabarito</div>
+            <div class="step-desc">Certas, erradas e pontuação</div>
+          </div>
+        </div>
+        <div class="step-item" onclick="goStepR(4)">
+          <div class="step-dot">4</div>
+          <div class="step-info">
+            <div class="step-name">Confirmar</div>
+            <div class="step-desc">Adicionar às métricas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-box">
+        <div class="preview-label">Preview do card</div>
+        <div class="preview-inst">
+          <div class="preview-logo">🏦</div>
+          <div>
+            <div class="preview-nome">Banco do Brasil</div>
+            <div class="preview-banca">CESGRANRIO</div>
+          </div>
+        </div>
+        <div class="preview-timer">
+          <div class="preview-timer-num">214</div>
+          <div class="preview-timer-label">dias para a prova</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT CONTENT -->
+    <main class="right-content">
+
+      <!-- STEP 0 — Escolha do tipo -->
+      <div class="step-panel active" id="step-0">
+        <div class="step-header">
+          <div class="step-badge">✦ Novo registro</div>
+          <div class="step-title">Que tipo de concurso?</div>
+          <div class="step-subtitle">Adicione um concurso que você está estudando agora, ou registre um concurso que já
+            foi realizado para guardar em suas métricas.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+          <div class="date-option" onclick="escolherTipo('ativo')" style="padding:28px 24px">
+            <div class="date-option-icon" style="font-size:36px;margin-bottom:14px">🎯</div>
+            <div class="date-option-title" style="font-size:17px;margin-bottom:8px">Novo Foco de Concurso</div>
+            <div class="date-option-desc" style="font-size:12px;line-height:1.6">Adicione aqui um concurso que você
+              deseja focar, seja pré-edital ou pós edital.</div>
+          </div>
+          <div class="date-option" onclick="escolherTipo('realizado')" style="padding:28px 24px">
+            <div class="date-option-icon" style="font-size:36px;margin-bottom:14px">✅</div>
+            <div class="date-option-title" style="font-size:17px;margin-bottom:8px">Concurso já feito</div>
+            <div class="date-option-desc" style="font-size:12px;line-height:1.6">Cadastre aqui um concurso que você já
+              fez. Registre seu resultado, gabarito e colocação para guardar no seu mural de concurseiro.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1 — Informações Gerais -->
+      <div class="step-panel" id="step-1">
+        <div class="step-header">
+          <div class="step-badge">✦ Etapa 1 de 4</div>
+          <div class="step-title">Informações gerais</div>
+          <div class="step-subtitle">Dê um nome ao concurso, adicione os logos e identifique a banca organizadora.</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Concurso</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nome da Instituição ou Concurso <span>*</span></label>
+              <input class="form-input" id="a_nome" type="text" placeholder="Ex: Banco do Brasil ou CPNU 3">
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Cargo / Área</label>
+              <input class="form-input" id="a_cargo" type="text" placeholder="Ex: Escriturário Agente Comercial">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Número de vagas</label>
+              <input class="form-input" id="a_vagas" type="number" placeholder="Ex: 2000">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Logo da Instituição</div>
+          <!-- Upload area (mostrada quando sem logo) -->
+          <div class="upload-area" id="uploadAreaInst" onclick="document.getElementById('fileInst').click()">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Clique para carregar</div>
+            <div class="upload-size">PNG ou JPG · até 2MB</div>
+          </div>
+          <!-- Preview (mostrado quando tem logo) -->
+          <div class="upload-preview" id="previewInst" style="display:none">
+            <div class="upload-preview-img" id="previewInstImg" style="overflow:hidden;padding:0">
+              <img id="previewInstImgEl" style="width:100%;height:100%;object-fit:cover" src="">
+            </div>
+            <div class="upload-preview-info">
+              <div class="upload-preview-name" id="previewInstName">—</div>
+              <div class="upload-preview-size" id="previewInstSize">—</div>
+            </div>
+            <button class="upload-remove" onclick="removerLogo('inst')">✕ Remover</button>
+          </div>
+          <input type="file" id="fileInst" accept="image/*" style="display:none" onchange="carregarLogo('inst', this)">
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Banca organizadora</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nome da banca <span>*</span></label>
+              <input class="form-input" id="inputBanca" type="text" placeholder="Ex: CESGRANRIO, CEBRASPE, FGV...">
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="step-counter">1 / 4</div>
+          <button class="btn-next" onclick="goStep(2)">Próximo — Data da prova →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 — Data da Prova -->
+      <div class="step-panel" id="step-2">
+        <div class="step-header">
+          <div class="step-badge">✦ Etapa 2 de 4</div>
+          <div class="step-title">Data da prova</div>
+          <div class="step-subtitle">O edital já foi publicado com data definida, ou você está estudando em modo
+            pré-edital?</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Modo do concurso</div>
+          <div class="date-options">
+            <div class="date-option" onclick="selectMode(this, 'pre')">
+              <div class="date-option-icon"><img src="assets/mascots/pre-edital-rocket-still.png" alt="Foguete do pré-edital" style="width:26px;height:26px;object-fit:contain"></div>
+              <div class="date-option-title">Pré-Edital</div>
+              <div class="date-option-desc">Ainda não há data definida. O programa exibirá quantas vezes você zerou o
+                edital.</div>
+            </div>
+            <div class="date-option selected" onclick="selectMode(this, 'data')">
+              <div class="date-option-icon">📅</div>
+              <div class="date-option-title">Data definida</div>
+              <div class="date-option-desc">O edital foi publicado. O programa exibirá um timer regressivo em dias.
+              </div>
+            </div>
+          </div>
+
+          <div class="date-input-wrap visible" id="date-input-wrap">
+            <div class="form-row cols-2" style="margin-top:0">
+              <div class="form-group">
+                <label class="form-label">Data da prova <span>*</span></label>
+                <input class="form-input" id="a_data" type="date" value="2026-10-15">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Local da prova</label>
+                <input class="form-input" type="text" placeholder="Ex: Teresina — PI">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Opções adicionais</div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Destaque de proximidade</div>
+              <div class="toggle-desc">Faltando 30 dias o card ganha um destaque sutil no topo. Faltando 7 dias fica
+                vermelho discreto — só pra você não esquecer, sem te deixar ansioso.</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStep(1)">← Voltar</button>
+          <div class="step-counter">2 / 4</div>
+          <button class="btn-next" onclick="goStep(3)">Próximo — Importar edital →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 — Importar Edital -->
+      <div class="step-panel" id="step-3">
+        <div class="step-header">
+          <div class="step-badge">✦ Etapa 3 de 4</div>
+          <div class="step-title">Importar edital</div>
+          <div class="step-subtitle">Cole o JSON gerado ou adicione as matérias manualmente.
+            Atenção: Este processo automatizado pode apresentar inconsistências. Verifique se todos os tópicos e
+            subtópicos foram incluídos corretamente. Ocasionalmente, a IA pode gerar redundâncias ou tópicos
+            desnecessários. Você poderá realizar ajustes, inclusões ou exclusões após a importação.
+
+          </div>
+        </div>
+
+        <div class="prompt-box">
+          <div class="prompt-box-title">🤖 Prompt para gerar o JSON (testado no Gemini)</div>
+          <div class="prompt-text" id="promptTexto">Converta o edital abaixo para JSON seguindo exatamente este modelo:
+
+            {
+            "materias": [
+            {
+            "id": "mat_001",
+            "nome": "Nome da Matéria",
+            "topicos": [
+            {
+            "id": "top_001",
+            "nome": "Nome do Tópico",
+            "subtopicos": [
+            { "id": "sub_001", "nome": "Nome do Subtópico" }
+            ]
+            }
+            ]
+            }
+            ]
+            }
+
+            Mantenha a hierarquia matéria → tópico → subtópico. Quando um tópico contiver assuntos distintos separados
+            por vírgula, "e" ou ";", separe-os em subtópicos individuais. Os IDs devem seguir o padrão mat_001, top_001,
+            sub_001 incrementando. Não adicione campos extras. Retorne apenas o JSON, sem explicações.
+
+            [Cole o edital abaixo desta linha]</div>
+          <button class="prompt-copy" onclick="copiarPrompt()">📋 Copiar prompt completo</button>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Importar via JSON</div>
+          <div class="json-area">
+            <div class="json-area-header">
+              <div class="json-area-title">
+                <span class="json-tag">JSON</span>
+                Cole o JSON do edital aqui
+              </div>
+              <div class="json-area-actions">
+                <button class="json-btn"
+                  onclick="document.querySelector('textarea.json-input').value='';materiasTemp=[];renderMateriasLista()">✕
+                  Limpar</button>
+                <button class="json-btn primary" onclick="document.getElementById('fileJsonImport').click()">📥 Importar
+                  arquivo</button>
+                <input type="file" id="fileJsonImport" accept=".json" style="display:none"
+                  onchange="importarArquivoJSON(this)">
+              </div>
+            </div>
+            <textarea class="json-input" placeholder='{
+  "concurso": { ... },
+  "materias": [
+    {
+      "id": "mat_001",
+      "nome": "Língua Portuguesa",
+      "topicos": [ ... ]
+    }
+  ]
+}'></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Ou adicionar manualmente</span>
+            <span style="font-size:12px;color:var(--text3);text-transform:none;letter-spacing:0">As matérias do JSON
+              aparecerão aqui para revisão</span>
+          </div>
+          <div class="materias-list" id="materiasList"></div>
+          <button class="add-materia-btn" onclick="adicionarMateriaManual()">＋ Adicionar matéria</button>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStep(2)">← Voltar</button>
+          <div class="step-counter">3 / 4</div>
+          <button class="btn-next" onclick="goStep(4)">Próximo — Revisar →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 — Revisar -->
+      <div class="step-panel" id="step-4">
+        <div class="step-header">
+          <div class="step-badge">✦ Etapa 4 de 4</div>
+          <div class="step-title">Revisar e salvar</div>
+          <div class="step-subtitle">Confira o resumo do seu concurso antes de criar o dashboard.</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Resumo do concurso</div>
+
+          <div id="resumoAtivo"
+            style="background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:16px">
+            Carregando...</div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Contar nas estatísticas gerais</div>
+              <div class="toggle-desc">Este concurso somará nas suas métricas globais de horas, questões e acertos.
+              </div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStep(3)">← Voltar</button>
+          <div class="step-counter">4 / 4</div>
+          <button class="btn-next btn-save">✓ Criar concurso e ir ao dashboard</button>
+        </div>
+      </div>
+
+      <!-- ═══ WIZARD REALIZADO ═══ -->
+
+      <!-- R1 — Informações básicas -->
+      <div class="step-panel" id="stepr-1">
+        <div class="step-header">
+          <div class="step-badge"
+            style="background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.2);color:var(--yellow)">⚔️ Etapa 1 de
+            4</div>
+          <div class="step-title">Informações básicas</div>
+          <div class="step-subtitle">Dados gerais do concurso realizado.</div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Concurso</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nome da Instituição ou Concurso <span>*</span></label>
+              <input class="form-input" id="r_nome" type="text" placeholder="Ex: Banco do Brasil ou CPNU 3">
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Cargo / Área</label>
+              <input class="form-input" id="r_cargo" type="text" placeholder="Ex: Escriturário">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Banca</label>
+              <input class="form-input" id="r_banca" type="text" placeholder="Ex: CESGRANRIO">
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Data em que foi realizado <span>*</span></label>
+              <input class="form-input" id="r_data" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Logo do concurso</label>
+              <div class="upload-area" id="uploadAreaR" onclick="document.getElementById('fileR').click()"
+                style="padding:14px">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Clique para carregar</div>
+                <div class="upload-size">PNG ou JPG · até 2MB</div>
+              </div>
+              <div class="upload-preview" id="previewR" style="display:none">
+                <div class="upload-preview-img" style="overflow:hidden;padding:0">
+                  <img id="previewRImgEl" style="width:100%;height:100%;object-fit:cover" src="">
+                </div>
+                <div class="upload-preview-info">
+                  <div class="upload-preview-name" id="previewRName">—</div>
+                </div>
+                <button class="upload-remove" onclick="removerLogo('r')">✕ Remover</button>
+              </div>
+              <input type="file" id="fileR" accept="image/*" style="display:none" onchange="carregarLogo('r', this)">
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="voltarTipo()">← Tipo</button>
+          <div class="step-counter">1 / 4</div>
+          <button class="btn-next" onclick="goStepR(2)">Próximo — Resultado →</button>
+        </div>
+      </div>
+
+      <!-- R2 — Resultado -->
+      <div class="step-panel" id="stepr-2">
+        <div class="step-header">
+          <div class="step-badge"
+            style="background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.2);color:var(--yellow)">⚔️ Etapa 2 de
+            4</div>
+          <div class="step-title">Resultado</div>
+          <div class="step-subtitle">Como foi o resultado deste concurso?</div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Status</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
+            <div class="date-option" id="res_aprovado" onclick="selecionarResultado('aprovado')"
+              style="text-align:center;padding:20px 12px">
+              <div style="font-size:32px;margin-bottom:8px">👑</div>
+              <div class="date-option-title" style="color:var(--green)">Aprovado</div>
+              <div class="date-option-desc" style="font-size:11px">Dentro das vagas</div>
+            </div>
+            <div class="date-option" id="res_cr" onclick="selecionarResultado('cr')"
+              style="text-align:center;padding:20px 12px">
+              <div style="font-size:32px;margin-bottom:8px">📋</div>
+              <div class="date-option-title" style="color:#f5d060">Class. CR</div>
+              <div class="date-option-desc" style="font-size:11px">Cadastro de Reserva</div>
+            </div>
+            <div class="date-option" id="res_aguardando" onclick="selecionarResultado('aguardando')"
+              style="text-align:center;padding:20px 12px">
+              <div style="font-size:32px;margin-bottom:8px">⏳</div>
+              <div class="date-option-title" style="color:var(--text)">Aguardando</div>
+              <div class="date-option-desc" style="font-size:11px">Aguardando Resultado</div>
+            </div>
+            <div class="date-option" id="res_reprovado" onclick="selecionarResultado('reprovado')"
+              style="text-align:center;padding:20px 12px">
+              <div style="font-size:32px;margin-bottom:8px">❌</div>
+              <div class="date-option-title" style="color:var(--red)">Reprovado</div>
+              <div class="date-option-desc" style="font-size:11px">Não passou desta vez</div>
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Colocação (posição no ranking)</label>
+              <input class="form-input" id="r_colocacao" type="number" min="1" placeholder="Ex: 247">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total de candidatos</label>
+              <input class="form-input" id="r_total_candidatos" type="number" min="1" placeholder="Ex: 5000">
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStepR(1)">← Voltar</button>
+          <div class="step-counter">2 / 4</div>
+          <button class="btn-next" onclick="goStepR(3)">Próximo — Gabarito →</button>
+        </div>
+      </div>
+
+      <!-- R3 — Gabarito -->
+      <div class="step-panel" id="stepr-3">
+        <div class="step-header">
+          <div class="step-badge"
+            style="background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.2);color:var(--yellow)">⚔️ Etapa 3 de
+            4</div>
+          <div class="step-title">Gabarito</div>
+          <div class="step-subtitle">Compare sua marcação com o gabarito oficial. Tudo é opcional — preencha o que
+            tiver.</div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Questões — sua marcação vs gabarito oficial</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+            <div class="pomo-cfg-item"
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div
+                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:8px">
+                ✅ Certas</div>
+              <input class="form-input" id="r_certas" type="number" min="0" placeholder="0"
+                style="text-align:center;font-size:20px;font-family:var(--mono);font-weight:700;color:var(--green)">
+            </div>
+            <div class="pomo-cfg-item"
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div
+                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">
+                ❌ Erradas</div>
+              <input class="form-input" id="r_erradas" type="number" min="0" placeholder="0"
+                style="text-align:center;font-size:20px;font-family:var(--mono);font-weight:700;color:var(--red)">
+            </div>
+            <div class="pomo-cfg-item"
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div
+                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px">
+                ⬜ Em branco</div>
+              <input class="form-input" id="r_branco" type="number" min="0" placeholder="0"
+                style="text-align:center;font-size:20px;font-family:var(--mono);font-weight:700">
+            </div>
+            <div class="pomo-cfg-item"
+              style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div
+                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--yellow);margin-bottom:8px">
+                🏆 Pontuação</div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+                <input class="form-input" id="r_pontuacao" type="number" step="any" min="0" placeholder="0"
+                  style="width:55%;text-align:center;font-size:20px;font-family:var(--mono);font-weight:700;color:var(--yellow);padding:10px 4px">
+                <span style="font-size:14px;color:var(--text3)">/</span>
+                <input class="form-input" id="r_pontuacao_maxima" type="number" step="any" min="0" placeholder="Máx"
+                  style="width:45%;text-align:center;font-size:14px;font-family:var(--mono);font-weight:600;color:var(--text3);padding:10px 4px">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-title">✍️ Redação / Discursiva</div>
+          <div style="width:200px;margin-bottom:20px">
+              <input class="form-input" id="r_redacao" type="number" step="0.01" min="0" placeholder="0.00"
+                style="text-align:center;font-size:24px;font-family:var(--mono);font-weight:700;color:var(--accent2);height:60px;border-color:var(--border2);background:rgba(124,92,252,0.03)">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Observações (opcional)</label>
+              <input class="form-input" id="r_obs" type="text"
+                placeholder="Ex: Anularam 2 questões, nota de corte foi 65 pts...">
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStepR(2)">← Voltar</button>
+          <div class="step-counter">3 / 4</div>
+          <button class="btn-next" onclick="goStepR(4)">Próximo — Confirmar →</button>
+        </div>
+      </div>
+
+      <!-- R4 — Confirmar -->
+      <div class="step-panel" id="stepr-4">
+        <div class="step-header">
+          <div class="step-badge"
+            style="background:rgba(245,200,66,0.08);border-color:rgba(245,200,66,0.2);color:var(--yellow)">⚔️ Etapa 4 de
+            4</div>
+          <div class="step-title">Confirmar registro</div>
+          <div class="step-subtitle">Revise os dados antes de salvar no seu mural de batalhas.</div>
+        </div>
+        <div class="form-section">
+          <div id="resumoRealizado"
+            style="background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:16px">
+            <!-- preenchido pelo JS -->
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-title">Contar nas estatísticas gerais</div>
+              <div class="toggle-desc">Este concurso somará nas suas métricas globais.</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" id="r_contar"><span
+                class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="btn-back" onclick="goStepR(3)">← Voltar</button>
+          <div class="step-counter">4 / 4</div>
+          <button class="btn-next"
+            style="background:linear-gradient(135deg,var(--yellow),var(--orange));box-shadow:0 4px 16px rgba(245,200,66,0.3)"
+            onclick="salvarRealizado()">⚔️ Salvar no mural</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    let modoAtivo = null; // 'ativo' ou 'realizado'
+    let currentStep = 0;
+    let currentStepR = 0;
+    let resultadoSelecionado = null;
+
+    // ── ESCOLHA DO TIPO ───────────────────────
+    function escolherTipo(tipo) {
+      modoAtivo = tipo;
+      if (tipo === 'ativo') {
+        document.getElementById('stepsAtivo').style.display = '';
+        document.getElementById('stepsRealizado').style.display = 'none';
+        document.getElementById('leftTitle').textContent = 'Etapas do cadastro';
+        goStep(1);
+      } else {
+        document.getElementById('stepsAtivo').style.display = 'none';
+        document.getElementById('stepsRealizado').style.display = '';
+        document.getElementById('leftTitle').textContent = 'Registrar realizado';
+        goStepR(1);
+      }
+    }
+
+    function voltarTipo() {
+      modoAtivo = null;
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('step-0').classList.add('active');
+      document.getElementById('stepsAtivo').style.display = '';
+      document.getElementById('stepsRealizado').style.display = 'none';
+      document.getElementById('leftTitle').textContent = 'Etapas do cadastro';
+    }
+
+    // ── WIZARD ATIVO ──────────────────────────
+    function goStep(n) {
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('step-' + n).classList.add('active');
+      const items = document.querySelectorAll('#stepsAtivo .step-item');
+      items.forEach((item, i) => {
+        item.classList.remove('active', 'done');
+        if (i + 1 < n) item.classList.add('done');
+        else if (i + 1 === n) item.classList.add('active');
+        const dot = item.querySelector('.step-dot');
+        if (i + 1 < n) dot.textContent = '✓';
+        else dot.textContent = i + 1;
+      });
+      currentStep = n;
+      if (n === 4) {
+        // Se materiasTemp ainda está vazio e tem JSON no textarea, parseia UMA vez
+        if (!materiasTemp.length) {
+          const ta = document.querySelector('textarea.json-input');
+          if (ta && ta.value.trim()) parsearJSONParaLista();
+        }
+        // Nunca re-parseia se já tem dados — preserva edições manuais
+        preencherResumoAtivo();
+      }
+    }
+
+    function preencherResumoAtivo() {
+      const nome = document.getElementById('a_nome')?.value || '—';
+      const banca = document.getElementById('inputBanca')?.value || '—';
+      const cargo = document.getElementById('a_cargo')?.value || '';
+      const preEd = modoAtual === 'pre';
+      const dataVal = document.getElementById('a_data')?.value || '';
+      const jsonText = document.querySelector('textarea.json-input')?.value.trim() || '';
+      let nMaterias = 0, nTopicos = 0, nSubtopicos = 0;
+      if (materiasTemp && materiasTemp.length > 0) {
+        nMaterias = materiasTemp.length;
+        nTopicos = materiasTemp.reduce((a, m) => a + (m.topicos || []).length, 0);
+        nSubtopicos = materiasTemp.reduce((a, m) =>
+          a + (m.topicos || []).reduce((b, t) => b + (t.subtopicos || []).length, 0), 0);
+      } else if (jsonText) {
+        try {
+          const j = JSON.parse(jsonText);
+          nMaterias = (j.materias || []).length;
+          nTopicos = (j.materias || []).reduce((a, m) => a + (m.topicos || []).length, 0);
+          nSubtopicos = (j.materias || []).reduce((a, m) =>
+            a + (m.topicos || []).reduce((b, t) => b + (t.subtopicos || []).length, 0), 0);
+        } catch { }
+      }
+      const logoEl = document.getElementById('previewInstImgEl');
+      const logoHtml = logoInstBase64
+        ? `<img src="${logoInstBase64}" style="width:64px;height:64px;object-fit:contain;border-radius:12px;padding:4px">`
+        : `<div style="width:64px;height:64px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:30px">🏛️</div>`;
+
+      let timerHtml = '';
+      if (preEd) {
+        timerHtml = `<div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Modo</div><div style="font-family:var(--mono);font-size:14px;color:var(--accent2);font-weight:700;margin-top:2px;display:inline-flex;align-items:center;gap:6px"><img src="assets/mascots/pre-edital-rocket-still.png" alt="Foguete do pré-edital" style="width:18px;height:18px;object-fit:contain"> Pré-Edital</div></div>`;
+      } else if (dataVal) {
+        const partes = dataVal.split('-');
+        const dataFmt = partes[2] + '/' + partes[1] + '/' + partes[0];
+        const dias = Math.ceil((new Date(dataVal) - new Date()) / 86400000);
+        timerHtml = `
+        <div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Prova em</div><div style="font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:700;margin-top:2px">${dataFmt}</div></div>
+        <div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Dias restantes</div><div style="font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:700;margin-top:2px">${dias} dias</div></div>`;
+      }
+
+      document.getElementById('resumoAtivo').innerHTML = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start">
+        ${logoHtml}
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">${nome}</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${banca}${cargo ? ' · ' + cargo : ''}</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Matérias</div><div style="font-family:var(--mono);font-size:14px;color:var(--text);font-weight:700;margin-top:2px">${nMaterias}</div></div>
+            <div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Tópicos</div><div style="font-family:var(--mono);font-size:14px;color:var(--text);font-weight:700;margin-top:2px">${nTopicos}</div></div>
+            <div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Subtópicos</div><div style="font-family:var(--mono);font-size:14px;color:var(--text);font-weight:700;margin-top:2px">${nSubtopicos}</div></div>
+            ${timerHtml}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ── WIZARD REALIZADO ──────────────────────
+    function goStepR(n) {
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      const stepEl = document.getElementById('stepr-' + n);
+      if(stepEl) stepEl.classList.add('active');
+      const items = document.querySelectorAll('#stepsRealizado .step-item');
+      items.forEach((item, i) => {
+        item.classList.remove('active', 'done');
+        if (i + 1 < n) item.classList.add('done');
+        else if (i + 1 === n) item.classList.add('active');
+        const dot = item.querySelector('.step-dot');
+        if (dot) {
+            if (i + 1 < n) dot.textContent = '✓';
+            else dot.textContent = i + 1;
+        }
+      });
+      currentStepR = n;
+      if (n === 4) {
+        preencherResumoRealizado();
+      }
+    }
+
+    function selecionarResultado(tipo) {
+      resultadoSelecionado = tipo;
+      document.querySelectorAll('.btn-resultado').forEach(b => b.classList.remove('selected'));
+      const actBtn = document.querySelector(`.btn-resultado[onclick="selecionarResultado('${tipo}')"]`);
+      if (actBtn) actBtn.classList.add('selected');
+    }
+    function preencherResumoRealizado() {
+      const nome = document.getElementById('r_nome')?.value || '—';
+      const banca = document.getElementById('r_banca')?.value || '—';
+      const cargo = document.getElementById('r_cargo')?.value || '';
+      const data = document.getElementById('r_data')?.value || '';
+      const col = document.getElementById('r_colocacao')?.value || '';
+      const notaCorte = document.getElementById('r_nota_corte')?.value || '';
+      const vagas = document.getElementById('r_vagas')?.value || '';
+      const certas = document.getElementById('r_certas')?.value || '—';
+      const erradas = document.getElementById('r_erradas')?.value || '—';
+      const branco = document.getElementById('r_branco')?.value || '—';
+      const pts = document.getElementById('r_pontuacao')?.value || '—';
+      const ptsMax = document.getElementById('r_pontuacao_maxima')?.value || '';
+
+      const resLabel = resultadoSelecionado === 'aprovado' ? '👑 Aprovado'
+        : resultadoSelecionado === 'cr' ? '📋 Cadastro de Reserva'
+          : resultadoSelecionado === 'aguardando' ? '⏳ Aguardando Resultado'
+            : resultadoSelecionado === 'reprovado' ? '❌ Reprovado' : '— não selecionado';
+
+      const resColor = resultadoSelecionado === 'aprovado' ? '#f5d060'
+        : resultadoSelecionado === 'cr' ? 'var(--yellow)'
+          : resultadoSelecionado === 'aguardando' ? 'var(--text)'
+            : resultadoSelecionado === 'reprovado' ? 'var(--red)' : 'var(--text3)';
+
+      const dataFmt = data ? data.split('-').reverse().join('/') : '—';
+
+      document.getElementById('resumoRealizado').innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div style="font-size:36px">${logoRealizadoBase64 ? `<img src="${logoRealizadoBase64}" style="width:36px;height:36px;object-fit:contain;border-radius:6px">` : '🏛️'}</div>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:var(--text)">${nome}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px">${banca}${cargo ? ' · ' + cargo : ''} · ${dataFmt}</div>
+        </div>
+        <div style="margin-left:auto;font-size:15px;font-weight:700;color:${resColor}">${resLabel}${col ? ' · ' + col + 'º' : ''}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:var(--bg2);border-radius:8px;padding:12px">
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--green);font-family:var(--mono)">${certas}</div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;margin-top:3px">Certas</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--red);font-family:var(--mono)">${erradas}</div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;margin-top:3px">Erradas</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--text3);font-family:var(--mono)">${branco}</div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;margin-top:3px">Branco</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--yellow);font-family:var(--mono)">${pts}${ptsMax ? '<span style="font-size:12px;color:var(--text3);font-weight:400">/' + ptsMax + '</span>' : ''}</div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;margin-top:3px">Pontuação</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:var(--accent2);font-family:var(--mono)">${document.getElementById('r_redacao')?.value || '—'}</div><div style="font-size:12px;color:var(--text3);text-transform:uppercase;margin-top:3px">Redação</div></div>
+      </div>`;
+    }
+
+    function salvarRealizado() {
+      const nome = document.getElementById('r_nome')?.value.trim();
+      if (!nome) { alert('Informe o nome do concurso.'); goStepR(1); return; }
+      if (!resultadoSelecionado) { alert('Por favor, volte à etapa 2 e selecione o resultado (Aprovado, CR, Aguardando ou Reprovado).'); goStepR(2); return; }
+
+      const editId = sessionStorage.getItem('ct_editando_realizado_id');
+      if (editId) sessionStorage.removeItem('ct_editando_realizado_id');
+      const concurso = {
+        id: editId || undefined,
+        nome,
+        cargo: document.getElementById('r_cargo')?.value || '',
+        banca: document.getElementById('r_banca')?.value || '',
+        logoBase64: logoRealizadoBase64 || null,
+        logoEmoji: logoRealizadoBase64 ? null : '🏛️',
+        dataProva: document.getElementById('r_data')?.value || null,
+        resultado: resultadoSelecionado,
+        colocacao: parseInt(document.getElementById('r_colocacao')?.value) || null,
+        totalCand: parseInt(document.getElementById('r_total_candidatos')?.value) || null,
+        certas: parseInt(document.getElementById('r_certas')?.value) || null,
+        erradas: parseInt(document.getElementById('r_erradas')?.value) || null,
+        branco: parseInt(document.getElementById('r_branco')?.value) || null,
+        pontuacao: parseFloat(document.getElementById('r_pontuacao')?.value) || null,
+        pontuacaoMax: parseFloat(document.getElementById('r_pontuacao_maxima')?.value) || null,
+        redacao: parseFloat(document.getElementById('r_redacao')?.value) || null,
+        obs: document.getElementById('r_obs')?.value || '',
+        notaCorte: parseFloat(document.getElementById('r_nota_corte')?.value) || null,
+        vagas: parseInt(document.getElementById('r_vagas')?.value) || null,
+        realizado: true,
+        contarEstatisticas: document.getElementById('r_contar')?.checked || false,
+        preEdital: false,
+      };
+
+      concurso.id = CT.saveConcurso(concurso);
+      
+      const finalize = () => {
+        location.href = 'concursos.html';
+      };
+
+      if (window.pywebview && window.pywebview.api && logoRealizadoBase64) {
+        window.pywebview.api.salvar_logo(concurso.id || editId, logoRealizadoBase64).then(res => {
+          if (res && res.ok) {
+            concurso.logoPath = res.path;
+            CT.saveConcurso(concurso);
+          }
+          finalize();
+        }).catch(finalize);
+      } else {
+        finalize();
+      }
+    }
+
+    // ── COPIAR PROMPT ─────────────────────────
+    function copiarPrompt() {
+      const texto = document.getElementById('promptTexto').innerText;
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = document.querySelector('.prompt-copy');
+        const original = btn.textContent;
+        btn.textContent = '✅ Copiado!';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.style.color = '';
+        }, 2000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = document.getElementById('promptTexto').innerText;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const btn = document.querySelector('.prompt-copy');
+        const original = btn.textContent;
+        btn.textContent = '✅ Copiado!';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => { btn.textContent = original; btn.style.color = ''; }, 2000);
+      });
+    }
+
+    // Começa na tela de escolha do tipo
+    // (step-0 já está com class active no HTML)
+
+    // ── CARREGAR REALIZADO PARA EDIÇÃO ────────
+
+
+
+    // ── UPLOAD DE LOGOS ───────────────────────
+    let logoInstBase64 = null;
+    let logoRealizadoBase64 = null;
+
+    function carregarLogo(tipo, input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { alert('Arquivo muito grande! Use uma imagem de até 2MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // Redimensiona via canvas para máximo 128x128px antes de salvar
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 128;
+          const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const base64 = canvas.toDataURL('image/png');
+          if (tipo === 'inst') {
+            logoInstBase64 = base64;
+            document.getElementById('previewInstImgEl').src = base64;
+            document.getElementById('previewInstName').textContent = file.name;
+            document.getElementById('previewInstSize').textContent = canvas.width + '×' + canvas.height + 'px';
+            document.getElementById('uploadAreaInst').style.display = 'none';
+            document.getElementById('previewInst').style.display = 'flex';
+          } else if (tipo === 'r') {
+            logoRealizadoBase64 = base64;
+            document.getElementById('previewRImgEl').src = base64;
+            document.getElementById('previewRName').textContent = file.name;
+            document.getElementById('uploadAreaR').style.display = 'none';
+            document.getElementById('previewR').style.display = 'flex';
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removerLogo(tipo) {
+      if (tipo === 'inst') {
+        logoInstBase64 = null;
+        document.getElementById('fileInst').value = '';
+        document.getElementById('previewInst').style.display = 'none';
+        document.getElementById('uploadAreaInst').style.display = '';
+      } else if (tipo === 'r') {
+        logoRealizadoBase64 = null;
+        document.getElementById('fileR').value = '';
+        document.getElementById('previewR').style.display = 'none';
+        document.getElementById('uploadAreaR').style.display = '';
+      }
+    }
+
+    function copiarPrompt() {
+      const texto = document.getElementById('promptTexto').textContent;
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = document.querySelector('.prompt-copy');
+        const original = btn.textContent;
+        btn.textContent = '✅ Copiado!';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => { btn.textContent = original; btn.style.color = ''; }, 2000);
+      }).catch(() => {
+        alert('Não foi possível copiar automaticamente. Selecione o texto acima e copie manualmente.');
+      });
+    }
+
+    function importarArquivoJSON(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.querySelector('textarea.json-input').value = e.target.result;
+        parsearJSONParaLista();
+      };
+      reader.readAsText(file);
+    }
+
+    // Cores para as matérias
+    const CORES = ['#4f8ef7', '#7c5cfc', '#3ecf8e', '#f5c842', '#f5874a', '#f55a5a', '#27a06b', '#e879f9'];
+    let materiasTemp = []; // array de {nome, topicos:[{nome, subtopicos:[]}]}
+
+    function parsearJSONParaLista() {
+      const txt = document.querySelector('textarea.json-input')?.value.trim();
+      if (!txt) return;
+      try {
+        const json = JSON.parse(txt);
+        materiasTemp = (json.materias || []).map(m => ({
+          nome: m.nome,
+          topicos: (m.topicos || []).map(t => ({
+            nome: t.nome,
+            subtopicos: (t.subtopicos || []).map(s => s.nome)
+          }))
+        }));
+        renderMateriasLista();
+      } catch (e) {
+        alert('JSON inválido: ' + e.message);
+      }
+    }
+
+    function renderMateriasLista() {
+      const el = document.getElementById('materiasList');
+      const abertas = new Set();
+      el.querySelectorAll('.materia-item.open').forEach(e => abertas.add(e.id));
+      if (!materiasTemp.length) { el.innerHTML = ''; return; }
+      el.innerHTML = materiasTemp.map((m, mi) => {
+        const cor = CORES[mi % CORES.length];
+        const nTop = m.topicos.length;
+        const topRows = m.topicos.map((t, ti) => {
+          const subRows = t.subtopicos.map((s, si) =>
+            `<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 28px;background:rgba(255,255,255,0.02)">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
+            <input style="flex:1;background:transparent;border:none;color:var(--text2);font-family:var(--sans);font-size:12px;outline:none" value="${s}" oninput="materiasTemp[${mi}].topicos[${ti}].subtopicos[${si}]=this.value">
+            <button onclick="materiasTemp[${mi}].topicos[${ti}].subtopicos.splice(${si},1);renderMateriasLista()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;line-height:1">×</button>
+          </div>`
+          ).join('');
+          return `
+        <div style="border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+            <div class="topico-dot"></div>
+            <input style="flex:1;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:12px;outline:none" value="${t.nome}" oninput="materiasTemp[${mi}].topicos[${ti}].nome=this.value">
+            <span onclick="materiasTemp[${mi}].topicos[${ti}].subtopicos.push('Novo subtópico');renderMateriasLista()" style="font-size:12px;color:var(--text3);cursor:pointer;padding:2px 7px;border:1px solid var(--border);border-radius:4px;white-space:nowrap;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">＋ sub</span>
+            <button onclick="materiasTemp[${mi}].topicos.splice(${ti},1);renderMateriasLista()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px">×</button>
+          </div>
+          ${subRows}
+        </div>`;
+        }).join('');
+        return `
+      <div class="materia-item${abertas.has('mat_' + mi) ? ' open' : ''}" id="mat_${mi}">
+        <div class="materia-header" onclick="event.stopPropagation();this.closest('.materia-item').classList.toggle('open')">
+          <span class="materia-handle">⠿</span>
+          <div class="materia-color" style="background:${cor}"></div>
+          <input class="materia-name-input" value="${m.nome}" onclick="event.stopPropagation()" oninput="materiasTemp[${mi}].nome=this.value">
+          <span class="materia-count">${nTop} tópico${nTop !== 1 ? 's' : ''}</span>
+          <span class="materia-expand">›</span>
+          <button class="materia-remove" onclick="event.stopPropagation();materiasTemp.splice(${mi},1);renderMateriasLista()">×</button>
+        </div>
+        <div class="topicos-wrap">
+          ${topRows}
+          <button onclick="materiasTemp[${mi}].topicos.push({nome:'Novo tópico',subtopicos:[]});renderMateriasLista();setTimeout(()=>{const m=document.getElementById('mat_${mi}');if(m)m.classList.add('open')},30)"
+            style="margin-top:8px;display:flex;align-items:center;gap:5px;border:none;background:none;color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;padding:2px 0">
+            ＋ adicionar tópico
+          </button>
+        </div>
+      </div>`;
+      }).join('');
+    }
+
+    function adicionarMateriaManual() {
+      // Remove modal anterior se existir
+      const old = document.getElementById('modalAddMateria');
+      if (old) old.remove();
+
+      _modalTopicos = [];
+      const overlay = document.createElement('div');
+      overlay.id = 'modalAddMateria';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+      overlay.innerHTML = `
+      <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:520px;max-width:94vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
+        <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px">Nova matéria</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Preencha o nome e adicione os tópicos</div>
+
+        <!-- Nome da matéria -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nome da matéria</div>
+          <input id="matNomeInput" placeholder="Ex: Direito Constitucional..."
+            style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+        </div>
+
+        <!-- Lista de tópicos -->
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Tópicos</div>
+        <div id="matTopicosLista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+
+        <!-- Botão add tópico -->
+        <button onclick="modalAddTopico()" style="width:100%;padding:8px;background:transparent;border:2px dashed var(--border2);border-radius:8px;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;margin-bottom:20px"
+          onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+          onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">
+          ＋ Adicionar tópico
+        </button>
+
+        <div style="display:flex;gap:10px">
+          <button onclick="document.getElementById('modalAddMateria').remove()"
+            style="padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">
+            Cancelar
+          </button>
+          <button onclick="confirmarAddMateria()"
+            style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">
+            ＋ Adicionar matéria
+          </button>
+        </div>
+      </div>`;
+
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+      setTimeout(() => document.getElementById('matNomeInput')?.focus(), 50);
+    }
+
+    // Tópicos temporários do modal
+    let _modalTopicos = [];
+
+    function modalAddTopico() {
+      _modalTopicos.push({ nome: '', subtopicos: [] });
+      renderModalTopicos();
+      // Foca no novo campo
+      setTimeout(() => {
+        const inputs = document.querySelectorAll('.modal-top-input');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }, 30);
+    }
+
+    function renderModalTopicos() {
+      const lista = document.getElementById('matTopicosLista');
+      if (!lista) return;
+      lista.innerHTML = _modalTopicos.map((t, ti) => {
+        const subRows = t.subtopicos.map((s, si) => `
+        <div style="display:flex;align-items:center;gap:6px;padding:4px 0 4px 20px">
+          <span style="color:var(--text3);font-size:12px">└</span>
+          <input value="${s}" placeholder="Subtópico..."
+            style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text2);font-family:var(--sans);font-size:12px;outline:none"
+            oninput="_modalTopicos[${ti}].subtopicos[${si}]=this.value"
+            onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="_modalTopicos[${ti}].subtopicos.splice(${si},1);renderModalTopicos()"
+            style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px">×</button>
+        </div>`).join('');
+
+        return `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:${t.subtopicos.length ? '6px' : '0'}">
+            <span style="color:var(--text3);font-size:12px">●</span>
+            <input class="modal-top-input" value="${t.nome}" placeholder="Nome do tópico..."
+              style="flex:1;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:12px;font-weight:600;outline:none"
+              oninput="_modalTopicos[${ti}].nome=this.value">
+            <span onclick="_modalTopicos[${ti}].subtopicos.push('');renderModalTopicos()"
+              style="font-size:12px;color:var(--text3);cursor:pointer;padding:2px 7px;border:1px solid var(--border);border-radius:4px;white-space:nowrap"
+              onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">＋ sub</span>
+            <button onclick="_modalTopicos.splice(${ti},1);renderModalTopicos()"
+              style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 4px">×</button>
+          </div>
+          ${subRows}
+        </div>`;
+      }).join('');
+    }
+
+    function confirmarAddMateria() {
+      const nome = document.getElementById('matNomeInput')?.value.trim();
+      if (!nome) {
+        const el = document.getElementById('matNomeInput');
+        if (el) { el.style.borderColor = 'var(--red)'; setTimeout(() => el.style.borderColor = 'var(--border2)', 1200); }
+        return;
+      }
+      // Filtra tópicos sem nome
+      const topicos = _modalTopicos.filter(t => t.nome.trim()).map(t => ({
+        nome: t.nome.trim(),
+        subtopicos: t.subtopicos.filter(s => s.trim())
+      }));
+      materiasTemp.push({ nome, topicos });
+      _modalTopicos = [];
+      document.getElementById('modalAddMateria')?.remove();
+      renderMateriasLista();
+      setTimeout(() => {
+        const last = document.getElementById('mat_' + (materiasTemp.length - 1));
+        if (last) last.classList.add('open');
+      }, 50);
+    }
+
+
+    // Escuta mudanças na textarea para parsear automaticamente
+    document.addEventListener('DOMContentLoaded', () => {
+      const ta = document.querySelector('textarea.json-input');
+      if (ta) {
+        // Parseia ao colar (paste) ou ao limpar (via botão Limpar que chama .value='')
+        ta.addEventListener('paste', () => {
+          // Reseta materiasTemp pois é um novo JSON sendo colado
+          materiasTemp = [];
+          setTimeout(parsearJSONParaLista, 100);
+        });
+      }
+    });
+
+    let modoAtual = 'data'; // rastreia se é 'pre' ou 'data'
+    function selectMode(el, mode) {
+      modoAtual = mode;
+      document.querySelectorAll('.date-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      const wrap = document.getElementById('date-input-wrap');
+      wrap.classList.toggle('visible', mode === 'data');
+    }
+
+    // expand/collapse materia
+    document.querySelectorAll('.materia-header').forEach(h => {
+      h.addEventListener('click', e => {
+        if (e.target.classList.contains('materia-remove') || e.target.classList.contains('materia-name-input')) return;
+        h.closest('.materia-item').classList.toggle('open');
+      });
+    });
+  </script>
+  <script src="nav.js"></script>
+
+  <script src="data.js"></script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Verifica se veio de uma edição via URL ?editar=ID
+      const params = new URLSearchParams(window.location.search);
+      const editandoId = params.get('editar');
+      const finalizeFlag = params.get('finalizar');
+      if (!editandoId) return;
+
+      const c = CT.getConcurso(editandoId);
+      if (!c) return;
+
+      // Se flag 'finalizar' estiver ativa, forçamos o modo 'realizado' preenchendo com dados do ativo
+      if (finalizeFlag === '1' && !c.realizado) {
+        escolherTipo('realizado');
+        document.getElementById('r_nome').value = c.nome || '';
+        document.getElementById('r_cargo').value = c.cargo || '';
+        document.getElementById('r_banca').value = c.banca || '';
+        document.getElementById('r_data').value = c.dataProva || '';
+        selecionarResultado('aguardando');
+        
+        if (c.logoPath || c.logoBase64) {
+          logoRealizadoBase64 = c.logoBase64;
+          document.getElementById('previewRImgEl').src = c.logoPath ? (c.logoPath + '?t=' + Date.now()) : c.logoBase64;
+          document.getElementById('previewRName').textContent = 'logo salvo';
+          document.getElementById('uploadAreaR').style.display = 'none';
+          document.getElementById('previewR').style.display = 'flex';
+        }
+        sessionStorage.setItem('ct_editando_realizado_id', editandoId);
+        return;
+      }
+
+      if (c.realizado) {
+        // Abre direto o wizard de realizado
+        escolherTipo('realizado');
+
+        // Preenche os campos
+        document.getElementById('r_nome').value = c.nome || '';
+        document.getElementById('r_cargo').value = c.cargo || '';
+        document.getElementById('r_banca').value = c.banca || '';
+        document.getElementById('r_data').value = c.dataProva || '';
+
+        const ids = {
+          r_colocacao: c.colocacao, r_total_candidatos: c.totalCand,
+          r_nota_corte: c.notaCorte, r_vagas: c.vagas,
+          r_certas: c.certas, r_erradas: c.erradas,
+          r_branco: c.branco, r_pontuacao: c.pontuacao, r_pontuacao_maxima: c.pontuacaoMax,
+          r_redacao: c.redacao,
+          r_obs: c.obs
+        };
+        Object.entries(ids).forEach(([id, val]) => {
+          const el = document.getElementById(id);
+          if (el && val != null) el.value = val;
+        });
+
+        const ct2 = document.getElementById('r_contar');
+        if (ct2) ct2.checked = !!c.contarEstatisticas;
+
+        if (c.resultado) selecionarResultado(c.resultado);
+
+        if (c.logoPath || c.logoBase64) {
+          logoRealizadoBase64 = c.logoBase64;
+          document.getElementById('previewRImgEl').src = c.logoPath ? (c.logoPath + '?t=' + Date.now()) : c.logoBase64;
+          document.getElementById('previewRName').textContent = 'logo salvo';
+          document.getElementById('uploadAreaR').style.display = 'none';
+          document.getElementById('previewR').style.display = 'flex';
+        }
+
+        // Guarda o id para sobrescrever ao salvar
+        sessionStorage.setItem('ct_editando_realizado_id', editandoId);
+      } else {
+        // Abre o wizard normal de concurso ativo
+        escolherTipo('ativo');
+
+        // Preenche campos
+        const inNome = document.getElementById('a_nome');
+        const inCargo = document.getElementById('a_cargo');
+        const inBanca = document.getElementById('inputBanca');
+        if (inNome) inNome.value = c.nome || '';
+        if (inCargo) inCargo.value = c.cargo || '';
+        if (inBanca) inBanca.value = c.banca || '';
+
+        const dataOpts = document.querySelectorAll('.date-option');
+        if (c.preEdital) {
+          if (dataOpts.length > 0) selectMode(dataOpts[0], 'pre');
+        } else {
+          if (dataOpts.length > 1) selectMode(dataOpts[1], 'data');
+          if (c.dataProva) {
+            const inDate = document.getElementById('a_data');
+            if (inDate) inDate.value = c.dataProva;
+          }
+        }
+        if (c.logoPath || c.logoBase64) {
+          logoInstBase64 = c.logoBase64;
+          document.getElementById('previewInstImgEl').src = c.logoPath ? (c.logoPath + '?t=' + Date.now()) : c.logoBase64;
+          document.getElementById('previewInstName').textContent = 'logo salvo';
+          document.getElementById('uploadAreaInst').style.display = 'none';
+          document.getElementById('previewInst').style.display = 'flex';
+        }
+        if (c.logoEmoji) selectedEmoji = c.logoEmoji;
+
+        const st2Next = document.querySelector('#step-2 .btn-next');
+        if (st2Next) {
+          st2Next.innerHTML = '💾 Salvar edições';
+          st2Next.style.background = 'linear-gradient(135deg, var(--yellow), var(--orange))';
+          st2Next.onclick = salvarConcurso;
+        }
+        const sideItems = document.querySelectorAll('#stepsAtivo .step-item');
+        if (sideItems.length > 3) {
+          sideItems[2].style.display = 'none';
+          sideItems[3].style.display = 'none';
+        }
+        const cnt1 = document.querySelector('#step-1 .step-counter');
+        if (cnt1) cnt1.textContent = '1 / 2';
+        const cnt2 = document.querySelector('#step-2 .step-counter');
+        if (cnt2) cnt2.textContent = '2 / 2';
+
+        sessionStorage.setItem('ct_editando', editandoId);
+      }
+    });
+  </script>
+
+  <script>
+    // Emoji picker for concurso
+    const EMOJIS = ['🏦', '🏛️', '🚔', '🏫', '🏥', '🏤', '⚖️', '🔬', '📐', '🌿', '🛡️', '📊'];
+    let selectedEmoji = '🏛️';
+
+    // Step navigation already exists, just add save on final step
+    const origGoStep = window.goStep;
+
+    function salvarConcurso() {
+      const nome = document.getElementById('a_nome')?.value.trim();
+      const cargo = document.getElementById('a_cargo')?.value.trim();
+      const banca = document.getElementById('inputBanca')?.value.trim();
+      const dataProva = document.getElementById('a_data')?.value;
+      const preEdital = modoAtual === 'pre';
+
+      if (!nome) { alert('Por favor, informe o nome do concurso.'); return; }
+
+      const id = sessionStorage.getItem('ct_editando') || null;
+      const old = id ? CT.getConcurso(id) : null;
+
+      const concurso = {
+        id: id || undefined,
+        nome,
+        cargo: cargo || '',
+        banca: banca || '',
+        logoBase64: logoInstBase64 || (old ? old.logoBase64 : null),
+        logoEmoji: logoInstBase64 ? null : selectedEmoji,
+        dataProva: preEdital ? null : (dataProva || null),
+        preEdital: !!preEdital,
+        coberto: old ? (old.coberto || 0) : 0,
+        contarEstatisticas: old ? old.contarEstatisticas : true,
+        realizado: false,
+      };
+
+      const idFinal = CT.saveConcurso(concurso);
+
+      // Importar matérias
+      const jsonText = document.querySelector('textarea.json-input')?.value.trim();
+      if (idFinal) {
+        if (materiasTemp && materiasTemp.length > 0) {
+          const jsonObj = {
+            materias: materiasTemp.map((m) => ({
+              nome: m.nome,
+              topicos: m.topicos.map((t) => {
+                return {
+                  nome: t.nome,
+                  subtopicos: t.subtopicos.map((s) => ({
+                    nome: typeof s === 'string' ? s : s.nome
+                  }))
+                };
+              })
+            }))
+          };
+          const resultado = CT.importarEdital(jsonObj, idFinal);
+          if (!resultado.ok) alert('Aviso: erro ao importar matérias — ' + resultado.erro);
+        } else if (jsonText) {
+          const resultado = CT.importarEdital(jsonText, idFinal);
+          if (!resultado.ok) alert('Aviso: erro ao importar JSON — ' + resultado.erro);
+        }
+      }
+
+      const finalize = () => {
+          sessionStorage.setItem('ct_concurso_ativo', idFinal);
+          sessionStorage.removeItem('ct_editando');
+          location.href = 'dashboard.html';
+      };
+
+      if (window.pywebview && window.pywebview.api && logoInstBase64) {
+          window.pywebview.api.salvar_logo(idFinal, logoInstBase64).then(res => {
+              if (res && res.ok) {
+                  concurso.id = idFinal;
+                  concurso.logoPath = res.path;
+                  CT.saveConcurso(concurso);
+              }
+              finalize();
+          }).catch(finalize);
+      } else {
+          finalize();
+      }
+    }
+
+    // Wire up save button
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnSave = document.querySelector('.btn-save');
+      if (btnSave) btnSave.onclick = salvarConcurso;
+    });
+
+    // Emoji selector on logo placeholder click
+    document.querySelectorAll('.logo-placeholder').forEach(el => {
+      el.onclick = () => {
+        const emoji = prompt('Cole um emoji para o logo (ex: 🏦 🏛️ 🚔 🎓 📋):', selectedEmoji);
+        if (emoji) {
+          selectedEmoji = emoji.trim().slice(0, 2);
+          el.querySelector('.logo-placeholder-icon').textContent = selectedEmoji;
+        }
+      };
+    });
+  </script>
+
+</body>
+
+</html>

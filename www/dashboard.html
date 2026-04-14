@@ -1,0 +1,3590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+<title>Track Concursos — Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --bg4: #1f2330;
+      --border: #252836;
+      --border2: #2e3347;
+      --accent: #4f8ef7;
+      --accent2: #7c5cfc;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --green: #3ecf8e;
+      --green2: #27a06b;
+      --yellow: #FFD700;
+      --orange: #f5874a;
+      --red: #f55a5a;
+      --mono: 'Inter', sans-serif;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-variant-numeric: tabular-nums;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 220px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo {
+      height: 36px;
+      max-width: 180px;
+      width: auto;
+      object-fit: contain;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .brand-logo:hover {
+      transform: scale(1.04);
+    }
+
+    .nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--text3);
+      padding: 0 8px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text2);
+      transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: var(--bg3);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: rgba(79, 142, 247, 0.12);
+      color: var(--accent);
+    }
+
+    .nav-item .icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+      font-family: var(--mono);
+    }
+
+    .sidebar-concurso {
+      margin: 0 12px 12px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      position: relative;
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    .concurso-nome {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .concurso-banca {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+
+    .timer-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: center;
+      position: relative;
+      overflow: visible;
+    }
+
+    .timer-box.pre-edital-mode {
+      padding: 12px 12px 10px;
+    }
+
+    .pre-rocket-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pre-rocket-kicker {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .pre-rocket-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text3);
+    }
+
+    .pre-rocket-shell {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transform-origin: center;
+    }
+
+    .pre-rocket-shell img,
+    .pre-rocket-launch-layer img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .pre-rocket-count {
+      color: var(--text);
+    }
+
+    .pre-rocket-count strong {
+      color: var(--accent2);
+      font-weight: 800;
+    }
+
+    .pre-reset-modal-card {
+      max-width: 680px;
+    }
+
+    .pre-reset-hero {
+      padding: 34px 34px 22px;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(circle at top right, rgba(124, 92, 252, 0.18), transparent 36%),
+        radial-gradient(circle at top left, rgba(79, 142, 247, 0.16), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+    }
+
+    .pre-reset-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 92, 252, 0.28);
+      background: rgba(124, 92, 252, 0.1);
+      color: #cfc4ff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .pre-reset-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .pre-reset-copy {
+      color: var(--text3);
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    .pre-reset-body {
+      padding: 24px 34px 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .pre-reset-highlight {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(79, 142, 247, 0.16);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .pre-reset-highlight img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .pre-reset-highlight strong {
+      display: block;
+      font-size: 16px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .pre-reset-highlight span {
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.55;
+    }
+
+    .pre-reset-benefits {
+      display: grid;
+      gap: 10px;
+    }
+
+    .pre-reset-benefit {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    .pre-reset-benefit span {
+      color: var(--green);
+      font-weight: 800;
+      margin-top: 1px;
+    }
+
+    .pre-reset-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 0 34px 30px;
+    }
+    }
+
+    .timer-num {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .timer-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+
+    .main {
+      margin-left: 220px;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .header-date {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    .stat-card.blue::before {
+      background: var(--accent);
+    }
+
+    .stat-card.purple::before {
+      background: var(--accent2);
+    }
+
+    .stat-card.green::before {
+      background: var(--green);
+    }
+
+    .stat-card.yellow::before {
+      background: var(--yellow);
+    }
+
+    .stat-card.orange::before {
+      background: var(--orange);
+    }
+
+    .stat-icon {
+      font-size: 22px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .alert-section {
+      background: rgba(245, 90, 90, 0.06);
+      border: 1px solid rgba(245, 90, 90, 0.2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .alert-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .alert-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    .alert-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .alert-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .alert-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .alert-tag.atrasada {
+      background: rgba(245, 90, 90, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(245, 90, 90, 0.3);
+    }
+
+    .alert-tag.hoje {
+      background: rgba(245, 200, 66, 0.1);
+      color: var(--yellow);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 2.5fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .table-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 9px 14px;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg3);
+    }
+
+    .mat-nome {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .badge-revisao {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .badge-revisao.none {
+      color: var(--text3);
+    }
+
+    .badge-revisao.atrasada {
+      background: rgba(245, 90, 90, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(245, 90, 90, 0.3);
+    }
+
+    .badge-revisao.hoje {
+      background: rgba(245, 200, 66, 0.1);
+      color: var(--yellow);
+    }
+
+    .badge-revisao.futura {
+      color: var(--text3);
+    }
+
+    .tempo-text {
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .pct {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pct.none {
+      color: var(--text3);
+    }
+
+    .prog-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prog-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--bg3);
+      border-radius: 4px;
+      min-width: 40px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+    }
+
+    .prog-text {
+      font-size: 12px;
+      color: var(--text3);
+      white-space: nowrap;
+      font-family: var(--mono);
+    }
+
+    .history-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .hist-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+    }
+
+    .crono-day {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .crono-day.today {
+      border-color: var(--accent);
+    }
+
+    .crono-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .crono-day-name {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text2);
+    }
+
+    .crono-day.today .crono-day-name {
+      color: var(--accent);
+    }
+
+    .crono-day-date {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+
+    .crono-chips-area {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      flex-wrap: wrap;
+      min-height: 28px;
+    }
+
+    .crono-chip-faixa {
+      border-radius: 6px;
+      padding: 4px 20px 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 0.8);
+      cursor: pointer;
+      white-space: nowrap;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      max-width: 140px;
+      box-sizing: border-box;
+      transition: opacity 0.15s;
+    }
+
+    .crono-chip-faixa.estudado {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .crono-chip-x {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      opacity: 0.85;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in:nth-child(1) {
+      animation-delay: 0.05s
+    }
+
+    .fade-in:nth-child(2) {
+      animation-delay: 0.1s
+    }
+
+    .fade-in:nth-child(3) {
+      animation-delay: 0.15s
+    }
+
+    .fade-in:nth-child(4) {
+      animation-delay: 0.2s
+    }
+
+    /* Esconder botões nativos de scroll numérico */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      appearance: none;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .dash-user-tier {
+      position: relative;
+    }
+
+    .belt-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      margin-bottom: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      width: 270px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      font-size: 13px;
+      color: var(--text2);
+      z-index: 99999;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .dash-user-tier:hover .belt-tooltip {
+      visibility: visible;
+      opacity: 1;
+      margin-bottom: 15px;
+    }
+
+    .belt-tooltip-title {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .belt-tooltip-req {
+      margin-bottom: 6px;
+      display: flex;
+      align-items: start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .belt-tooltip-req::before {
+      content: '•';
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Modal Report/Merge */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content.report-modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .modal-overlay.visible .modal-content.report-modal {
+      transform: translateY(0);
+    }
+
+    .report-header {
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-main-info h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .report-body {
+      padding: 30px;
+    }
+
+    .report-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .report-card-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .report-footer {
+      padding: 25px 30px;
+      background: var(--bg3);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-modal {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--sans);
+      border: none;
+    }
+
+    .btn-modal.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+
+    .btn-modal.primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-modal.secondary {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text3);
+      cursor: pointer;
+      z-index: 10;
+      border: 1px solid var(--border);
+    }
+
+    .sidebar-concurso.clickable {
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .sidebar-concurso.clickable:hover {
+      background: var(--bg4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
+      border-color: var(--accent2);
+    }
+
+    .banner-exam-day {
+      display: none;
+      align-items: center;
+      gap: 18px;
+      background: linear-gradient(135deg, rgba(79, 142, 247, 0.12), rgba(124, 92, 252, 0.12));
+      border: 2px solid var(--accent);
+      border-radius: 18px;
+      padding: 22px 28px;
+      margin-bottom: 28px;
+      animation: slideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner-exam-day::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+      animation: rotate 10s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .banner-icon {
+      font-size: 38px;
+      filter: drop-shadow(0 0 10px rgba(79, 142, 247, 0.4));
+      flex-shrink: 0;
+    }
+
+    .banner-content {
+      flex: 1;
+    }
+
+    .banner-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-text {
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.5;
+      max-width: 550px;
+    }
+
+    .banner-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px rgba(79, 142, 247, 0.3);
+      white-space: nowrap;
+      font-family: var(--sans);
+    }
+
+    .banner-btn:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(124, 92, 252, 0.4);
+    }
+
+    /* Estilos do Novo Modal de Clonagem */
+    .contest-clone-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .contest-clone-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contest-clone-card:hover {
+      background: rgba(79, 142, 247, 0.1);
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .contest-clone-card.active {
+      background: rgba(79, 142, 247, 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(79, 142, 247, 0.3);
+    }
+
+    .contest-clone-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 1px solid var(--border2);
+    }
+
+    .contest-clone-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text2);
+      line-height: 1.3;
+    }
+
+    .subject-clone-container {
+      margin-top: 15px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 5px;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .subject-clone-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+
+    .subject-clone-item:hover {
+      background: var(--bg4);
+      color: var(--text);
+    }
+
+    .subject-clone-item.selected {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Novo Estilo Painel da Prova e Notas */
+    .prova-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .prova-stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .prova-group-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 14px 6px;
+      background: rgba(79, 142, 247, 0.03);
+    }
+
+    .prova-score-badge {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .notes-card {
+      display: none;
+    }
+
+    .prova-drop-zone.drag-over {
+      border-color: var(--accent) !important;
+      background: rgba(79, 142, 247, 0.1) !important;
+    }
+
+    .prova-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 6px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .prova-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .prova-group-pts {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+  </style>
+  <link rel="stylesheet" href="theme.css">
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="assets/Track Concursos logo.png" alt="Track Concursos" class="brand-logo"
+        onclick="location.href='concursos.html'">
+    </div>
+    <nav class="nav">
+      <div class="nav-label">Menu</div>
+      <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span>
+        Meus Concursos</div>
+      <div class="nav-item active" onclick="location.href='dashboard.html'" style="cursor:pointer"><span
+          class="icon">🏠</span> Dashboard</div>
+      <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span>
+        Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+      <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span>
+        Métricas</div>
+      <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span>
+        Simulados</div>
+      <div class="nav-item" onclick="location.href='ajuda.html'" style="cursor:pointer"><span class="icon">❓</span>
+        Ajuda</div>
+    </nav>
+    <div style="margin:0 12px 8px;text-align:center">
+      <a href="ajuda.html" style="text-decoration:none">
+        <div style="font-size:12px;color:var(--text3);line-height:1.6">
+          <span style="color:var(--accent2);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Desenvolvido por <img src="assets/logoMichelSoftwares.png?v=1" alt="Michel Softwares" style="height:36px;width:auto;max-width:240px;vertical-align:middle"></span><br>
+          <span style="opacity:0.7">powered by Antigravity Gemini</span>
+        </div>
+      </a>
+    </div>
+    <div id="modalMerge" class="modal-overlay">
+      <div class="modal-content report-modal">
+        <div class="modal-close-btn" onclick="fecharModalMerge()">✕</div>
+        <div class="report-header">
+          <div class="report-main-info">
+            <div id="modalLabel"
+              style="font-size:12px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">
+              ✦ Ações do Concurso</div>
+            <h2 id="mergeContestName">Concurso</h2>
+            <p id="modalDesc" style="color:var(--text3);font-size:13px;margin-top:8px;line-height:1.5">Gerencie os dados
+              e estatísticas deste certame.</p>
+          </div>
+        </div>
+        <div class="report-body">
+          <div class="report-card">
+            <div class="report-card-label">Concurso de Destino (Já Realizado)</div>
+            <select id="selectDestino" onchange="verificarMerge()"
+              style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:12px;width:100%;border-radius:10px;font-family:var(--sans);font-size:14px;outline:none">
+              <option value="">Selecione para onde enviar estes dados...</option>
+            </select>
+          </div>
+          <div id="mergePreview"
+            style="margin-top:15px;display:none;background:rgba(255,165,0,0.05);padding:15px;border-radius:10px;border:1px solid var(--orange)">
+            <div
+              style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:5px;display:flex;align-items:center;gap:6px">
+              ⚠️ ATENÇÃO</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.4">As <b>horas estudadas</b> e <b>questões</b>
+              deste Pré-Edital serão somadas ao concurso selecionado. Este card de Pré-Edital será EXCLUÍDO
+              permanentemente após a fusão.</div>
+          </div>
+        </div>
+        <div class="report-footer" style="justify-content:space-between">
+          <button class="btn-modal secondary" onclick="CT.exportarConcurso(cId)" style="display:none">📤 Exportar Template</button>
+          <div style="display:flex;gap:12px">
+            <button class="btn-modal secondary" onclick="fecharModalMerge()">Fechar</button>
+            <button class="btn-modal primary" id="btnConfirmMerge" disabled onclick="executarMerge()">Confirmar e
+              Fusionar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalPreEditalReset" class="modal-overlay" onclick="if(event.target===this) fecharModalPreEditalReset()">
+      <div class="modal-content report-modal pre-reset-modal-card">
+        <div class="modal-close-btn" onclick="fecharModalPreEditalReset()">✕</div>
+        <div class="pre-reset-hero">
+          <div class="pre-reset-chip">✦ Cobertura concluída</div>
+          <div class="pre-reset-title">Parabéns pela nova cobertura do edital</div>
+          <div class="pre-reset-copy">
+            Você concluiu 100% dos tópicos deste pré-edital e registrou mais uma cobertura completa.
+            Se quiser começar um novo ciclo agora, o Track Concursos pode reiniciar apenas as marcações de estudo,
+            sem apagar horas, questões, simulados ou o seu histórico.
+          </div>
+        </div>
+        <div class="pre-reset-body">
+          <div class="pre-reset-highlight">
+            <img src="assets/mascots/pre-edital-rocket.gif" alt="Foguete do pré-edital">
+            <div>
+              <strong id="preResetHighlightTitle">Cobertura atual ×1</strong>
+              <span>Ao reiniciar, os tópicos voltam a ficar desmarcados para você começar uma nova passada pelo edital com tudo limpo visualmente.</span>
+            </div>
+          </div>
+          <div class="pre-reset-benefits">
+            <div class="pre-reset-benefit"><span>✓</span><div>Suas estatísticas e registros continuam preservados.</div></div>
+            <div class="pre-reset-benefit"><span>✓</span><div>O contador de cobertura permanece salvo no concurso.</div></div>
+            <div class="pre-reset-benefit"><span>✓</span><div>Ao confirmar, o foguete entra em cena para marcar o início do novo ciclo.</div></div>
+          </div>
+        </div>
+        <div class="pre-reset-actions">
+          <button class="btn-modal secondary" onclick="fecharModalPreEditalReset()">Agora não</button>
+          <button class="btn-modal primary" onclick="confirmarReinicioPreEdital()">Reiniciar edital</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-concurso" id="sideCard">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div id="sideLogoImg"
+          style="width:32px;height:32px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          📋</div>
+        <div style="min-width:0">
+          <div class="concurso-nome" id="sideNome">—</div>
+          <div class="concurso-banca" id="sideBanca">—</div>
+        </div>
+      </div>
+      <div class="timer-box">
+        <div class="timer-num" id="sideTimer">—</div>
+        <div class="timer-label" id="sideTimerLabel">dias para a prova</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-header fade-in">
+      <div>
+        <div class="page-title" id="dashTitle">Dashboard</div>
+        <div class="page-subtitle" id="dashSub">Carregando...</div>
+      </div>
+      <div class="header-date" id="dashDate">—</div>
+    </div>
+
+    <div id="bannerExamDay" class="banner-exam-day">
+      <div class="banner-icon">🎯</div>
+      <div class="banner-content">
+        <div class="banner-title">Sua Batalha foi Realizada! ⚔️</div>
+        <div class="banner-text">Chegou o momento de colher os frutos de sua dedicação. Finalize agora este edital para
+          salvá-lo em suas métricas e registrar seu desempenho.</div>
+      </div>
+      <button class="banner-btn" onclick="finalizarBatalhaAutomatico()">Finalizar Batalha</button>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card blue fade-in"><span class="stat-icon">⏱️</span>
+        <div class="stat-value" id="sHoras">—</div>
+        <div class="stat-label">Horas estudadas</div>
+      </div>
+      <div class="stat-card purple fade-in"><span class="stat-icon">📝</span>
+        <div class="stat-value" id="sQuestoes">—</div>
+        <div class="stat-label">Questões resolvidas</div>
+      </div>
+      <div class="stat-card green fade-in"><span class="stat-icon">🎯</span>
+        <div class="stat-value" id="sAcertos">—</div>
+        <div class="stat-label">Taxa de acertos</div>
+      </div>
+      <div class="stat-card orange fade-in">
+        <span class="stat-icon">🏆</span>
+        <div class="stat-value" id="sSimulado">—</div>
+        <div class="stat-label">Último Simulado</div>
+        <div id="sSimMedia"
+          style="font-size:11px;color:var(--text3);margin-top:6px;font-weight:500;text-transform:lowercase">média em
+          todos: —</div>
+      </div>
+      <div class="stat-card yellow fade-in"><span class="stat-icon">✅</span>
+        <div class="stat-value" id="sTopicos">—</div>
+        <div class="stat-label">Tópicos concluídos</div>
+      </div>
+    </div>
+    <div class="alert-section fade-in" id="alertSection" style="display:none">
+      <div class="alert-header">
+        <div class="alert-dot"></div>
+        <div class="alert-title">Revisões pendentes</div>
+      </div>
+      <div class="alert-tags" id="alertTags"></div>
+    </div>
+    <div class="lower-grid">
+      <div class="table-card fade-in">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Matérias</div>
+            <div class="card-sub">Clique para ver os tópicos</div>
+          </div>
+          <button onclick="abrirModalAddMateriaDash()"
+            style="padding:5px 12px;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">＋ Adicionar
+            matéria</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Matéria</th>
+              <th>Revisão</th>
+              <th>Tempo</th>
+              <th>Acertos</th>
+              <th>Progresso</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="materiasTbody">
+            <tr>
+              <td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Carregando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="history-card fade-in">
+        <div class="card-header">
+          <div class="card-title">📅 Cronograma semanal</div>
+          <button onclick="abrirModalCrono()"
+            style="padding:4px 12px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✏️
+            Editar</button>
+        </div>
+        <div id="cronoGrid" style="display:flex;flex-direction:column;gap:4px;padding:10px"></div>
+        <!-- FAIXA DO CONCURSEIRO -->
+        <div id="faixaSection" class="dash-user-tier" style="padding:0 10px 12px">
+          <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:8px">
+            <!-- Linha principal: emoji + faixa + semanas -->
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div id="faixaEmoji" style="font-size:26px;line-height:1;flex-shrink:0">🤍</div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span id="faixaNome" style="font-size:13px;font-weight:700;color:var(--text)">Faixa Branca</span>
+                  <span style="color:var(--text3);font-size:12px">|</span>
+                  <span id="faixaSemanas" style="font-size:12px;color:var(--text2);font-weight:600"></span>
+                </div>
+              </div>
+            </div>
+            <!-- Frase motivacional -->
+            <div id="faixaFrase"
+              style="font-size:13px;color:var(--text2);line-height:1.75;font-style:italic;font-weight:500;letter-spacing:0.1px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:3px solid var(--accent2);text-shadow:0 1px 0 rgba(0,0,0,0.18)">
+            </div>
+            <!-- Semana completa notification -->
+            <div id="semanaCompletaBox"
+              style="display:none;background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3);border-radius:8px;padding:9px 12px;align-items:center;gap:8px">
+              <div style="font-size:18px">🎉</div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--green)">Semana completa!</div>
+                <div style="font-size:11px;color:var(--text3)" id="semanaMsg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-grid">
+      <div class="table-card fade-in">
+        <div class="card-header">
+          <div class="card-title">📊 Estudo semanal — últimos 7 dias</div>
+        </div>
+        <div style="padding:12px 16px"><canvas id="chartSemanal" height="130"></canvas></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <!-- PAINEL DA PROVA -->
+        <div class="table-card fade-in" id="cardProva" style="cursor:pointer; transition: transform 0.2s"
+          onclick="abrirModalConfigProva()">
+          <div class="card-header" style="background:rgba(255,255,255,0.02)">
+            <div>
+              <div class="card-title">🧭 Painel da Prova</div>
+              <div class="card-sub">Configuração completa do edital</div>
+            </div>
+            <div class="prova-score-badge" id="dashNotaMax">Nota Máx: 0</div>
+          </div>
+          <div id="dashProvaResumo" style="max-height:400px;overflow-y:auto">
+            <!-- Renderizado via JS -->
+            <div style="padding:40px 20px;text-align:center;color:var(--text3);font-size:12px;opacity:0.8">Clique aqui
+              para configurar as questões, pesos e blocos da sua prova.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <script src="timer-popup.js"></script>
+  <script src="nav.js"></script>
+  <script>
+    var cId = sessionStorage.getItem('ct_concurso_ativo');
+    if (!cId) { location.href = 'concursos.html'; }
+
+    function pctColor(p) { return CT.pctColor ? CT.pctColor(p) : 'var(--text3)'; }
+    function diasAtraso(d) { return Math.floor((new Date(CT._today()) - new Date(d)) / 86400000); }
+    function preEditalRocketSrc(c) {
+      if (CT.getPreEditalRocketAsset) return CT.getPreEditalRocketAsset(c);
+      return (c && (c.coberto || 0) > 0)
+        ? 'assets/mascots/pre-edital-rocket.gif'
+        : 'assets/mascots/pre-edital-rocket-still.png';
+    }
+    function coverageRocketHtml(c, size, extraStyle) {
+      if (CT.renderCoverageRocket) return CT.renderCoverageRocket(c, size || 18, extraStyle || '');
+      return '<img src="' + preEditalRocketSrc(c) + '" alt="Foguete da cobertura" style="width:' + (size || 18) + 'px;height:' + (size || 18) + 'px;object-fit:contain;display:inline-block;vertical-align:-4px;' + (extraStyle || '') + '">';
+    }
+    function triggerPreEditalMascotCelebration(concursoId) {
+      var launchLayer = document.getElementById('preRocketLaunchLayer');
+      if (!launchLayer) return;
+      launchLayer.addEventListener('animationend', function () {
+        if (CT.consumirAnimacaoMascotePreEdital) CT.consumirAnimacaoMascotePreEdital(concursoId);
+        var sideCard = document.getElementById('sideCard');
+        if (sideCard) sideCard.classList.remove('pre-rocket-launching');
+        launchLayer.remove();
+      }, { once: true });
+    }
+    function renderPreEditalTimerBoxLegacy(c) {
+      var box = document.querySelector('.timer-box');
+      var sideCard = document.getElementById('sideCard');
+      if (!box) return;
+      var coberto = c.coberto || 0;
+      var ativo = coberto > 0;
+      var launchPending = !!c.preMascotLaunchPending && ativo;
+      box.classList.add('pre-edital-mode');
+      if (sideCard) sideCard.classList.toggle('pre-rocket-launching', launchPending);
+      box.innerHTML = ''
+        + '<div class="pre-rocket-panel">'
+        +   '<div class="pre-rocket-kicker">&#10022; PRE-EDITAL</div>'
+        +   '<div class="pre-rocket-row">'
+        +     '<span class="pre-rocket-shell ' + (ativo ? 'is-active' : 'is-idle') + '" id="preRocketShell">'
+        +       '<img src="' + preEditalRocketSrc(c) + '" alt="Foguete do pre-edital">'
+        +     '</span>'
+        +     '<div class="pre-rocket-count"><span style="color:var(--text)">coberto</span> <strong>&times;' + coberto + '</strong></div>'
+        +   '</div>'
+        + '</div>'
+        + (launchPending
+          ? '<div class="pre-rocket-launch-layer active" id="preRocketLaunchLayer"><img src="assets/mascots/pre-edital-rocket.gif" alt=""></div>'
+          : '');
+      if (launchPending) {
+        var shell = document.getElementById('preRocketShell');
+        var layer = document.getElementById('preRocketLaunchLayer');
+        if (shell && layer && sideCard) {
+          var shellRect = shell.getBoundingClientRect();
+          var cardRect = sideCard.getBoundingClientRect();
+          layer.style.left = (shellRect.left - cardRect.left - 11) + 'px';
+          layer.style.top = (shellRect.top - cardRect.top - 11) + 'px';
+        }
+        triggerPreEditalMascotCelebration(c.id);
+      }
+    }
+    function renderPreEditalTimerBox(c) {
+      var box = document.querySelector('.timer-box');
+      if (!box) return;
+      var coberto = c.coberto || 0;
+      var ativo = coberto > 0;
+      if (ativo && c.preMascotLaunchPending && CT.consumirAnimacaoMascotePreEdital) {
+        CT.consumirAnimacaoMascotePreEdital(c.id);
+      }
+      box.classList.add('pre-edital-mode');
+      box.innerHTML = ''
+        + '<div class="pre-rocket-panel">'
+        +   '<div class="pre-rocket-kicker">&#10022; PRE-EDITAL</div>'
+        +   '<div class="pre-rocket-row">'
+        +     '<span class="pre-rocket-shell ' + (ativo ? 'is-active' : 'is-idle') + '" id="preRocketShell">'
+        +       '<img src="' + preEditalRocketSrc(c) + '" alt="Foguete do pre-edital">'
+        +     '</span>'
+        +     '<div class="pre-rocket-count"><span style="color:var(--text)">coberto</span> <strong>&times;' + coberto + '</strong></div>'
+        +   '</div>'
+        + '</div>';
+    }
+    function abrirModalPreEditalReset(c) {
+      var modal = document.getElementById('modalPreEditalReset');
+      if (!modal || !c) return;
+      var title = document.getElementById('preResetHighlightTitle');
+      if (title) title.textContent = 'Cobertura atual ×' + (c.coberto || 0);
+      modal.classList.add('visible');
+    }
+    function fecharModalPreEditalReset() {
+      document.getElementById('modalPreEditalReset')?.classList.remove('visible');
+    }
+    function confirmarReinicioPreEdital() {
+      if (!CT.resetarProgressoPreEdital || !cId) return;
+      const ok = CT.resetarProgressoPreEdital(cId);
+      if (!ok) return;
+      fecharModalPreEditalReset();
+      const atual = CT.getConcurso(cId);
+      if (atual) {
+        renderPreEditalTimerBox(atual);
+        var materiasReset = CT.getMaterias(cId);
+        var matIdsReset = materiasReset.map(function (m) { return m.id; });
+        var topicosReset = CT.getTopicos().filter(function (t) { return matIdsReset.includes(t.materiaId); });
+        document.getElementById('sTopicos').textContent = '0/' + topicosReset.length;
+      }
+      setTimeout(function () { location.reload(); }, 180);
+    }
+
+    (function run() {
+      if (!cId) return;
+      var c = CT.getConcurso(cId);
+      if (!c) { location.href = 'concursos.html'; return; }
+
+      var hoje = new Date();
+      var dSem = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      var meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      document.getElementById('dashDate').textContent = dSem[hoje.getDay()] + ', ' + hoje.getDate() + ' ' + meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+
+      document.getElementById('sideNome').textContent = c.nome;
+      document.getElementById('sideBanca').textContent = c.banca || '—';
+      var logoHtml = '';
+      if (c.logoPath) logoHtml = '<img src="' + c.logoPath + '?t=' + Date.now() + '" style="width:100%;height:100%;object-fit:cover;border-radius:5px">';
+      else if (c.logoBase64) logoHtml = '<img src="' + c.logoBase64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:5px">';
+      else if (c.logoEmoji) logoHtml = c.logoEmoji;
+      document.getElementById('sideLogoImg').innerHTML = logoHtml;
+
+      const boxSidebar = document.getElementById('sideCard');
+      if (boxSidebar) {
+        boxSidebar.classList.add('clickable');
+        boxSidebar.onclick = abrirModalMerge;
+        boxSidebar.title = c.preEdital ? "Clique para finalizar e fusionar este pré-edital" : "Clique para ver opções do concurso";
+      }
+
+      if (c.preEdital) {
+        renderPreEditalTimerBox(c);
+        document.getElementById('dashTitle').textContent = c.nome;
+        document.getElementById('dashSub').textContent = '✦ Modo Pré-Edital';
+        if (c.preResetPromptPending) {
+          setTimeout(function () { abrirModalPreEditalReset(CT.getConcurso(cId) || c); }, 420);
+        }
+      } else {
+        var dias = CT.diasRestantes(c);
+        var cor = dias == null ? 'var(--accent)' : dias <= 7 ? 'var(--red)' : dias <= 30 ? 'var(--orange)' : 'var(--accent)';
+        var box2 = document.querySelector('.timer-box');
+        if (box2) {
+          box2.classList.remove('pre-edital-mode');
+          box2.style.padding = '8px 10px';
+          var cobHtml = (c.coberto > 0)
+            ? '<div style="margin-top:5px; border-top:1px solid var(--border); padding-top:5px; display:flex; flex-direction:column; align-items:center;">'
+            + '<div style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px">✦ Pós-Edital</div>'
+            + '<div style="font-size:11px; font-weight:600; color:var(--text3);display:inline-flex;align-items:center;gap:4px">' + coverageRocketHtml(c, 18) + ' Coberto <span style="color:var(--accent2)">×' + c.coberto + '</span></div>'
+            + '</div>'
+            : '';
+          box2.innerHTML = '<div class="timer-num" id="sideTimer">' + (dias != null ? dias : '—') + '</div><div class="timer-label" id="sideTimerLabel">dias para a prova</div>' + cobHtml;
+          document.getElementById('sideTimer').style.color = cor;
+        }
+        document.getElementById('dashTitle').textContent = c.nome;
+        document.getElementById('dashSub').textContent = dias != null ? dias + ' dias para a prova' : 'Data não definida';
+
+        // Banner de Prova Realizada
+        if (dias !== null && dias <= 0) {
+          document.getElementById('bannerExamDay').style.display = 'flex';
+        } else {
+          document.getElementById('bannerExamDay').style.display = 'none';
+        }
+      }
+
+      var materias = CT.getMaterias(cId);
+      var matIds = materias.map(function (m) { return m.id; });
+      var topicos = CT.getTopicos().filter(function (t) { return matIds.includes(t.materiaId); });
+      var estudados = topicos.filter(function (t) { return t.estudado; }).length;
+
+      var sessoes = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId); });
+      var seg = CT.totalSegundos(sessoes);
+
+      var questoesArr = CT.getQuestoes().filter(function (q) { return matIds.includes(q.materiaId); });
+      var q = CT.calcStats(questoesArr);
+
+      document.getElementById('sHoras').textContent = seg > 0 ? CT.formatarTempo(seg) : '0h';
+      document.getElementById('sQuestoes').textContent = q.resolvidas || 0;
+      var aEl = document.getElementById('sAcertos');
+      aEl.textContent = q.pct != null ? q.pct + '%' : '—';
+      if (q.pct != null) aEl.style.color = pctColor(q.pct);
+
+      var ultimoSim = CT.ultimoSimulado(cId);
+      var sSimEl = document.getElementById('sSimulado');
+      var ultimoSimPct = ultimoSim ? CT.getSimuladoPct(ultimoSim) : null;
+      sSimEl.textContent = ultimoSimPct != null ? ultimoSimPct + '%' : '—';
+      sSimEl.style.color = ultimoSimPct != null ? pctColor(ultimoSimPct) : 'var(--text)';
+
+      var todosSims = CT.getSimulados(cId)
+        .map(function (s) { return CT.getSimuladoPct(s); })
+        .filter(function (pct) { return pct != null; });
+      var mediaSims = todosSims.length > 0 ? Math.round(todosSims.reduce(function (acc, pct) { return acc + pct; }, 0) / todosSims.length) : null;
+      document.getElementById('sSimMedia').innerHTML = mediaSims != null ? 'média em todos: <strong style="color:var(--text2)">' + mediaSims + '%</strong>' : 'média em todos: —';
+
+      document.getElementById('sTopicos').textContent = estudados + '/' + topicos.length;
+
+      var rev = CT.classificarRevisoes();
+      var urgentes = [].concat(rev.atrasadas, rev.hoje).filter(function (r) { var t = CT.getTopico(r.topicoId); return t && matIds.includes(t.materiaId); }).length;
+      var bEl = document.getElementById('revBadge');
+      if (urgentes > 0) { bEl.textContent = urgentes; bEl.style.display = ''; }
+
+      var alertas = [];
+      rev.atrasadas.forEach(function (r) { var t = CT.getTopico(r.topicoId); if (t && matIds.includes(t.materiaId)) alertas.push('<span class="alert-tag atrasada">🔴 ' + t.nome + ' — ' + diasAtraso(r.data) + 'd atrasado</span>'); });
+      rev.hoje.forEach(function (r) { var t = CT.getTopico(r.topicoId); if (t && matIds.includes(t.materiaId)) alertas.push('<span class="alert-tag hoje">🟡 ' + t.nome + ' — hoje</span>'); });
+      if (alertas.length) { document.getElementById('alertSection').style.display = ''; document.getElementById('alertTags').innerHTML = alertas.join(''); }
+      var hoje_str = CT._today();
+      var tbody = document.getElementById('materiasTbody');
+      if (!materias.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma matéria cadastrada.<br><small>Use ＋ Adicionar matéria acima.</small></td></tr>';
+      } else {
+        tbody.innerHTML = materias.map(function (m) {
+          var tops = CT.getTopicos(m.id);
+          var est = tops.filter(function (t) { return t.estudado; }).length;
+          var pProg = tops.length ? Math.round(est / tops.length * 100) : 0;
+          var mSeg = CT.totalSegundos(CT.getSessoes().filter(function (s) { return s.materiaId === m.id; }));
+          var mQ = CT.calcStats(CT.getQuestoes().filter(function (q) { return q.materiaId === m.id; }));
+          var revMat = CT.getRevisoes().filter(function (r) { var t = CT.getTopico(r.topicoId); return t && t.materiaId === m.id && !r.concluida; }).sort(function (a, b) { return a.data.localeCompare(b.data); });
+          var revBadge = '<span class="badge-revisao none">—</span>';
+          if (revMat.length) { var r = revMat[0]; if (r.data < hoje_str) revBadge = '<span class="badge-revisao atrasada">🔴 ' + diasAtraso(r.data) + 'd</span>'; else if (r.data === hoje_str) revBadge = '<span class="badge-revisao hoje">🟡 hoje</span>'; else revBadge = '<span class="badge-revisao futura">📅 ' + r.data.split('-').slice(1).reverse().join('/') + '</span>'; }
+          var pctStr = mQ.pct != null ? '<span class="pct" style="color:' + pctColor(mQ.pct) + '">' + mQ.pct + '%</span>' : '<span class="pct none">—</span>';
+          var tempoStr = mSeg > 0 ? CT.formatarTempo(mSeg) : '<span style="color:var(--text3)">—</span>';
+          return '<tr onclick="abrirMateria(\'' + m.id + '\')" style="cursor:pointer">'
+            + '<td><div class="mat-nome">' + m.nome + '</div></td>'
+            + '<td>' + revBadge + '</td>'
+            + '<td><span class="tempo-text">' + tempoStr + '</span></td>'
+            + '<td>' + pctStr + '</td>'
+            + '<td><div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:' + pProg + '%"></div></div><span class="prog-text">' + est + '/' + tops.length + '</span></div></td>'
+            + '<td style="white-space:nowrap"><button data-mid="' + m.id + '" onclick="event.stopPropagation();deletarMateria(this.dataset.mid)" style="padding:2px 7px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--text3)\'">✕</button></td>'
+            + '</tr>';
+        }).join('');
+      }
+
+      // Weekly reset: if new week started, archive metrics and clear all ct_cest_ keys
+      (function () {
+        var today = CT._today();
+        var d = new Date(today);
+        // Week key = year + week number (Sun=start)
+        var jan1 = new Date(d.getFullYear(), 0, 1);
+        var weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+        var weekKey = d.getFullYear() + '_w' + weekNum;
+        var savedWeek = localStorage.getItem('ct_crono_week');
+        
+        if (savedWeek && savedWeek !== weekKey) {
+          // New week — archive PREVIOUS week metrics before clearing
+          CT.archiveWeeklyMetrics(savedWeek);
+
+          // Clear all studied markers (ct_cest_)
+          var toRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.startsWith('ct_cest_')) toRemove.push(k);
+          }
+          toRemove.forEach(function (k) { localStorage.removeItem(k); });
+          localStorage.setItem('ct_crono_week', weekKey);
+        } else if (!savedWeek) {
+          localStorage.setItem('ct_crono_week', weekKey);
+        }
+      })();
+
+      initCrono(cId, materias);
+      setTimeout(function () { renderFaixa(cId); }, 50);
+
+      var allSess = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId); });
+      var allQ = CT.getQuestoes().filter(function (q) { return matIds.includes(q.materiaId); });
+      var lbls = [], hData = [], qData = [];
+      for (var i = 6; i >= 0; i--) { var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i); var ds = CT._dateString(d); lbls.push(dSem[d.getDay()]); hData.push(parseFloat((CT.totalSegundos(allSess.filter(function (s) { return s.data === ds; })) / 3600).toFixed(2))); qData.push(CT.calcStats(allQ.filter(function (q2) { return q2.data === ds; })).resolvidas || 0); }
+      var chartCtx = document.getElementById('chartSemanal').getContext('2d');
+      var theme = window.TrackTheme ? TrackTheme.palette() : null;
+      var gradHoras = chartCtx.createLinearGradient(0, 0, 0, 260);
+      gradHoras.addColorStop(0, theme ? TrackTheme.alpha(theme.accent, 0.42) : 'rgba(79, 142, 247, 0.42)');
+      gradHoras.addColorStop(1, theme ? TrackTheme.alpha(theme.accent, 0.03) : 'rgba(79, 142, 247, 0.03)');
+      var gradQuestoes = chartCtx.createLinearGradient(0, 0, 0, 260);
+      gradQuestoes.addColorStop(0, theme ? TrackTheme.alpha(theme.yellow, 0.24) : 'rgba(255, 212, 86, 0.22)');
+      gradQuestoes.addColorStop(1, theme ? TrackTheme.alpha(theme.yellow, 0) : 'rgba(255, 212, 86, 0)');
+      new Chart(chartCtx, {
+        type: 'line',
+        data: {
+          labels: lbls,
+          datasets: [
+            {
+              label: 'Horas',
+              data: hData,
+              yAxisID: 'y',
+              borderColor: theme ? theme.accent : '#72a7ff',
+              backgroundColor: gradHoras,
+              fill: true,
+              tension: 0.42,
+              borderWidth: 3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: theme ? theme.chartSurfaceBorder : '#0d0f14',
+              pointBorderColor: theme ? theme.accent : '#9fc0ff',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'Questões',
+              data: qData,
+              yAxisID: 'y2',
+              borderColor: theme ? theme.yellow : '#ffd456',
+              backgroundColor: gradQuestoes,
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: theme ? theme.yellow : '#ffd456',
+              pointBorderColor: theme ? theme.chartSurfaceBorder : '#0d0f14',
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              labels: {
+                color: theme ? theme.chartAxisStrong : '#aeb4cf',
+                font: { size: 11, weight: '600' },
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 18
+              }
+            },
+            tooltip: {
+              backgroundColor: theme ? theme.tooltipBg : '#13161e',
+              borderColor: theme ? theme.tooltipBorder : 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              titleColor: theme ? theme.tooltipTitle : '#f1f2f6',
+              bodyColor: theme ? theme.tooltipBody : '#c3c8df',
+              padding: 12,
+              displayColors: true
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: theme ? theme.chartAxis : '#6f7694', font: { size: 10 } },
+              grid: { color: theme ? theme.chartGrid : 'rgba(255,255,255,0.035)', drawBorder: false }
+            },
+            y: {
+              position: 'left',
+              beginAtZero: true,
+              ticks: {
+                color: theme ? theme.accent : '#72a7ff',
+                font: { size: 10 },
+                callback: function(value) { return value + 'h'; }
+              },
+              grid: { color: theme ? theme.chartGrid : 'rgba(255,255,255,0.04)', drawBorder: false }
+            },
+            y2: {
+              position: 'right',
+              beginAtZero: true,
+              ticks: { color: theme ? theme.yellow : '#ffd456', font: { size: 10 } },
+              grid: { display: false, drawBorder: false }
+            }
+          }
+        }
+      });
+
+      renderPainelProva();
+    })();
+
+    // ══ PAINEL DA PROVA ══════════════════════════════
+
+    function renderPainelProva() {
+      const resEl = document.getElementById('dashProvaResumo');
+      const notaEl = document.getElementById('dashNotaMax');
+      let config = { groups: [] };
+
+      try {
+        const saved = localStorage.getItem('ct_config_prova_' + cId);
+        if (saved) {
+          let parsed = JSON.parse(saved);
+          // Migração do formato antigo (geral/especifico) para o novo formato (groups)
+          if (parsed.geral || parsed.especifico) {
+            config.groups = [];
+            if (parsed.geral && parsed.geral.length) {
+              config.groups.push({ id: 'mig_g', name: 'Conhecimentos Gerais', items: parsed.geral });
+            }
+            if (parsed.especifico && parsed.especifico.length) {
+              config.groups.push({ id: 'mig_e', name: 'Conhecimentos Específicos', items: parsed.especifico });
+            }
+            // Salva de volta o formato migrado para evitar re-migração constante
+            localStorage.setItem('ct_config_prova_' + cId, JSON.stringify(config));
+          } else {
+            config = parsed;
+          }
+        }
+      } catch (e) { }
+
+      if (!config.groups || config.groups.length === 0) {
+        resEl.innerHTML = '<div style="padding:40px 20px; text-align:center; color:var(--text3); font-size:12px; opacity:0.8">Clique aqui para configurar as questões, pesos e blocos da sua prova.</div>';
+        notaEl.textContent = 'Nota Máx: 0';
+        return;
+      }
+
+      let totalGlobal = 0;
+      const materias = CT.getMaterias(cId);
+
+      resEl.innerHTML = config.groups.map(g => {
+        let groupScore = 0;
+        let itemsHtml = '';
+
+        if (g.type === 'redacao') {
+          const score = parseFloat(g.pts || 0);
+          groupScore = score;
+          const isClassOnly = g.isClassificatoriaOnly;
+          if (!isClassOnly) totalGlobal += score;
+
+          const minPtsHtml = (isClassOnly && g.minPts > 0) ? `<span style="font-size:11px; color:var(--text3); font-weight:700">Nota Mínima: ${g.minPts}</span>` : '';
+
+          itemsHtml = `
+        <div class="prova-stat-row" style="background:rgba(255,165,0,0.03)">
+          <div style="font-weight:600; color:var(--orange)">Tipo: ${g.redType || 'Não definido'} ${isClassOnly ? '<span style="font-size:9px; opacity:0.7; color:var(--text3); margin-left:5px">(Não soma ao total)</span>' : ''}</div>
+          <div class="prova-group-pts">
+            ${minPtsHtml}
+          </div>
+        </div>
+      `;
+        } else {
+          if (g.items && g.items.length) {
+            itemsHtml = g.items.map(it => {
+              const m = materias.find(x => x.id === it.id);
+              if (!m) return '';
+              const score = (it.q || 0) * (it.w || 0);
+              groupScore += score;
+              return `
+            <div class="prova-stat-row">
+              <div style="font-weight:600; flex:1; padding-right:15px; word-break:break-word">${m.nome}</div>
+              <div style="display:flex; align-items:center; gap:12px; color:var(--text3); font-size:12px">
+                <div style="text-align:right; white-space:nowrap">
+                  <span style="font-family:var(--mono)">${it.q} Questões</span> x <span style="font-family:var(--mono)">${it.w} (Peso)</span>
+                </div>
+                <div style="font-weight:700; color:var(--text2); text-align:right; width:40px; white-space:nowrap">
+                  ${score.toFixed(1)} pts
+                </div>
+              </div>
+            </div>
+          `;
+            }).join('');
+          } else if (g.q > 0) {
+            groupScore = (g.q || 0) * (g.w || 0);
+            itemsHtml = `
+          <div class="prova-stat-row" style="opacity:0.8">
+            <div style="font-weight:500; font-style:italic; flex:1; padding-right:15px; word-break:break-word">Bloco indivisível</div>
+            <div style="display:flex; align-items:center; gap:12px; color:var(--text3); font-size:12px">
+              <div style="text-align:right; white-space:nowrap">
+                <span style="font-family:var(--mono)">${g.q} Questões</span> x <span style="font-family:var(--mono)">${g.w} (Peso)</span>
+              </div>
+              <div style="width:70px"></div>
+            </div>
+          </div>
+        `;
+          }
+        }
+
+        if (g.type !== 'redacao') totalGlobal += groupScore;
+
+        return `
+      <div style="margin-bottom:1px">
+        <div class="prova-group-header">
+          <div class="prova-group-title" style="color:${g.type === 'redacao' ? 'var(--orange)' : 'var(--accent)'}">${g.name}</div>
+          <div class="prova-group-pts">${groupScore.toFixed(1)} pts</div>
+        </div>
+        ${itemsHtml || '<div style="padding:10px 14px; font-size:11px; color:var(--text3); font-style:italic">Nenhuma informação adicionada</div>'}
+      </div>
+    `;
+      }).join('');
+
+      notaEl.textContent = 'Nota Máx: ' + totalGlobal.toFixed(1);
+    }
+
+    function abrirModalConfigProva() {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay visible';
+
+      let config = { groups: [] };
+      try {
+        const saved = localStorage.getItem('ct_config_prova_' + cId);
+        if (saved) {
+          let parsed = JSON.parse(saved);
+          if (parsed.geral || parsed.especifico) {
+            if (parsed.geral && parsed.geral.length) config.groups.push({ id: 'mig_g' + Date.now(), name: 'Conhecimentos Gerais', items: parsed.geral });
+            if (parsed.especifico && parsed.especifico.length) config.groups.push({ id: 'mig_e' + Date.now(), name: 'Conhecimentos Específicos', items: parsed.especifico });
+          } else {
+            config = parsed;
+          }
+        }
+      } catch (e) { }
+
+      if (!config.groups.length) {
+        config.groups = [
+          { id: 'g_comp', name: 'Conhecimentos Gerais', items: [], q: 0, w: 1 },
+          { id: 'g_espec', name: 'Conhecimentos Específicos', items: [], q: 0, w: 1 }
+        ];
+      }
+
+      const materias = CT.getMaterias(cId);
+      window.localConfig = config;
+
+      window.reRenderModalConfigProva = () => {
+        const idSet = new Set();
+        localConfig.groups.forEach(g => { if (g.items) g.items.forEach(it => idSet.add(it.id)); });
+        const disponiveis = materias.filter(m => !idSet.has(m.id));
+
+        overlay.innerHTML = `
+      <div class="modal-content report-modal" style="width:900px; max-width:96vw; height:90vh; display:flex; flex-direction:column">
+        <div class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()">✕</div>
+        <div class="report-header" style="display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <h2 style="font-size:20px">🧭 Configuração Detalhada da Prova</h2>
+            <p style="color:var(--text3); font-size:13px">Personalize blocos, pesos e questões conforme o edital.</p>
+          </div>
+          <div style="display:flex; gap:10px">
+            <button class="btn-modal secondary" onclick="addNovoBlocoConfig('standard')" style="padding:8px 14px; font-size:12px; font-weight:600">＋ Bloco Comum</button>
+            <button class="btn-modal secondary" onclick="addNovoBlocoConfig('redacao')" style="padding:8px 14px; font-size:12px; font-weight:600; color:var(--orange); border-color:var(--orange)">＋ Redação</button>
+          </div>
+        </div>
+        
+        <div class="report-body" style="flex:1; display:grid; grid-template-columns:260px 1fr; gap:20px; overflow:hidden; padding:20px">
+          <div style="background:var(--bg3); padding:15px; border-radius:14px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden">
+            <div style="font-size:11px; font-weight:800; color:var(--text3); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px">Disponíveis</div>
+            <div id="matsDisp" style="flex:1; display:flex; flex-direction:column; gap:8px; overflow-y:auto">
+              ${disponiveis.map(m => `
+                <div class="subject-clone-item" draggable="true" ondragstart="dragStartProva(event, '${m.id}')" style="padding:10px; font-size:12px; cursor:grab; line-height:1.3">
+                  ${m.nome}
+                </div>
+              `).join('')}
+              ${disponiveis.length === 0 ? '<div style="font-size:11px; color:var(--text3); text-align:center; padding:20px; opacity:0.6">Todas alocadas</div>' : ''}
+            </div>
+          </div>
+          <div id="listaDeBlocos" style="display:flex; flex-direction:column; gap:20px; overflow-y:auto; padding-right:10px">
+            ${localConfig.groups.map(g => renderBlocoConfig(g)).join('')}
+          </div>
+        </div>
+        <div class="report-footer">
+           <button class="btn-modal secondary" onclick="fecharModalSemSalvar(this)">Cancelar</button>
+           <button class="btn-modal primary" onclick="salvarConfigProva(this)">Confirmar Estrutura</button>
+        </div>
+      </div>
+    `;
+        document.body.appendChild(overlay);
+      };
+
+      const renderBlocoConfig = (g) => {
+        const isRed = g.type === 'redacao';
+        return `
+      <div class="prova-drop-zone" ondragover="allowDropProva(event)" ondragleave="dragLeaveProva(this)" ondrop="dropProva(event, '${g.id}')"
+           style="background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:20px; transition:all 0.2s; position:relative">
+        <button onclick="removerBlocoConfig('${g.id}')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--red); cursor:pointer; font-size:14px">✕</button>
+        <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px">
+          <input type="text" value="${g.name}" onchange="updateGroupName('${g.id}', this.value)" 
+                 style="background:transparent; border:none; border-bottom:1px solid var(--border2); color:${isRed ? 'var(--orange)' : 'var(--accent)'}; font-size:14px; font-weight:800; text-transform:uppercase; outline:none; padding:4px 0; width:250px">
+          <span style="font-size:10px; font-weight:700; color:var(--text3); background:var(--bg2); padding:2px 6px; border-radius:4px">${isRed ? 'REDAÇÃO' : 'PADRÃO'}</span>
+        </div>
+        ${isRed ? renderConfigRedacao(g) : renderConfigStandard(g)}
+      </div>
+    `;
+      };
+
+      const renderConfigRedacao = (g) => `
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:15px; margin-bottom:15px">
+      <div>
+        <label style="font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; display:block; margin-bottom:5px">Tipo de Redação e Instruções</label>
+        <input type="text" value="${g.redType || ''}" oninput="updateGroupVal('${g.id}', 'redType', this.value)" placeholder="Ex: Dissertativa, Estudo de caso..."
+               style="width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:10px; color:var(--text); font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; display:block; margin-bottom:5px">Pontuação Máxima</label>
+        <input type="number" value="${g.pts || 0}" oninput="updateGroupVal('${g.id}', 'pts', this.value)"
+               style="width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:10px; color:var(--text); font-size:13px; font-family:var(--mono)">
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; padding:12px; background:rgba(255,165,0,0.05); border-radius:10px; border:1px solid rgba(255,165,0,0.1)">
+      <label class="switch-mini" style="display:flex; align-items:center; gap:8px; cursor:pointer">
+        <input type="checkbox" ${g.isClassificatoriaOnly ? 'checked' : ''} onchange="updateGroupVal('${g.id}', 'isClassificatoriaOnly', this.checked); window.reRenderModalConfigProva();" style="width:16px; height:16px; cursor:pointer">
+        <span style="font-size:11px; font-weight:800; color:var(--orange); text-transform:uppercase">Apenas Classificatória / Eliminatória (Não soma ao total)</span>
+      </label>
+      ${g.isClassificatoriaOnly ? `
+        <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
+          <span style="font-size:10px; color:var(--text3); font-weight:700">NOTA MÍNIMA:</span>
+          <input type="number" value="${g.minPts || 0}" oninput="updateGroupVal('${g.id}', 'minPts', this.value)" 
+                 style="width:70px; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:4px 8px; color:var(--text); font-size:12px; font-family:var(--mono)">
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+      const renderConfigStandard = (g) => {
+        const itemsHtml = (g.items || []).map(it => {
+          const m = materias.find(x => x.id === it.id);
+          return m ? `
+        <div style="background:var(--bg2); border:1px solid var(--border2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <span style="font-size:11px; font-weight:700">${m.nome}</span>
+            <button onclick="removerMatDoBloco('${g.id}', '${m.id}')" style="color:var(--red); background:none; border:none; cursor:pointer; font-size:14px">✕</button>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <div><label style="font-size:9px; color:var(--text3); display:block; margin-bottom:2px">Questões</label><input type="number" value="${it.q}" oninput="updateMatVal('${g.id}','${m.id}','q',this.value)" style="width:100%; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:6px; color:var(--text); font-size:12px"></div>
+            <div><label style="font-size:9px; color:var(--text3); display:block; margin-bottom:2px">Peso</label><input type="number" step="0.1" value="${it.w}" oninput="updateMatVal('${g.id}','${m.id}','w',this.value)" style="width:100%; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:6px; color:var(--text); font-size:12px"></div>
+          </div>
+        </div>
+      ` : '';
+        }).join('');
+        return `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px">${itemsHtml}</div>
+            ${(!g.items || !g.items.length) ? `<div style="background:rgba(255,165,0,0.03); border:1px dashed var(--border2); border-radius:10px; padding:15px; display:flex; align-items:center; gap:15px"><div style="font-size:11px; color:var(--text3); flex:1">Bloco sem divisão por matéria?</div><div style="display:flex; gap:10px"><div><label style="font-size:9px">Questões</label><input type="number" value="${g.q || 0}" oninput="updateGroupVal('${g.id}','q',this.value)" style="width:70px"></div><div><label style="font-size:9px">Peso</label><input type="number" value="${g.w || 1}" oninput="updateGroupVal('${g.id}','w',this.value)" style="width:70px"></div></div></div>` : ''}`;
+      };
+
+      window.addNovoBlocoConfig = (type) => {
+        localConfig.groups.push({ id: 'g_' + Date.now(), name: type === 'redacao' ? 'Redação' : 'Novo Bloco', type: type, items: [], q: 0, w: 1, pts: 0, redType: '' });
+        window.reRenderModalConfigProva();
+      };
+      window.removerBlocoConfig = (gid) => { localConfig.groups = localConfig.groups.filter(g => g.id !== gid); window.reRenderModalConfigProva(); };
+      window.updateGroupName = (gid, val) => { const g = localConfig.groups.find(x => x.id === gid); if (g) g.name = val; };
+      window.updateGroupVal = (gid, key, val) => { const g = localConfig.groups.find(x => x.id === gid); if (g) g[key] = (typeof val === 'boolean' ? val : (key === 'redType' ? val : parseFloat(val) || 0)); };
+      window.updateMatVal = (gid, mid, key, val) => { const g = localConfig.groups.find(x => x.id === gid); if (g) { const it = g.items.find(x => x.id === mid); if (it) it[key] = parseFloat(val) || 0; } };
+      window.removerMatDoBloco = (gid, mid) => { const g = localConfig.groups.find(x => x.id === gid); if (g) { g.items = g.items.filter(x => x.id !== mid); window.reRenderModalConfigProva(); } };
+      window.dragStartProva = (ev, id) => { ev.dataTransfer.setData('text/prova_mid', id); };
+      window.allowDropProva = (ev) => { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); };
+      window.dragLeaveProva = (el) => { el.classList.remove('drag-over'); };
+      window.dropProva = (ev, gid) => {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('drag-over');
+        const mid = ev.dataTransfer.getData('text/prova_mid');
+        if (!mid) return;
+        localConfig.groups.forEach(g => { if (g.items) g.items = g.items.filter(x => x.id !== mid); });
+        const g = localConfig.groups.find(x => x.id === gid);
+        if (g && g.type !== 'redacao') { if (!g.items) g.items = []; g.items.push({ id: mid, q: 10, w: 1 }); window.reRenderModalConfigProva(); }
+      };
+      window.fecharModalSemSalvar = (btn) => { btn.closest('.modal-overlay').remove(); };
+      window.salvarConfigProva = (btn) => {
+        localStorage.setItem('ct_config_prova_' + cId, JSON.stringify(localConfig));
+        btn.closest('.modal-overlay').remove();
+        renderPainelProva();
+      };
+
+      window.reRenderModalConfigProva();
+    }
+
+    function formatPainelNumero(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '0';
+      const rounded = Math.abs(num - Math.round(num)) < 0.05 ? Math.round(num) : Math.round(num * 10) / 10;
+      return String(rounded).replace(/\.0$/, '').replace('.', ',');
+    }
+
+    function normalizePainelConfig(rawConfig) {
+      const config = rawConfig && typeof rawConfig === 'object' ? { ...rawConfig } : {};
+      if (config.geral || config.especifico) {
+        const groups = [];
+        if (Array.isArray(config.geral) && config.geral.length) groups.push({ id: 'mig_g', name: 'Conhecimentos Gerais', items: config.geral });
+        if (Array.isArray(config.especifico) && config.especifico.length) groups.push({ id: 'mig_e', name: 'Conhecimentos Especificos', items: config.especifico });
+        config.groups = groups;
+      }
+      config.groups = Array.isArray(config.groups) ? config.groups : [];
+      config.scoringMode = config.scoringMode === 'cebraspe' ? 'cebraspe' : 'tradicional';
+      const penalty = Number(config.errorPenalty);
+      config.errorPenalty = Number.isFinite(penalty) && penalty >= 0 ? Math.round(penalty * 10) / 10 : 1;
+      return config;
+    }
+
+    function loadPainelConfigDashboard() {
+      try {
+        const saved = localStorage.getItem('ct_config_prova_' + cId);
+        if (!saved) return normalizePainelConfig({ groups: [] });
+        return normalizePainelConfig(JSON.parse(saved));
+      } catch (e) {
+        return normalizePainelConfig({ groups: [] });
+      }
+    }
+
+    function renderPainelProva() {
+      const resEl = document.getElementById('dashProvaResumo');
+      const notaEl = document.getElementById('dashNotaMax');
+      const config = loadPainelConfigDashboard();
+
+      if (!config.groups || config.groups.length === 0) {
+        resEl.innerHTML = '<div style="padding:40px 20px; text-align:center; color:var(--text3); font-size:12px; opacity:0.8">Clique aqui para configurar as questões, pesos, blocos ou o modo CESPE/CEBRASPE da sua prova.</div>';
+        notaEl.textContent = 'Nota Máx: 0';
+        return;
+      }
+
+      const isCespe = config.scoringMode === 'cebraspe';
+      const errorPenalty = Number(config.errorPenalty || 1);
+      const materias = CT.getMaterias(cId);
+      let totalGlobal = 0;
+
+      const metaHtml = isCespe ? `
+        <div style="padding:0 14px 12px; font-size:11px; color:var(--text3); display:flex; flex-wrap:wrap; gap:8px; align-items:center">
+          <span style="font-weight:800; color:var(--accent2)">Método CESPE/CEBRASPE</span>
+          <span>+1 por acerto • -${formatPainelNumero(errorPenalty)} por erro • 0 em branco</span>
+        </div>
+      ` : '';
+
+      resEl.innerHTML = metaHtml + config.groups.map(g => {
+        let groupScore = 0;
+        let itemsHtml = '';
+
+        if (g.type === 'redacao') {
+          const score = parseFloat(g.pts || 0);
+          const isClassOnly = !!g.isClassificatoriaOnly;
+          groupScore = score;
+          if (!isClassOnly) totalGlobal += score;
+
+          itemsHtml = `
+            <div class="prova-stat-row" style="background:rgba(255,165,0,0.03)">
+              <div style="font-weight:600; color:var(--orange)">Tipo: ${g.redType || 'Não definido'} ${isClassOnly ? '<span style="font-size:9px; opacity:0.7; color:var(--text3); margin-left:5px">(Não soma ao total)</span>' : ''}</div>
+              <div class="prova-group-pts">
+                ${(isClassOnly && Number(g.minPts || 0) > 0) ? `<span style="font-size:11px; color:var(--text3); font-weight:700">Nota mínima: ${formatPainelNumero(g.minPts)}</span>` : ''}
+              </div>
+            </div>
+          `;
+        } else if (Array.isArray(g.items) && g.items.length) {
+          itemsHtml = g.items.map(it => {
+            const materia = materias.find(x => x.id === it.id);
+            if (!materia) return '';
+            const questoes = Math.max(0, Number(it.q || 0));
+            const peso = Math.max(0, Number(it.w || 0));
+            const score = isCespe ? questoes : (questoes * peso);
+            groupScore += score;
+            return `
+              <div class="prova-stat-row">
+                <div style="font-weight:600; flex:1; padding-right:15px; word-break:break-word">${materia.nome}</div>
+                <div style="display:flex; align-items:center; gap:12px; color:var(--text3); font-size:12px">
+                  <div style="text-align:right; white-space:nowrap">
+                    ${isCespe
+                      ? `<span style="font-family:var(--mono)">${questoes} questões</span> • <span style="font-family:var(--mono)">+1 / -${formatPainelNumero(errorPenalty)}</span>`
+                      : `<span style="font-family:var(--mono)">${questoes} questões</span> x <span style="font-family:var(--mono)">${formatPainelNumero(peso)} (peso)</span>`}
+                  </div>
+                  <div style="font-weight:700; color:var(--text2); text-align:right; width:56px; white-space:nowrap">
+                    ${formatPainelNumero(score)} pts
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+          totalGlobal += groupScore;
+        } else if (Number(g.q || 0) > 0) {
+          const blocoQuestoes = Math.max(0, Number(g.q || 0));
+          const blocoPeso = Math.max(0, Number(g.w || 0));
+          groupScore = isCespe ? blocoQuestoes : (blocoQuestoes * blocoPeso);
+          totalGlobal += groupScore;
+          itemsHtml = `
+            <div class="prova-stat-row" style="opacity:0.8">
+              <div style="font-weight:500; font-style:italic; flex:1; padding-right:15px; word-break:break-word">Bloco indivisível</div>
+              <div style="display:flex; align-items:center; gap:12px; color:var(--text3); font-size:12px">
+                <div style="text-align:right; white-space:nowrap">
+                  ${isCespe
+                    ? `<span style="font-family:var(--mono)">${blocoQuestoes} questões</span> • <span style="font-family:var(--mono)">+1 / -${formatPainelNumero(errorPenalty)}</span>`
+                    : `<span style="font-family:var(--mono)">${blocoQuestoes} questões</span> x <span style="font-family:var(--mono)">${formatPainelNumero(blocoPeso)} (peso)</span>`}
+                </div>
+                <div style="width:70px"></div>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div style="margin-bottom:1px">
+            <div class="prova-group-header">
+              <div class="prova-group-title" style="color:${g.type === 'redacao' ? 'var(--orange)' : 'var(--accent)'}">${g.name}</div>
+              <div class="prova-group-pts">${formatPainelNumero(groupScore)} pts</div>
+            </div>
+            ${itemsHtml || '<div style="padding:10px 14px; font-size:11px; color:var(--text3); font-style:italic">Nenhuma informação adicionada</div>'}
+          </div>
+        `;
+      }).join('');
+
+      notaEl.textContent = 'Nota Máx: ' + formatPainelNumero(totalGlobal);
+    }
+
+    function abrirModalConfigProva() {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay visible';
+      const config = loadPainelConfigDashboard();
+
+      if (!config.groups.length) {
+        config.groups = [
+          { id: 'g_comp', name: 'Conhecimentos Gerais', items: [], q: 0, w: 1 },
+          { id: 'g_espec', name: 'Conhecimentos Especificos', items: [], q: 0, w: 1 }
+        ];
+      }
+
+      const materias = CT.getMaterias(cId);
+      window.localConfig = config;
+
+      window.reRenderModalConfigProva = () => {
+        const idSet = new Set();
+        localConfig.groups.forEach(g => { if (g.items) g.items.forEach(it => idSet.add(it.id)); });
+        const disponiveis = materias.filter(m => !idSet.has(m.id));
+        const isCespe = localConfig.scoringMode === 'cebraspe';
+
+        overlay.innerHTML = `
+          <div class="modal-content report-modal" style="width:900px; max-width:96vw; height:90vh; display:flex; flex-direction:column">
+            <div class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()">✕</div>
+            <div class="report-header" style="display:flex; justify-content:space-between; align-items:center">
+              <div>
+                <h2 style="font-size:20px">Configuração detalhada da prova</h2>
+                <p style="color:var(--text3); font-size:13px">Escolha entre o método tradicional por peso ou o modelo CESPE/CEBRASPE com penalidade por erro.</p>
+              </div>
+              <div style="display:flex; gap:10px">
+                <button class="btn-modal secondary" onclick="addNovoBlocoConfig('standard')" style="padding:8px 14px; font-size:12px; font-weight:600">+ Bloco Comum</button>
+                <button class="btn-modal secondary" onclick="addNovoBlocoConfig('redacao')" style="padding:8px 14px; font-size:12px; font-weight:600; color:var(--orange); border-color:var(--orange)">+ Redação</button>
+              </div>
+            </div>
+
+            <div style="padding:16px 20px 0">
+              <div style="display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(180px, 0.8fr); gap:12px; align-items:end">
+                <div>
+                  <div style="font-size:11px; font-weight:800; color:var(--text3); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Método de correção</div>
+                  <select onchange="updatePainelMode(this.value)" style="width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13px; outline:none">
+                    <option value="tradicional" ${!isCespe ? 'selected' : ''}>Tradicional por pesos</option>
+                    <option value="cebraspe" ${isCespe ? 'selected' : ''}>CESPE / CEBRASPE</option>
+                  </select>
+                </div>
+                <div style="${isCespe ? '' : 'opacity:0.5'}">
+                  <div style="font-size:11px; font-weight:800; color:var(--text3); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Penalidade por erro</div>
+                  <input type="number" min="0" step="0.1" value="${localConfig.errorPenalty}" oninput="updatePainelPenalty(this.value)" ${isCespe ? '' : 'disabled'}
+                    style="width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13px; font-family:var(--mono); outline:none; box-sizing:border-box">
+                </div>
+              </div>
+              <div style="margin-top:8px; font-size:11px; color:var(--text3); line-height:1.55">
+                ${isCespe
+                  ? `Modo atual: +1 por acerto, -${formatPainelNumero(localConfig.errorPenalty)} por erro e 0 ponto em branco. No simulado, o usuário informa acertos e em branco para o Track deduzir os erros.`
+                  : 'Modo atual: nota calculada por quantidade de questões x peso de cada matéria.'}
+              </div>
+            </div>
+
+            <div class="report-body" style="flex:1; display:grid; grid-template-columns:260px 1fr; gap:20px; overflow:hidden; padding:20px">
+              <div style="background:var(--bg3); padding:15px; border-radius:14px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden">
+                <div style="font-size:11px; font-weight:800; color:var(--text3); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px">Disponíveis</div>
+                <div id="matsDisp" style="flex:1; display:flex; flex-direction:column; gap:8px; overflow-y:auto">
+                  ${disponiveis.map(m => `
+                    <div class="subject-clone-item" draggable="true" ondragstart="dragStartProva(event, '${m.id}')" style="padding:10px; font-size:12px; cursor:grab; line-height:1.3">
+                      ${m.nome}
+                    </div>
+                  `).join('')}
+                  ${disponiveis.length === 0 ? '<div style="font-size:11px; color:var(--text3); text-align:center; padding:20px; opacity:0.6">Todas alocadas</div>' : ''}
+                </div>
+              </div>
+              <div id="listaDeBlocos" style="display:flex; flex-direction:column; gap:20px; overflow-y:auto; padding-right:10px">
+                ${localConfig.groups.map(g => renderBlocoConfigPainel(g, isCespe, materias)).join('')}
+              </div>
+            </div>
+            <div class="report-footer">
+               <button class="btn-modal secondary" onclick="fecharModalSemSalvar(this)">Cancelar</button>
+               <button class="btn-modal primary" onclick="salvarConfigProva(this)">Confirmar Estrutura</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      };
+
+      function renderBlocoConfigPainel(g, isCespe, materiasList) {
+        const isRed = g.type === 'redacao';
+        return `
+          <div class="prova-drop-zone" ondragover="allowDropProva(event)" ondragleave="dragLeaveProva(this)" ondrop="dropProva(event, '${g.id}')"
+               style="background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:20px; transition:all 0.2s; position:relative">
+            <button onclick="removerBlocoConfig('${g.id}')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--red); cursor:pointer; font-size:14px">✕</button>
+            <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px; flex-wrap:wrap">
+              <input type="text" value="${g.name}" onchange="updateGroupName('${g.id}', this.value)"
+                     style="background:transparent; border:none; border-bottom:1px solid var(--border2); color:${isRed ? 'var(--orange)' : 'var(--accent)'}; font-size:14px; font-weight:800; text-transform:uppercase; outline:none; padding:4px 0; width:250px">
+              <span style="font-size:10px; font-weight:700; color:var(--text3); background:var(--bg2); padding:2px 6px; border-radius:4px">${isRed ? 'REDAÇÃO' : (isCespe ? 'CESPE' : 'PADRÃO')}</span>
+            </div>
+            ${isRed ? renderConfigRedacaoPainel(g) : renderConfigStandardPainel(g, isCespe, materiasList)}
+          </div>
+        `;
+      }
+
+      function renderConfigRedacaoPainel(g) {
+        return `
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:15px; margin-bottom:15px">
+            <div>
+              <label style="font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; display:block; margin-bottom:5px">Tipo de redação e instruções</label>
+              <input type="text" value="${g.redType || ''}" oninput="updateGroupVal('${g.id}', 'redType', this.value)" placeholder="Ex: Dissertativa, estudo de caso..."
+                     style="width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:10px; color:var(--text); font-size:13px">
+            </div>
+            <div>
+              <label style="font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; display:block; margin-bottom:5px">Pontuação máxima</label>
+              <input type="number" value="${g.pts || 0}" oninput="updateGroupVal('${g.id}', 'pts', this.value)"
+                     style="width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:10px; color:var(--text); font-size:13px; font-family:var(--mono)">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:12px; background:rgba(255,165,0,0.05); border-radius:10px; border:1px solid rgba(255,165,0,0.1)">
+            <label class="switch-mini" style="display:flex; align-items:center; gap:8px; cursor:pointer">
+              <input type="checkbox" ${g.isClassificatoriaOnly ? 'checked' : ''} onchange="updateGroupVal('${g.id}', 'isClassificatoriaOnly', this.checked); window.reRenderModalConfigProva();" style="width:16px; height:16px; cursor:pointer">
+              <span style="font-size:11px; font-weight:800; color:var(--orange); text-transform:uppercase">Apenas classificatória / eliminatória (não soma ao total)</span>
+            </label>
+            ${g.isClassificatoriaOnly ? `
+              <div style="margin-left:auto; display:flex; align-items:center; gap:8px">
+                <span style="font-size:10px; color:var(--text3); font-weight:700">NOTA MÍNIMA:</span>
+                <input type="number" value="${g.minPts || 0}" oninput="updateGroupVal('${g.id}', 'minPts', this.value)"
+                       style="width:70px; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:4px 8px; color:var(--text); font-size:12px; font-family:var(--mono)">
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      function renderConfigStandardPainel(g, isCespe, materiasList) {
+        const itemsHtml = (g.items || []).map(it => {
+          const materia = materiasList.find(x => x.id === it.id);
+          if (!materia) return '';
+          return `
+            <div style="background:var(--bg2); border:1px solid var(--border2); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:11px; font-weight:700">${materia.nome}</span>
+                <button onclick="removerMatDoBloco('${g.id}', '${materia.id}')" style="color:var(--red); background:none; border:none; cursor:pointer; font-size:14px">✕</button>
+              </div>
+              <div style="display:grid; grid-template-columns:${isCespe ? '1fr' : '1fr 1fr'}; gap:10px">
+                <div><label style="font-size:9px; color:var(--text3); display:block; margin-bottom:2px">Questões</label><input type="number" value="${it.q}" oninput="updateMatVal('${g.id}','${materia.id}','q',this.value)" style="width:100%; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:6px; color:var(--text); font-size:12px"></div>
+                ${isCespe ? '' : `<div><label style="font-size:9px; color:var(--text3); display:block; margin-bottom:2px">Peso</label><input type="number" step="0.1" value="${it.w}" oninput="updateMatVal('${g.id}','${materia.id}','w',this.value)" style="width:100%; background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:6px; color:var(--text); font-size:12px"></div>`}
+              </div>
+              ${isCespe ? `<div style="font-size:10px; color:var(--text3)">+1 por acerto, -${formatPainelNumero(localConfig.errorPenalty)} por erro e 0 em branco.</div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        const blocoFallback = isCespe
+          ? `<div style="background:rgba(255,165,0,0.03); border:1px dashed var(--border2); border-radius:10px; padding:15px; display:flex; align-items:center; gap:15px"><div style="font-size:11px; color:var(--text3); flex:1">Bloco sem divisão por matéria?</div><div style="display:flex; gap:10px"><div><label style="font-size:9px">Questões</label><input type="number" value="${g.q || 0}" oninput="updateGroupVal('${g.id}','q',this.value)" style="width:70px"></div></div></div>`
+          : `<div style="background:rgba(255,165,0,0.03); border:1px dashed var(--border2); border-radius:10px; padding:15px; display:flex; align-items:center; gap:15px"><div style="font-size:11px; color:var(--text3); flex:1">Bloco sem divisão por matéria?</div><div style="display:flex; gap:10px"><div><label style="font-size:9px">Questões</label><input type="number" value="${g.q || 0}" oninput="updateGroupVal('${g.id}','q',this.value)" style="width:70px"></div><div><label style="font-size:9px">Peso</label><input type="number" step="0.1" value="${g.w || 1}" oninput="updateGroupVal('${g.id}','w',this.value)" style="width:70px"></div></div></div>`;
+
+        return `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px">${itemsHtml}</div>${(!g.items || !g.items.length) ? blocoFallback : ''}`;
+      }
+
+      window.addNovoBlocoConfig = (type) => {
+        localConfig.groups.push({ id: 'g_' + Date.now(), name: type === 'redacao' ? 'Redação' : 'Novo Bloco', type: type, items: [], q: 0, w: 1, pts: 0, redType: '' });
+        window.reRenderModalConfigProva();
+      };
+      window.removerBlocoConfig = (gid) => {
+        localConfig.groups = localConfig.groups.filter(g => g.id !== gid);
+        window.reRenderModalConfigProva();
+      };
+      window.updateGroupName = (gid, val) => {
+        const group = localConfig.groups.find(x => x.id === gid);
+        if (group) group.name = val;
+      };
+      window.updateGroupVal = (gid, key, val) => {
+        const group = localConfig.groups.find(x => x.id === gid);
+        if (!group) return;
+        if (typeof val === 'boolean') {
+          group[key] = val;
+          return;
+        }
+        if (key === 'redType') {
+          group[key] = val;
+          return;
+        }
+        const parsed = Number(String(val).replace(',', '.'));
+        group[key] = Number.isFinite(parsed) ? parsed : 0;
+      };
+      window.updateMatVal = (gid, mid, key, val) => {
+        const group = localConfig.groups.find(x => x.id === gid);
+        const item = group && group.items ? group.items.find(x => x.id === mid) : null;
+        if (!item) return;
+        const parsed = Number(String(val).replace(',', '.'));
+        item[key] = Number.isFinite(parsed) ? parsed : 0;
+      };
+      window.updatePainelMode = (value) => {
+        localConfig.scoringMode = value === 'cebraspe' ? 'cebraspe' : 'tradicional';
+        if (!Number.isFinite(Number(localConfig.errorPenalty)) || Number(localConfig.errorPenalty) < 0) localConfig.errorPenalty = 1;
+        window.reRenderModalConfigProva();
+      };
+      window.updatePainelPenalty = (value) => {
+        const parsed = Number(String(value).replace(',', '.'));
+        localConfig.errorPenalty = Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 10) / 10 : 0;
+      };
+      window.removerMatDoBloco = (gid, mid) => {
+        const group = localConfig.groups.find(x => x.id === gid);
+        if (!group) return;
+        group.items = (group.items || []).filter(x => x.id !== mid);
+        window.reRenderModalConfigProva();
+      };
+      window.dragStartProva = (ev, id) => { ev.dataTransfer.setData('text/prova_mid', id); };
+      window.allowDropProva = (ev) => { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); };
+      window.dragLeaveProva = (el) => { el.classList.remove('drag-over'); };
+      window.dropProva = (ev, gid) => {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('drag-over');
+        const mid = ev.dataTransfer.getData('text/prova_mid');
+        if (!mid) return;
+        localConfig.groups.forEach(g => { if (g.items) g.items = g.items.filter(x => x.id !== mid); });
+        const group = localConfig.groups.find(x => x.id === gid);
+        if (!group || group.type === 'redacao') return;
+        if (!group.items) group.items = [];
+        group.items.push({ id: mid, q: 10, w: 1 });
+        window.reRenderModalConfigProva();
+      };
+      window.fecharModalSemSalvar = (btn) => { btn.closest('.modal-overlay').remove(); };
+      window.salvarConfigProva = (btn) => {
+        localStorage.setItem('ct_config_prova_' + cId, JSON.stringify(normalizePainelConfig(localConfig)));
+        btn.closest('.modal-overlay').remove();
+        renderPainelProva();
+      };
+
+      window.reRenderModalConfigProva();
+    }
+
+    function abrirMateria(mid) { sessionStorage.setItem('ct_materia_ativa', mid); location.href = 'aba_materia.html'; }
+
+    // CRONOGRAMA
+    var CORES_C = ['#4f8ef7', '#7c5cfc', '#3ecf8e', '#f5c842', '#f5874a', '#f55a5a', '#00bcd4', '#e91e8c', '#8bc34a', '#ff9800'];
+    var _cData = {}, _cCid = null, _cMats = [];
+    function initCrono(id, mats) {
+      _cCid = id; _cMats = mats;
+      try {
+        var saved = localStorage.getItem('ct_crono_' + id);
+        _cData = saved ? JSON.parse(saved) : {};
+      } catch (e) { _cData = {}; }
+      renderCrono();
+    }
+    function _getCorM(mId) { return localStorage.getItem('ct_matcor_' + mId) || ''; }
+    function _setCorM(mId, cor) { localStorage.setItem('ct_matcor_' + mId, cor); }
+    function _corM(mId) {
+      var salva = _getCorM(mId);
+      if (salva) return salva;
+      var i = _cMats.findIndex(function (m) { return m.id === mId; });
+      var cor = CORES_C[i % CORES_C.length];
+      _setCorM(mId, cor); // persiste a cor default imediatamente
+      return cor;
+    }
+    function _saveC() {
+      var key = 'ct_crono_' + (_cCid || cId || sessionStorage.getItem('ct_concurso_ativo'));
+      if (key && key !== 'ct_crono_null' && key !== 'ct_crono_undefined') {
+        localStorage.setItem(key, JSON.stringify(_cData));
+      }
+    }
+    function initCronoEditar() {
+      var btn = document.getElementById('btnEditCrono');
+      if (!btn || btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', function () { abrirModalCrono(); });
+    }
+
+    function renderCrono() {
+      var grid = document.getElementById('cronoGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      var today = CT._today();
+      var nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+      for (var i = 0; i <= 6; i++) {
+        var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - d.getDay() + i);
+        var ds = CT._dateString(d);
+        var isH = (ds === today);
+        var mIds = _cData[ds] || [];
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+
+        var card = document.createElement('div');
+        card.style.cssText = 'background:var(--bg3);border:1px solid ' + (isH ? 'var(--accent)' : 'var(--border)') + ';border-radius:8px';
+
+        var hdr = document.createElement('div');
+        hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--border)';
+        var nm = document.createElement('span');
+        nm.style.cssText = 'font-size:12px;font-weight:700;text-transform:uppercase;color:' + (isH ? 'var(--accent)' : 'var(--text2)');
+        nm.textContent = nomes[d.getDay()];
+        var dt = document.createElement('span');
+        dt.style.cssText = 'font-size:12px;color:var(--text3);font-family:var(--mono)';
+        dt.textContent = dd + '/' + mm;
+        hdr.appendChild(nm); hdr.appendChild(dt);
+        card.appendChild(hdr);
+
+        var area = document.createElement('div');
+        area.style.cssText = 'display:flex;gap:3px;padding:5px 6px;min-height:28px';
+
+        if (mIds.length === 0) {
+          area.style.cssText += 'align-items:center;justify-content:center';
+          var empty = document.createElement('span');
+          empty.style.cssText = 'font-size:11px;color:var(--text3)';
+          empty.textContent = 'vazio';
+          area.appendChild(empty);
+        } else {
+          var sg = _getCronoSugestoes();
+          mIds.forEach(function (nome) {
+            var baseCor = localStorage.getItem('ct_matcor_nome_' + nome) || sg[nome] || '#4f8ef7';
+            var state = localStorage.getItem('ct_cest_' + cId + '_' + ds + '_' + nome) || '0';
+            // state: 0=normal, 1=estudado(green), 2=nao-estudado(red)
+            var cor = state === '1' ? '#27a06b' : state === '2' ? '#f55a5a' : baseCor;
+            var emoji = state === '1' ? '✓ ' : state === '2' ? '✗ ' : '';
+            var chip = document.createElement('div');
+            chip.style.cssText = 'flex:1;background:' + cor + ';border-radius:5px;padding:2px 4px;'
+              + 'font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8),0 0 2px rgba(0,0,0,0.8);display:flex;align-items:center;'
+              + 'justify-content:center;text-align:center;min-height:22px;overflow:hidden;'
+              + 'white-space:nowrap;text-overflow:ellipsis;cursor:pointer;user-select:none;'
+              + 'transition:background 0.2s';
+            var maxLen = mIds.length <= 2 ? 10 : mIds.length <= 3 ? 7 : 5;
+            chip.textContent = emoji + (nome.length > maxLen ? nome.slice(0, maxLen) : nome);
+            chip.title = nome + ' — clique para marcar';
+            chip.addEventListener('click', (function (n, ds2, c) {
+              return function () {
+                var cur = localStorage.getItem('ct_cest_' + cId + '_' + ds2 + '_' + n) || '0';
+                var next = cur === '0' ? '1' : cur === '1' ? '2' : '0';
+                localStorage.setItem('ct_cest_' + cId + '_' + ds2 + '_' + n, next);
+                // Update chip appearance inline without full re-render
+                var newCor = next === '1' ? '#27a06b' : next === '2' ? '#f55a5a' : c;
+                var newEmoji = next === '1' ? '✓ ' : next === '2' ? '✗ ' : '';
+                c2.style.background = newCor;
+                c2.textContent = newEmoji + (n.length > maxLen ? n.slice(0, maxLen) : n);
+              };
+            })(nome, ds, baseCor));
+            var c2 = chip; // alias for closure
+            area.appendChild(chip);
+          });
+        }
+        card.appendChild(area);
+        grid.appendChild(card);
+      }
+    }
+
+    function _getCronoSugestoes() {
+      try { return JSON.parse(localStorage.getItem('ct_crono_sugestoes_' + (cId || '')) || '{}'); }
+      catch (e) { return {}; }
+    }
+    function _saveCronoSugestao(nome, cor) {
+      var s = _getCronoSugestoes();
+      s[nome] = cor;
+      localStorage.setItem('ct_crono_sugestoes_' + (cId || ''), JSON.stringify(s));
+    }
+
+    function _getCronoMats() {
+      try { return JSON.parse(localStorage.getItem('ct_crono_mats_' + (cId || '')) || '[]'); }
+      catch (e) { return []; }
+    }
+    function _saveCronoMats(mats) {
+      localStorage.setItem('ct_crono_mats_' + (cId || ''), JSON.stringify(mats));
+      // also update sugestoes
+      var sg = {};
+      mats.forEach(function (m) { sg[m.nome] = m.cor; });
+      localStorage.setItem('ct_crono_sugestoes_' + (cId || ''), JSON.stringify(sg));
+    }
+
+    function abrirModalCrono() {
+      var old = document.getElementById('modalCrono'); if (old) old.remove();
+      // Always resolve the correct key before anything else
+      var _activeCid = _cCid || cId || sessionStorage.getItem('ct_concurso_ativo');
+      if (_activeCid && _activeCid !== _cCid) { _cCid = _activeCid; }
+      // Reload _cData fresh from localStorage — never use stale in-memory state
+      try { _cData = JSON.parse(localStorage.getItem('ct_crono_' + _cCid) || '{}'); } catch (e) { _cData = {}; }
+      if (!_cMats.length && _cCid) _cMats = CT.getMaterias(_cCid);
+
+      var PALETA = [
+        '#4f8ef7', '#7c5cfc', '#3ecf8e', '#f5c842', '#f5874a',
+        '#f55a5a', '#00bcd4', '#e91e8c', '#8bc34a', '#ff9800',
+        '#9c27b0', '#607d8b', '#ff5722', '#009688', '#795548',
+        '#3f51b5', '#cddc39', '#03a9f4', '#e91e63', '#4caf50'
+      ];
+
+      var overlay = document.createElement('div');
+      overlay.id = 'modalCrono';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:560px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6)';
+
+      // ── TITLE ─────────────────────────────────
+      var title = document.createElement('div');
+      title.style.cssText = 'font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px';
+      title.textContent = '📅 Editar cronograma semanal';
+      box.appendChild(title);
+      
+      window.renderCrono = renderCrono;
+      window.abrirModalCrono = abrirModalCrono;
+
+      // ── MATÉRIAS SALVAS + CRIAR NOVA ──────────
+      var matsSection = document.createElement('div');
+      matsSection.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px';
+
+      var matsTitle = document.createElement('div');
+      matsTitle.style.cssText = 'font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px';
+      matsTitle.textContent = '🎨 Matérias — arraste para os dias';
+      matsSection.appendChild(matsTitle);
+
+      // chips container
+      var chipsArea = document.createElement('div');
+      chipsArea.id = 'cronoMatsChips';
+      chipsArea.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:28px';
+      matsSection.appendChild(chipsArea);
+
+      // new mat row
+      var newRow = document.createElement('div');
+      newRow.style.cssText = 'display:flex;gap:6px;align-items:center';
+
+      var newInp = document.createElement('input');
+      newInp.type = 'text'; newInp.maxLength = 10; newInp.placeholder = 'Ex: MAT FIN';
+      newInp.style.cssText = 'flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:5px 9px;color:var(--text);font-family:var(--sans);font-size:12px;font-weight:600;outline:none';
+
+      // color picker swatch
+      var newColorBtn = document.createElement('div');
+      newColorBtn.style.cssText = 'width:28px;height:28px;border-radius:6px;border:2px solid var(--border2);cursor:pointer;flex-shrink:0;background:' + PALETA[0];
+      newColorBtn.setAttribute('data-cor', PALETA[0]);
+      newColorBtn.title = 'Escolher cor';
+      newColorBtn.addEventListener('click', function () { abrirPaletaInline(newColorBtn, PALETA); });
+
+      var newAddBtn = document.createElement('button');
+      newAddBtn.textContent = '＋ Criar';
+      newAddBtn.style.cssText = 'padding:5px 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:6px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap';
+      newAddBtn.addEventListener('click', function () {
+        var nome = newInp.value.trim().toUpperCase().slice(0, 10);
+        if (!nome) return;
+        var cor = newColorBtn.getAttribute('data-cor');
+        var mats = _getCronoMats();
+        if (!mats.find(function (m) { return m.nome === nome; })) {
+          mats.push({ nome: nome, cor: cor });
+          _saveCronoMats(mats);
+        }
+        newInp.value = '';
+        renderMatsChips();
+      });
+      newInp.addEventListener('keydown', function (e) { if (e.key === 'Enter') newAddBtn.click(); });
+
+      newRow.appendChild(newInp);
+      newRow.appendChild(newColorBtn);
+      newRow.appendChild(newAddBtn);
+      matsSection.appendChild(newRow);
+      box.appendChild(matsSection);
+
+      // ── DAYS ─────────────────────────────────
+      var nomesCompletos = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
+      var daysContainer = document.createElement('div');
+
+      for (var i = 0; i <= 6; i++) {
+        (function (idx) {
+          var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - d.getDay() + idx);
+          var ds = CT._dateString(d);
+          var isH = (ds === CT._today());
+          var mIds = _cData[ds] || [];
+
+          var dayBlock = document.createElement('div');
+          dayBlock.style.cssText = 'background:var(--bg3);border:1px solid ' + (isH ? 'var(--accent)' : 'var(--border)') + ';border-radius:10px;margin-bottom:8px;transition:border-color 0.15s';
+
+          var dayHdr = document.createElement('div');
+          dayHdr.style.cssText = 'padding:7px 14px;border-bottom:1px solid var(--border)';
+          var dayNm = document.createElement('span');
+          dayNm.style.cssText = 'font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:' + (isH ? 'var(--accent)' : 'var(--text2)');
+          dayNm.textContent = nomesCompletos[d.getDay()];
+          dayHdr.appendChild(dayNm);
+          dayBlock.appendChild(dayHdr);
+
+          // Drop zone
+          var dropZone = document.createElement('div');
+          dropZone.setAttribute('data-ds', ds);
+          dropZone.style.cssText = 'padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;min-height:36px;align-items:center;transition:background 0.15s;border-radius:0 0 10px 10px';
+          dropZone.setAttribute('data-dropzone', '1');
+
+          dropZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropZone.style.background = 'rgba(79,142,247,0.1)';
+            dropZone.style.borderColor = 'var(--accent)';
+          });
+          dropZone.addEventListener('dragleave', function () {
+            dropZone.style.background = '';
+          });
+          dropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropZone.style.background = '';
+            var nome = e.dataTransfer.getData('text/plain');
+            if (!nome) return;
+            var cur = _cData[ds] || [];
+            if (cur.includes(nome) || cur.length >= 5) return;
+            cur.push(nome);
+            _cData[ds] = cur;
+            _saveC();
+            renderDropZone(ds, dropZone);
+          });
+
+          dayBlock.appendChild(dropZone);
+          daysContainer.appendChild(dayBlock);
+          renderDropZone(ds, dropZone);
+        })(i);
+      }
+      box.appendChild(daysContainer);
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:4px';
+
+      var clearBtn = document.createElement('button');
+      clearBtn.textContent = '✕ Limpar tudo';
+      clearBtn.style.cssText = 'padding:10px 16px;border:1px solid var(--red);border-radius:8px;background:transparent;color:var(--red);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0';
+      clearBtn.addEventListener('click', function () {
+        // Confirm
+        var conf = document.createElement('div');
+        conf.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;display:flex;align-items:center;justify-content:center';
+        var cb = document.createElement('div');
+        cb.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:340px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.6)';
+        cb.innerHTML = '<div style="font-size:28px;margin-bottom:10px">✕</div>'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Limpar cronograma?</div>'
+          + '<div style="font-size:13px;color:var(--text3);margin-bottom:20px">Remove todas as matérias de todos os dias.<br>As matérias criadas serão mantidas.</div>';
+        var btnsCf = document.createElement('div');
+        btnsCf.style.cssText = 'display:flex;gap:8px';
+        var cancelCf = document.createElement('button');
+        cancelCf.textContent = 'Cancelar';
+        cancelCf.style.cssText = 'flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:13px;cursor:pointer';
+        cancelCf.addEventListener('click', function () { conf.remove(); });
+        var confirmCf = document.createElement('button');
+        confirmCf.textContent = '✕ Limpar';
+        confirmCf.style.cssText = 'flex:1;padding:9px;background:var(--red);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer';
+        confirmCf.addEventListener('click', function () {
+          // Clear all days
+          _cData = {};
+          _saveC();
+          conf.remove();
+          abrirModalCrono();
+        });
+        btnsCf.appendChild(cancelCf); btnsCf.appendChild(confirmCf);
+        cb.appendChild(btnsCf); conf.appendChild(cb);
+        conf.addEventListener('click', function (e) { if (e.target === conf) conf.remove(); });
+        document.body.appendChild(conf);
+      });
+
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Fechar';
+      closeBtn.style.cssText = 'flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer';
+      closeBtn.addEventListener('click', function () { overlay.remove(); renderCrono(); });
+
+      btnRow.appendChild(clearBtn);
+      btnRow.appendChild(closeBtn);
+      box.appendChild(btnRow);
+
+      overlay.appendChild(box);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) { overlay.remove(); renderCrono(); } });
+      document.body.appendChild(overlay);
+
+      // Render the mats chips (draggable)
+      function renderMatsChips() {
+        var mats = _getCronoMats();
+        chipsArea.innerHTML = '';
+        if (!mats.length) {
+          var hint = document.createElement('span');
+          hint.style.cssText = 'font-size:12px;color:var(--text3)';
+          hint.textContent = 'Crie matérias acima e arraste para os dias';
+          chipsArea.appendChild(hint);
+          return;
+        }
+        mats.forEach(function (m) {
+          var chip = document.createElement('div');
+          chip.draggable = true;
+          chip.style.cssText = 'background:' + m.cor + ';border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8),0 0 2px rgba(0,0,0,0.8);cursor:grab;display:flex;align-items:center;gap:6px;user-select:none';
+          chip.title = 'Arraste para um dia';
+          var lbl = document.createElement('span');
+          lbl.textContent = m.nome;
+          var del = document.createElement('span');
+          del.textContent = '×';
+          del.style.cssText = 'opacity:0.7;cursor:pointer;font-size:12px';
+          del.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var mats2 = _getCronoMats().filter(function (x) { return x.nome !== m.nome; });
+            _saveCronoMats(mats2);
+            renderMatsChips();
+          });
+          chip.appendChild(lbl);
+          chip.appendChild(del);
+          chip.addEventListener('dragstart', function (e) {
+            e.dataTransfer.setData('text/plain', m.nome);
+            chip.style.opacity = '0.5';
+          });
+          chip.addEventListener('dragend', function () {
+            chip.style.opacity = '1';
+          });
+          chipsArea.appendChild(chip);
+        });
+      }
+      renderMatsChips();
+    }
+
+    function abrirPaletaInline(colorBtn, PALETA, onSelect) {
+      var pm = document.getElementById('paletaModal'); if (pm) pm.remove();
+      var po = document.createElement('div');
+      po.id = 'paletaModal';
+      po.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center';
+      var pb = document.createElement('div');
+      pb.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:20px;width:300px;box-shadow:0 20px 50px rgba(0,0,0,0.6)';
+      var pt = document.createElement('div');
+      pt.style.cssText = 'font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px';
+      pt.textContent = 'Escolher cor';
+      pb.appendChild(pt);
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px';
+      var cur = colorBtn.getAttribute('data-cor');
+      function applyColor(cor) {
+        colorBtn.style.background = cor;
+        colorBtn.setAttribute('data-cor', cor);
+        if (typeof onSelect === 'function') onSelect(cor);
+        po.remove();
+      }
+      PALETA.forEach(function (cor) {
+        var c = document.createElement('div');
+        c.style.cssText = 'height:36px;border-radius:8px;background:' + cor + ';cursor:pointer;border:3px solid ' + (cor === cur ? '#fff' : 'transparent');
+        c.addEventListener('click', function () {
+          applyColor(cor);
+        });
+        grid.appendChild(c);
+      });
+      pb.appendChild(grid);
+      var hRow = document.createElement('div');
+      hRow.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:12px';
+      var hInp = document.createElement('input');
+      hInp.type = 'text'; hInp.placeholder = '#FF5722';
+      hInp.style.cssText = 'flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none';
+      var hBtn = document.createElement('button');
+      hBtn.textContent = 'OK';
+      hBtn.style.cssText = 'padding:5px 12px;background:var(--accent);border:none;border-radius:6px;color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer';
+      hBtn.addEventListener('click', function () {
+        var v = hInp.value.trim();
+        if (!v.startsWith('#')) v = '#' + v;
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) applyColor(v);
+      });
+      hRow.appendChild(hInp); hRow.appendChild(hBtn);
+      pb.appendChild(hRow);
+      var cx = document.createElement('button');
+      cx.textContent = 'Cancelar';
+      cx.style.cssText = 'width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer';
+      cx.addEventListener('click', function () { po.remove(); });
+      pb.appendChild(cx);
+      po.appendChild(pb);
+      po.addEventListener('click', function (e) { if (e.target === po) po.remove(); });
+      document.body.appendChild(po);
+    }
+
+    function renderDropZone(ds, zone) {
+      zone.innerHTML = '';
+      var mIds = _cData[ds] || [];
+      var sg = _getCronoSugestoes();
+      if (!mIds.length) {
+        var hint = document.createElement('span');
+        hint.style.cssText = 'font-size:12px;color:var(--text3)';
+        hint.textContent = 'Arraste uma matéria aqui';
+        zone.appendChild(hint);
+        return;
+      }
+      mIds.forEach(function (nome, ci) {
+        var cor = sg[nome] || '#4f8ef7';
+        var est = localStorage.getItem('ct_cest_' + cId + '_' + ds + '_' + nome) === '1';
+        var chip = document.createElement('div');
+        chip.style.cssText = 'display:flex;align-items:center;gap:5px;background:' + cor + ';border-radius:6px;padding:3px 8px;opacity:' + (est ? '0.5' : '1');
+        if (est) chip.style.textDecoration = 'line-through';
+        var lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.8),0 0 2px rgba(0,0,0,0.8)';
+        lbl.textContent = (est ? '✓ ' : '') + nome;
+        var estBtn = document.createElement('span');
+        estBtn.textContent = est ? '↩' : '✓';
+        estBtn.style.cssText = 'color:#fff;cursor:pointer;font-size:12px;opacity:0.8;margin-left:2px';
+        estBtn.addEventListener('click', function () {
+          var k = 'ct_cest_' + cId + '_' + ds + '_' + nome;
+          localStorage.setItem(k, localStorage.getItem(k) === '1' ? '0' : '1');
+          renderDropZone(ds, zone); renderCrono();
+        });
+        var del = document.createElement('span');
+        del.textContent = '×';
+        del.style.cssText = 'color:#fff;cursor:pointer;font-size:12px;opacity:0.8;margin-left:2px';
+        del.addEventListener('click', function () {
+          _cData[ds].splice(ci, 1); _saveC();
+          renderDropZone(ds, zone); renderCrono();
+        });
+        chip.appendChild(lbl); chip.appendChild(estBtn); chip.appendChild(del);
+        zone.appendChild(chip);
+      });
+    }
+
+    function renderCronoModalDia(ds, mIds, container, sugestoes) {
+      container.innerHTML = '';
+      if (!mIds.length) {
+        var e = document.createElement('span');
+        e.style.cssText = 'font-size:12px;color:var(--text3)';
+        e.textContent = 'Nenhuma matéria adicionada';
+        container.appendChild(e);
+        return;
+      }
+      mIds.forEach(function (nome, ci) {
+        var cor = localStorage.getItem('ct_matcor_nome_' + nome) || (sugestoes && sugestoes[nome]) || '#4f8ef7';
+        var est = localStorage.getItem('ct_cest_' + ds + '_' + nome) === '1';
+
+        var chip = document.createElement('div');
+        chip.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:4px 10px';
+
+        var swatch = document.createElement('div');
+        swatch.style.cssText = 'width:10px;height:10px;border-radius:2px;flex-shrink:0;background:' + cor;
+
+        var label = document.createElement('span');
+        label.style.cssText = 'font-size:12px;font-weight:600;color:var(--text);' + (est ? 'text-decoration:line-through;opacity:0.5;' : '');
+        label.textContent = nome;
+
+        var estBtn = document.createElement('button');
+        estBtn.textContent = est ? '↩' : '✓';
+        estBtn.style.cssText = 'border:none;background:none;color:' + (est ? 'var(--text3)' : 'var(--green)') + ';cursor:pointer;font-size:12px;padding:0 2px';
+        estBtn.addEventListener('click', (function (a, b) {
+          return function () {
+            var k = 'ct_cest_' + a + '_' + b;
+            localStorage.setItem(k, localStorage.getItem(k) === '1' ? '0' : '1');
+            abrirModalCrono(); renderCrono();
+          };
+        })(ds, nome));
+
+        var delBtn = document.createElement('button');
+        delBtn.textContent = '×';
+        delBtn.style.cssText = 'border:none;background:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 2px;line-height:1';
+        delBtn.addEventListener('click', (function (a, b) {
+          return function () {
+            if (_cData[a]) { _cData[a].splice(b, 1); _saveC(); }
+            abrirModalCrono(); renderCrono();
+          };
+        })(ds, ci));
+
+        chip.appendChild(swatch);
+        chip.appendChild(label);
+        chip.appendChild(estBtn);
+        chip.appendChild(delBtn);
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleCronoEst(ds, mId) { var k = 'ct_cest_' + ds + '_' + mId; localStorage.setItem(k, localStorage.getItem(k) === '1' ? '0' : '1'); renderCrono(); }
+    function abrirCronoAdd(ds) {
+      var old = document.getElementById('cronoModal'); if (old) old.remove();
+      var mIds = _cData[ds] || [];
+      // Reload mats from CT in case _cMats is stale
+      if (!_cMats.length && _cCid) { _cMats = CT.getMaterias(_cCid); }
+      var disp = _cMats.filter(function (m) { return !mIds.includes(m.id); });
+      if (!disp.length) return;
+
+      // Build modal with createElement — no innerHTML quote issues
+      var overlay = document.createElement('div');
+      overlay.id = 'cronoModal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:22px;width:360px;max-width:92vw;box-shadow:0 20px 50px rgba(0,0,0,0.6)';
+
+      var title = document.createElement('div');
+      title.textContent = '📅 Adicionar ao cronograma';
+      title.style.cssText = 'font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px';
+      box.appendChild(title);
+
+      var lista = document.createElement('div');
+      lista.style.cssText = 'max-height:300px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:6px';
+
+      disp.forEach(function (m) {
+        var cor = _corM(m.id);
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px';
+        row.onmouseover = function () { row.style.background = 'var(--bg4)'; };
+        row.onmouseout = function () { row.style.background = 'var(--bg3)'; };
+
+        // Color picker
+        var picker = document.createElement('input');
+        picker.type = 'color'; picker.value = cor;
+        picker.title = 'Mudar cor desta matéria';
+        picker.style.cssText = 'width:24px;height:24px;border:none;border-radius:4px;padding:0;cursor:pointer;flex-shrink:0';
+        picker.onclick = function (e) { e.stopPropagation(); };
+        picker.onchange = (function (mid, swatch) {
+          return function () {
+            _setCorM(mid, picker.value);
+            swatch.style.background = picker.value;
+            // Update chips already in cronograma
+            renderCrono();
+          };
+        })(m.id, null); // swatch ref set below
+
+        // Color swatch
+        var swatch = document.createElement('div');
+        swatch.style.cssText = 'width:14px;height:14px;border-radius:3px;background:' + cor + ';flex-shrink:0';
+        // Fix reference
+        picker.onchange = (function (mid, sw) {
+          return function () {
+            _setCorM(mid, picker.value);
+            sw.style.background = picker.value;
+            renderCrono();
+          };
+        })(m.id, swatch);
+
+        // Name — clicking adds to crono
+        var nome = document.createElement('span');
+        nome.textContent = m.nome;
+        nome.style.cssText = 'flex:1;font-size:12px;color:var(--text);cursor:pointer';
+        nome.onclick = (function (mid) { return function () { adicionarCrono(ds, mid); }; })(m.id);
+
+        row.appendChild(picker);
+        row.appendChild(swatch);
+        row.appendChild(nome);
+        lista.appendChild(row);
+      });
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancelar';
+      cancelBtn.style.cssText = 'width:100%;padding:9px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer';
+      cancelBtn.onclick = function () { overlay.remove(); };
+
+      box.appendChild(lista);
+      box.appendChild(cancelBtn);
+      overlay.appendChild(box);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+    }
+    function adicionarCrono(ds, mId) { if (!_cData[ds]) _cData[ds] = []; if (!_cData[ds].includes(mId) && _cData[ds].length < 5) _cData[ds].push(mId); _saveC(); document.getElementById('cronoModal')?.remove(); renderCrono(); }
+    function removerCrono(ds, ci) { if (_cData[ds]) { _cData[ds].splice(ci, 1); _saveC(); renderCrono(); } }
+
+    // DELETAR MATÉRIA
+    function deletarMateria(mId) {
+      var m = CT.getMateria(mId); if (!m) return;
+      var old = document.getElementById('modalDelMat'); if (old) old.remove();
+      var o = document.createElement('div'); o.id = 'modalDelMat'; o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+      var msg = (m.concursoId !== cId || (m.concursosB && m.concursosB.length > 0))
+        ? "Ocultar deste concurso?<br><small style='color:var(--text3);font-size:12px'>Os dados desta matéria não serão perdidos pois estão vinculados a outro concurso.</small>"
+        : "Todos os tópicos, questões e sessões<br>vinculados serão removidos permanentemente.";
+
+      o.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;width:420px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,0.6);text-align:center"><div style="font-size:32px;margin-bottom:12px">✕</div><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">Remover matéria?</div><div style="font-size:14px;color:var(--accent);margin-bottom:6px;font-weight:600">' + m.nome + '</div><div style="font-size:12px;color:var(--text3);margin-bottom:24px;line-height:1.6">' + msg + '</div><div style="display:flex;gap:10px"><button onclick="document.getElementById(\'modalDelMat\').remove()" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button><button onclick="_confDelMat(\'' + mId + '\')" style="flex:1;padding:10px;background:var(--red);border:none;border-radius:8px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">✕ Remover</button></div></div>';
+      o.addEventListener('click', function (e) { if (e.target === o) o.remove(); }); document.body.appendChild(o);
+    }
+    function _confDelMat(mId) {
+      document.getElementById('modalDelMat')?.remove();
+      CT.desvincularOuDeletarMateria(mId, cId);
+      location.reload();
+    }
+
+    // MODAL ADICIONAR MATÉRIA
+    var _dTops = [];
+    function _dRender() {
+      var l = document.getElementById('dashMatTopLista'); if (!l) return;
+      l.innerHTML = _dTops.map(function (t, ti) {
+        var subs = (t.subtopicos || []).map(function (s, si) { return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 20px"><span style="color:var(--text3);font-size:12px">└</span><input value="' + s.replace(/"/g, '&quot;') + '" placeholder="Subtópico..." style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:4px 9px;color:var(--text2);font-family:var(--sans);font-size:12px;outline:none" oninput="_dTops[' + ti + '].subtopicos[' + si + ']=this.value"><button onclick="_dTops[' + ti + '].subtopicos.splice(' + si + ',1);_dRender()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 6px">×</button></div>'; }).join('');
+        return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:' + (t.subtopicos.length ? '6px' : '0') + '"><span style="color:var(--text3);font-size:12px">●</span><input value="' + t.nome.replace(/"/g, '&quot;') + '" placeholder="Nome do tópico..." style="flex:1;background:transparent;border:none;color:var(--text);font-family:var(--sans);font-size:12px;font-weight:600;outline:none" oninput="_dTops[' + ti + '].nome=this.value"><span onclick="_dTops[' + ti + '].subtopicos.push(\'\');_dRender()" style="font-size:12px;color:var(--text3);cursor:pointer;padding:2px 7px;border:1px solid var(--border);border-radius:4px;white-space:nowrap" onmouseover="this.style.color=\'var(--accent2)\'" onmouseout="this.style.color=\'var(--text3)\'">＋ sub</span><button onclick="_dTops.splice(' + ti + ',1);_dRender()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">×</button></div>' + subs + '</div>';
+      }).join('');
+    }
+    function _dAddTop() { document.querySelectorAll('#dashMatTopLista input[placeholder="Nome do tópico..."]').forEach(function (inp, ti) { if (_dTops[ti]) _dTops[ti].nome = inp.value; }); _dTops.push({ nome: '', subtopicos: [] }); _dRender(); setTimeout(function () { var all = document.querySelectorAll('#dashMatTopLista input[placeholder="Nome do tópico..."]'); if (all.length) all[all.length - 1].focus(); }, 30); }
+    function _dConfirm() {
+      document.querySelectorAll('#dashMatTopLista input[placeholder="Nome do tópico..."]').forEach(function (inp, ti) { if (_dTops[ti]) _dTops[ti].nome = inp.value; });
+      var nome = document.getElementById('dashMatNome')?.value.trim();
+      if (!nome) { var el = document.getElementById('dashMatNome'); if (el) { el.style.borderColor = 'var(--red)'; setTimeout(function () { el.style.borderColor = 'var(--border2)'; }, 1200); } return; }
+      var tops = _dTops.filter(function (t) { return t.nome.trim(); }).map(function (t) { return { nome: t.nome.trim(), subtopicos: (t.subtopicos || []).filter(function (s) { return s.trim(); }) }; });
+      CT.saveMateria({ nome: nome, concursoId: cId });
+      var saved = CT.getMaterias(cId).find(function (m) { return m.nome === nome; });
+      if (saved && tops.length) { var tc = Date.now(); tops.forEach(function (t) { var tid = 'top_d' + (tc++); CT.saveTopico({ id: tid, nome: t.nome, materiaId: saved.id, concursoId: cId, estudado: false }); t.subtopicos.forEach(function (s) { CT.saveSubtopico({ id: 'sub_d' + (tc++), nome: s, topicoId: tid, materiaId: saved.id, concursoId: cId, estudado: false }); }); }); }
+      document.getElementById('modalAddMatDash')?.remove(); location.reload();
+    }
+    function _dClonarMateriaConfirm() {
+      const mId = document.getElementById('dashMatCloneId').value;
+      if (!mId) return;
+      CT.vincularMateria(mId, cId);
+      document.getElementById('modalAddMatDash')?.remove();
+      location.reload();
+    }
+    function alternarAbaAddMat(abaStr) {
+      if (abaStr === 'nova') {
+        document.getElementById('tabAddNova').style.display = 'block';
+        document.getElementById('tabAddClonar').style.display = 'none';
+        document.getElementById('btnTabNova').style.color = 'var(--accent)';
+        document.getElementById('btnTabNova').style.borderBottom = '2px solid var(--accent)';
+        document.getElementById('btnTabClonar').style.color = 'var(--text3)';
+        document.getElementById('btnTabClonar').style.borderBottom = '2px solid transparent';
+      } else {
+        document.getElementById('tabAddNova').style.display = 'none';
+        document.getElementById('tabAddClonar').style.display = 'block';
+        document.getElementById('btnTabClonar').style.color = 'var(--accent)';
+        document.getElementById('btnTabClonar').style.borderBottom = '2px solid var(--accent)';
+        document.getElementById('btnTabNova').style.color = 'var(--text3)';
+        document.getElementById('btnTabNova').style.borderBottom = '2px solid transparent';
+      }
+    }
+
+    function abrirModalAddMateriaDash() {
+      var old = document.getElementById('modalAddMatDash'); if (old) old.remove();
+      _dTops = [];
+
+      const allMats = CT.getMaterias();
+      const currentMatsIds = CT.getMaterias(cId).map(m => m.id);
+      const outrass = allMats.filter(m => !currentMatsIds.includes(m.id));
+      const concursos = CT.getConcursos();
+
+      var o = document.createElement('div'); o.id = 'modalAddMatDash'; o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+
+      const abasHTML = `
+    <div style="display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:20px;">
+      <div id="btnTabNova" onclick="alternarAbaAddMat('nova')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;transition:all 0.2s">✨ Criar Nova</div>
+      <div id="btnTabClonar" onclick="alternarAbaAddMat('clonar')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s">🔗 Clonar Existente</div>
+    </div>
+  `;
+
+      const contentNova = `
+    <div id="tabAddNova">
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Nome da matéria</div>
+        <input id="dashMatNome" placeholder="Ex: Direito Constitucional..." style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;box-sizing:border-box" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+      </div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Tópicos</div>
+      <div id="dashMatTopLista" style="margin-bottom:10px"></div>
+      <button onclick="_dAddTop()" style="width:100%;padding:10px;background:transparent;border:2px dashed var(--border2);border-radius:8px;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:18px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">＋ Adicionar tópico</button>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('modalAddMatDash').remove()" style="padding:10px 20px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button onclick="_dConfirm()" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">＋ Criar Matéria</button>
+      </div>
+    </div>
+  `;
+
+      // Agrupar matérias por concurso
+      const matsPorConcurso = {};
+      outrass.forEach(m => {
+        if (!matsPorConcurso[m.concursoId]) matsPorConcurso[m.concursoId] = [];
+        matsPorConcurso[m.concursoId].push(m);
+      });
+
+      const contentClonar = `
+    <div id="tabAddClonar" style="display:none">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.4">Selecione o concurso para visualizar as matérias disponíveis para clonagem.</div>
+      <div class="contest-clone-grid" id="contestCloneGrid">
+        ${concursos.filter(c => matsPorConcurso[c.id]).map(c => `
+          <div class="contest-clone-card" onclick="exibirMateriasParaClonar('${c.id}')" id="cardC_${c.id}">
+            <div class="contest-clone-logo">${c.logoPath ? `<img src="${c.logoPath}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : (c.logoBase64 ? `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : (c.logoEmoji || '📋'))}</div>
+            <div class="contest-clone-name">${c.nome}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div id="subjectCloneContainer" class="subject-clone-container">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border)">Escolha a matéria:</div>
+        <div id="subjectCloneList"></div>
+      </div>
+      <input type="hidden" id="dashMatCloneId">
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button onclick="document.getElementById('modalAddMatDash').remove()" style="padding:10px 20px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button id="btnConfirmaClone" onclick="_dClonarMateriaConfirm()" disabled style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;opacity:0.5">🔗 Copiar para cá</button>
+      </div>
+    </div>
+  `;
+
+      o.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:30px;width:550px;max-width:94vw;max-height:86vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative">' + abasHTML + contentNova + contentClonar + '</div>';
+      o.addEventListener('click', function (e) { if (e.target === o) o.remove(); }); document.body.appendChild(o);
+
+      // Adiciona funções auxiliares ao escopo global temporariamente para o modal funcionar
+      window.exibirMateriasParaClonar = function (concursoId) {
+        // Highlight card
+        document.querySelectorAll('.contest-clone-card').forEach(el => el.classList.remove('active'));
+        document.getElementById('cardC_' + concursoId).classList.add('active');
+
+        const list = document.getElementById('subjectCloneList');
+        const container = document.getElementById('subjectCloneContainer');
+        const materias = matsPorConcurso[concursoId] || [];
+
+        list.innerHTML = materias.map(m => `
+      <div class="subject-clone-item" onclick="selecionarMateriaParaClonar('${m.id}', this)">
+        <span>${m.nome}</span>
+        <span style="font-size:11px;opacity:0.6">${CT.getTopicos(m.id).length} tópicos</span>
+      </div>
+    `).join('');
+
+        container.style.display = 'block';
+        document.getElementById('btnConfirmaClone').disabled = true;
+        document.getElementById('btnConfirmaClone').style.opacity = '0.5';
+      };
+
+      window.selecionarMateriaParaClonar = function (materiaId, el) {
+        document.querySelectorAll('.subject-clone-item').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('dashMatCloneId').value = materiaId;
+        document.getElementById('btnConfirmaClone').disabled = false;
+        document.getElementById('btnConfirmaClone').style.opacity = '1';
+      };
+
+      setTimeout(function () { document.getElementById('dashMatNome')?.focus(); }, 50);
+    }
+
+    // ══ SISTEMA DE FAIXAS ═══════════════════════════════
+    var FAIXAS = [
+      {
+        nome: 'Faixa Branca', imagem: 'assets/faixas/faixabranca.png', cor: '#e8eaf2', semanas: 0, questoes: 0, sims80: 0,
+        frase: '"A jornada de mil quilômetros começa com um único passo." — Lao Tsé'
+      },
+      {
+        nome: 'Faixa Amarela', imagem: 'assets/faixas/faixaamarela.png', cor: '#f5c842', semanas: 2, questoes: 250, sims80: 1,
+        frase: '"O sucesso é a soma de pequenos esforços repetidos dia após dia." — R. Collier'
+      },
+      {
+        nome: 'Faixa Vermelha', imagem: 'assets/faixas/faixavermelha.png', cor: '#f55a5a', semanas: 4, questoes: 500, sims80: 2,
+        frase: '"Disciplina é a ponte entre metas e realizações." — Jim Rohn'
+      },
+      {
+        nome: 'Faixa Laranja', imagem: 'assets/faixas/faixalaranja.png', cor: '#f5874a', semanas: 8, questoes: 1000, sims80: 3,
+        frase: '"A persistência realiza o impossível." — Provérbio Chinês'
+      },
+      {
+        nome: 'Faixa Verde', imagem: 'assets/faixas/faixaverde.png', cor: '#3ecf8e', semanas: 12, questoes: 2000, sims80: 4,
+        frase: '"Não é a força, mas a constância dos esforços que produz resultados." — Samuel Johnson'
+      },
+      {
+        nome: 'Faixa Roxa', imagem: 'assets/faixas/faixaroxa.png', cor: '#7c5cfc', semanas: 16, questoes: 3000, sims80: 5,
+        frase: '"Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar" — Josué 1:9'
+      },
+      {
+        nome: 'Faixa Marrom', imagem: 'assets/faixas/faixamarrom.png', cor: '#795548', semanas: 20, questoes: 5000, sims80: 6,
+        frase: '"O único lugar onde o sucesso vem antes do trabalho é no dicionário." — Vidal Sassoon'
+      },
+      {
+        nome: 'Faixa Preta', imagem: 'assets/faixas/faixapreta.png', cor: '#1a1a1a', semanas: 24, questoes: 8000, sims80: 7,
+        frase: '"Faixa Preta é uma Faixa Branca que nunca desistiu." — Mestre desconhecido'
+      },
+    ];
+
+    function _getSemanasCompletas(cId) {
+      try { return parseInt(localStorage.getItem('ct_semanas_completas_' + (cId || '')) || '0'); }
+      catch (e) { return 0; }
+    }
+
+    function _checkSemanaCompleta(cId) {
+      var weekKey = (function () {
+        var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - d.getDay()); return CT._dateString(d);
+      })();
+      var marcadaKey = 'ct_semana_marcada_' + cId + '_' + weekKey;
+      if (localStorage.getItem(marcadaKey) === '1') return false; // já contou essa semana
+
+      // Verifica se todos os dias com matérias foram marcados como estudados
+      var cData = {};
+      try { cData = JSON.parse(localStorage.getItem('ct_crono_' + cId) || '{}'); } catch (e) { }
+
+      var diasComMats = Object.keys(cData).filter(function (ds) {
+        return cData[ds] && cData[ds].length > 0;
+      });
+      if (!diasComMats.length) return false;
+
+      var todosEstudados = diasComMats.every(function (ds) {
+        // Algum check no cronograma neste dia?
+        var marcouCrono = cData[ds].some(function (nome) {
+          return localStorage.getItem('ct_cest_' + cId + '_' + ds + '_' + nome) === '1';
+        });
+        // Alguma sessão registrada?
+        var fezSess = CT.getSessoes({ concursoId: cId }).some(function (s) { return s.data === ds; });
+        // Alguma questão resolvida?
+        var fezQues = CT.getQuestoes({ concursoId: cId }).some(function (q) { return q.data === ds; });
+        // Algum simulado registrado?
+        var fezSimul = CT.getSimulados(cId).some(function (s) { return s.data === ds; });
+
+        return marcouCrono || fezSess || fezQues || fezSimul;
+      });
+
+      if (todosEstudados) {
+        var semanas = _getSemanasCompletas(cId) + 1;
+        localStorage.setItem('ct_semanas_completas_' + cId, String(semanas));
+        localStorage.setItem(marcadaKey, '1');
+        return true;
+      }
+      return false;
+    }
+
+    function renderFaixa(cId) {
+      var section = document.getElementById('faixaSection');
+      if (!section) return;
+
+      localStorage.removeItem('ct_semanas_completas'); // remove old global key
+      localStorage.removeItem('ct_melhor_faixa'); // remove old global key
+      var semanas = _getSemanasCompletas(cId);
+      var questoes = CT.calcStats(CT.getQuestoes({ concursoId: cId })).resolvidas || 0;
+      var sims80 = CT.getSimulados(cId).filter(function (s) { return s.pct >= 80; }).length;
+
+      var faixaIdx = 0;
+      for (var i = FAIXAS.length - 1; i >= 0; i--) {
+        var f = FAIXAS[i];
+        if (semanas >= f.semanas || questoes >= f.questoes || sims80 >= f.sims80) {
+          faixaIdx = i; break;
+        }
+      }
+
+      var faixaAtual = FAIXAS[faixaIdx];
+      var faixaProx = FAIXAS[Math.min(faixaIdx + 1, FAIXAS.length - 1)];
+
+      section.style.display = '';
+      document.getElementById('faixaEmoji').innerHTML = '<img src="' + faixaAtual.imagem + '" width="32" height="32" style="object-fit:contain; border-radius:4px">';
+      document.getElementById('faixaNome').textContent = faixaAtual.nome;
+      var isFaixaPreta = faixaAtual.nome === 'Faixa Preta';
+      document.getElementById('faixaNome').style.color = isFaixaPreta ? '#ffffff' : faixaAtual.cor;
+      document.getElementById('faixaNome').style.textShadow = isFaixaPreta ? '0 0 8px rgba(255,255,255,0.6), 1px 1px 3px rgba(0,0,0,0.8)' : '';
+      document.getElementById('faixaNome').style.background = isFaixaPreta ? 'rgba(255,255,255,0.1)' : '';
+      document.getElementById('faixaNome').style.padding = isFaixaPreta ? '2px 8px' : '';
+      document.getElementById('faixaNome').style.borderRadius = isFaixaPreta ? '4px' : '';
+      document.getElementById('faixaNome').style.border = isFaixaPreta ? '1px solid rgba(255,255,255,0.3)' : '';
+      document.getElementById('faixaFrase').textContent = '"Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar" — Josué 1:9';
+
+      var isMax = (faixaIdx === FAIXAS.length - 1);
+      var tooltipHtml = '';
+      if (!isMax) {
+        tooltipHtml = '<div class="belt-tooltip">' +
+          '<div class="belt-tooltip-title">Para desbloquear a <span style="color:' + FAIXAS[faixaIdx + 1].cor + '">' + FAIXAS[faixaIdx + 1].nome + '</span>, basta atingir <strong style="color:var(--accent)">1</strong> destas metas:</div>' +
+          '<div class="belt-tooltip-req"><strong>' + FAIXAS[faixaIdx + 1].semanas + '</strong> semana' + (FAIXAS[faixaIdx + 1].semanas === 1 ? '' : 's') + ' seguida' + (FAIXAS[faixaIdx + 1].semanas === 1 ? '' : 's') + ' de estudo</div>' +
+          '<div class="belt-tooltip-req"><strong>' + FAIXAS[faixaIdx + 1].questoes + '</strong> quest' + (FAIXAS[faixaIdx + 1].questoes === 1 ? 'ão feita' : 'ões feitas') + '</div>' +
+          '<div class="belt-tooltip-req"><strong>' + FAIXAS[faixaIdx + 1].sims80 + '</strong> simulado' + (FAIXAS[faixaIdx + 1].sims80 === 1 ? '' : 's') + ' com 80%+</div>' +
+          '</div>';
+      } else {
+        tooltipHtml = '<div class="belt-tooltip"><div class="belt-tooltip-title">Você atingiu a graduação máxima! 🥋</div></div>';
+      }
+
+      var existingTooltip = document.getElementById('beltTooltipEl');
+      if (existingTooltip) existingTooltip.remove();
+      var tierEl = document.getElementById('faixaSection');
+      if (tierEl) {
+        tierEl.insertAdjacentHTML('beforeend', '<div id="beltTooltipEl">' + tooltipHtml + '</div>');
+      }
+
+      // Celebração de nova faixa
+      var currentRankIdx = localStorage.getItem('ct_faixa_idx_' + cId);
+      if (currentRankIdx === null) {
+        localStorage.setItem('ct_faixa_idx_' + cId, faixaIdx);
+      } else if (faixaIdx > parseInt(currentRankIdx)) {
+        localStorage.setItem('ct_faixa_idx_' + cId, faixaIdx);
+        setTimeout(function () { showBeltCelebration(faixaAtual); }, 1000);
+      }
+
+      // Semanas streak text
+      var semStr = semanas === 0
+        ? 'Nenhuma semana completa ainda'
+        : semanas + ' semana' + (semanas > 1 ? 's' : '') + ' seguida' + (semanas > 1 ? 's' : '') + ' de estudos diários 🔥';
+      document.getElementById('faixaSemanas').textContent = semStr;
+
+      var isMax = (faixaIdx === FAIXAS.length - 1);
+
+      // Check if week is complete and show notification
+      var novaSemanaCmpleta = _checkSemanaCompleta(cId);
+      var semanaBox = document.getElementById('semanaCompletaBox');
+      if (novaSemanaCmpleta) {
+        semanaBox.style.cssText = 'display:flex;margin-top:10px;background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3);border-radius:8px;padding:9px 12px;align-items:center;gap:8px';
+        document.getElementById('semanaMsg').textContent =
+          'Você completou mais uma semana! Total: ' + _getSemanasCompletas(cId) + ' semanas completas. Continue assim! 🔥';
+        // Re-render with new count
+        setTimeout(function () { renderFaixa(cId); }, 100);
+      } else {
+        semanaBox.style.display = 'none';
+      }
+      section.style.display = '';
+    }
+
+    function showBeltCelebration(faixa) {
+      var cel = document.createElement('div');
+      cel.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-150px);background:var(--bg2);border:2px solid ' + faixa.cor + ';border-radius:16px;padding:24px 32px;box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 40px ' + faixa.cor + '40;z-index:10000;display:flex;align-items:center;gap:24px;transition:all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);opacity:0';
+
+      cel.innerHTML = '<div style="font-size:54px;animation:tada 1s ease infinite"><img src="' + faixa.imagem + '" style="width:72px;height:72px;object-fit:contain"></div>' +
+        '<div>' +
+        '<div style="font-size:15px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🎉 Novo Rank Desbloqueado!</div>' +
+        '<div style="font-size:28px;font-weight:800;color:' + faixa.cor + ';text-shadow:0 0 10px ' + faixa.cor + '60">' + faixa.nome + '</div>' +
+        '</div>';
+
+      document.body.appendChild(cel);
+
+      if (!document.getElementById('tadaAnim')) {
+        var style = document.createElement('style');
+        style.id = 'tadaAnim';
+        style.innerHTML = '@keyframes tada { 0% {transform:scale(1)} 10%,20% {transform:scale(.9) rotate(-3deg)} 30%,50%,70%,90% {transform:scale(1.1) rotate(3deg)} 40%,60%,80% {transform:scale(1.1) rotate(-3deg)} 100% {transform:scale(1) rotate(0)} }';
+        document.head.appendChild(style);
+      }
+
+      setTimeout(function () {
+        cel.style.transform = 'translateX(-50%) translateY(0)';
+        cel.style.opacity = '1';
+      }, 100);
+
+      setTimeout(function () {
+        cel.style.transform = 'translateX(-50%) translateY(-150px)';
+        cel.style.opacity = '0';
+        setTimeout(function () { cel.remove(); }, 600);
+      }, 6000);
+
+      createConfetti(faixa.cor);
+    }
+
+    function createConfetti(cor) {
+      if (!document.getElementById('fallDownAnim')) {
+        var style = document.createElement('style');
+        style.id = 'fallDownAnim';
+        style.innerHTML = '@keyframes fallDown { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }';
+        document.head.appendChild(style);
+      }
+      for (var i = 0; i < 40; i++) {
+        var c = document.createElement('div');
+        c.style.cssText = 'position:fixed;width:10px;height:10px;background:' + cor + ';top:-20px;left:' + (Math.random() * 100) + 'vw;z-index:9999;border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';opacity:' + (Math.random() * 0.5 + 0.5) + ';pointer-events:none;';
+        document.body.appendChild(c);
+        var dur = (Math.random() * 2 + 1.5) + 's';
+        var del = Math.random() * 0.5;
+        c.style.animation = 'fallDown ' + dur + ' ' + del + 's linear forwards';
+        setTimeout((function (el) { return function () { el.remove(); } })(c), 4000);
+      }
+    }
+
+    function abrirModalMerge() {
+      const c = CT.getConcurso(cId);
+      if (!c) return;
+      document.getElementById('mergeContestName').textContent = c.nome;
+
+      const desc = document.getElementById('modalDesc');
+      const label = document.getElementById('modalLabel');
+      const fusionBox = document.querySelector('.report-body .report-card');
+      const fusionTitle = document.querySelector('.report-body .report-card-label');
+      const btnFusion = document.getElementById('btnConfirmMerge');
+
+      if (c.preEdital) {
+        label.textContent = "✦ Finalizar Batalha (Pré-Edital)";
+        desc.innerHTML = "Este concurso de <b>Pré-Edital</b> chegou ao fim? Se você já realizou a prova oficial, pode finalizá-lo e fusionar suas estatísticas de estudo com o card definitivo.";
+        fusionBox.style.display = 'block';
+        btnFusion.style.display = 'block';
+
+        const todos = CT.getConcursos();
+        const realizados = todos.filter(x => x.realizado && x.id !== cId);
+        const select = document.getElementById('selectDestino');
+        select.innerHTML = '<option value="">Selecione para onde enviar estes dados...</option>' +
+          realizados.map(r => `<option value="${r.id}">${r.nome} (${r.banca})</option>`).join('');
+      } else {
+        label.textContent = "✦ Opções do Edital (Pós-Edital)";
+        desc.innerHTML = "Visualize ações e status do seu concurso em andamento. Você pode exportar os dados deste edital para backup ou compartilhamento.";
+        fusionBox.style.display = 'none';
+        btnFusion.style.display = 'none';
+        document.getElementById('mergePreview').style.display = 'none';
+      }
+
+      document.getElementById('modalMerge').classList.add('visible');
+    }
+
+    function fecharModalMerge() {
+      document.getElementById('modalMerge').classList.remove('visible');
+    }
+
+    function verificarMerge() {
+      const destId = document.getElementById('selectDestino').value;
+      const btn = document.getElementById('btnConfirmMerge');
+      const preview = document.getElementById('mergePreview');
+      btn.disabled = !destId;
+      preview.style.display = destId ? 'block' : 'none';
+    }
+
+    function executarMerge() {
+      const destId = document.getElementById('selectDestino').value;
+      if (!destId) return;
+
+      if (!confirm('Você tem certeza? Esta operação irá somar suas estatísticas e APAGAR este card de Pré-Edital.')) return;
+
+      const res = CT.fusionarConcursos(cId, destId);
+      if (res.ok) {
+        alert(`✅ Fusão realizada com sucesso!\n${res.sessoes} sessões e ${res.questoes} questões foram transferidas.`);
+        location.href = 'concursos.html';
+      } else {
+        alert('❌ Erro: ' + res.erro);
+      }
+    }
+
+    function finalizarBatalhaAutomatico() {
+      // Redireciona para o cadastro em modo edição, passando flag para finalizar
+      location.href = 'cadastro_edital.html?editar=' + encodeURIComponent(cId) + '&finalizar=1';
+    }
+  </script>
+  <script src="crono-cycle.js"></script>
+</body>
+
+</html>
