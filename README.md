@@ -10,12 +10,8 @@
 <p align="center">
   <a href="#requisitos-para-instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
   <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
-  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0-6C63FF.svg" alt="Status"></a>
+  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0.0-6C63FF.svg" alt="Status"></a>
   <a href="#licenca-de-uso"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
-</p>
-
-<p align="center">
-  <a href="#instalacao"><img src="https://img.shields.io/badge/INSTALA%C3%87%C3%83O-ver%20passo%20a%20passo-2ea44f?style=for-the-badge" alt="Instalação passo a passo"></a>
 </p>
 
 <p align="center">
@@ -420,13 +416,13 @@ Faça assim:
 
 ### O navegador não conclui o download do instalador
 
-Alguns navegadores podem interromper o download por reputação baixa do arquivo.
+Alguns navegadores podem interromper o download por reputação baixa do arquivo. O código-fonte está aberto aqui no github e não oferece risco algum.
 
 Alternativas:
 
-- tentar novamente e escolher manter o arquivo, quando essa opção aparecer
-- usar a instalação manual com Python
-- compartilhar o instalador diretamente em ambiente de teste fechado
+- tentar baixar novamente e escolher manter o arquivo, quando essa opção aparecer
+- Ir nos seus downloads procurar o arquivo e renomear para Track Concursos.exe e executá-lo
+
 
 ### O app avisou que falta WebView2
 
