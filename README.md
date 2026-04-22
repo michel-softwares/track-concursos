@@ -237,7 +237,7 @@ Veja o tutorial no youtube para fácil instalação e como usar a aplicação
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ">
-    <img src="https://img.youtube.com/vi/YrqFyPrqRSQ/hqdefault.jpg" alt="Assistir tutorial de instalação no YouTube" width="700">
+    <img src="www/assets/readme/tutorial-youtube-thumbnail.png" alt="Assistir tutorial de instalação no YouTube" width="700">
   </a>
 </p>
 
