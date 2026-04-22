@@ -231,6 +231,20 @@ Para a instalação manual pelo código-fonte, você também precisa de:
 
 Este passo a passo foi pensado para quem nunca usou GitHub antes.
 
+### Tutorial em vídeo
+
+Veja o tutorial no youtube para fácil instalação e como usar a aplicação
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ">
+    <img src="https://img.youtube.com/vi/YrqFyPrqRSQ/hqdefault.jpg" alt="Assistir tutorial de instalação no YouTube" width="700">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ"><strong>Assistir tutorial de instalação no YouTube</strong></a>
+</p>
+
 > [!IMPORTANT]
 > A forma recomendada de instalação agora é pelo instalador `.exe` disponível na área de Releases.
 
