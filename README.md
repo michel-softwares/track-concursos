@@ -88,10 +88,10 @@ Com ele, é possível:
 - analisar desempenho geral e por matéria
 - importar estruturas prontas via Edital Premium
 - usar perfis separados no mesmo computador sem misturar dados
-- criar flashcards ou importá-los via .CSV ou .JSON / ferramenta de Flashcards criada especialmente para ser compatível com Cards e Quizzes (questões comentadas) criadas pelo NotebookLM, mas que também é compatível com Anki
+- criar flashcards ou importá-los via .CSV ou .JSON / ferramenta de Flashcards criada especialmente para ser compatível com Cards e Quizzes (questões comentadas) criados pelo NotebookLM, mas que também é compatível com Anki
 
 > [!TIP]
-> Utilize a extensão "NotebookLM Quiz Exporter" para exportar facilmente Cards e Quizzes criado pelo NOTEBOOK LM
+> Utilize a extensão "NotebookLM Quiz Exporter" para exportar facilmente Cards e Quizzes criado pelo NOTEBOOK LM no formato .CSV e .JSON compatíveis com o sistema de Flashcards do Track Concursos
 > Entre no grupo do Telegram para ter acesso a Editais Premium gratuitos.
 > Entre em contato se quiser um em específico.
 
