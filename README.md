@@ -15,7 +15,7 @@
   <a href="#requisitos-para-instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
   <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
   <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ"><img src="https://img.shields.io/badge/TUTORIAL-YouTube-FF0000?logo=youtube&logoColor=white" alt="Tutorial no YouTube"></a>
-  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0.1-6C63FF.svg" alt="Status"></a>
+  <a href="https://github.com/michel-softwares/track-concursos/releases/tag/v1.0.1"><img src="https://img.shields.io/badge/status-v1.0.1-6C63FF.svg" alt="Status"></a>
   <a href="#licenca-de-uso"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
 </p>
 
