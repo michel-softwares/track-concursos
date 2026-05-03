@@ -16,7 +16,7 @@ Essa atualização é focada em produtividade real dentro do app: sistema de Fla
 
 ### Importação e exportação de Flashcards
 
-- O sistema de FLASHCARDS do Track foi criado para ser facilmente compatível com Questões Comentadas (Quizzes) e flashcards (cards) criados pelo NotebookLM. Utilizem a extensão para navegador NotebookLM Quiz Exporter para exportar facilmente Quizzes e Cards em .CSV ou .JSON compatíveis com o Track Concursos
+- O sistema de FLASHCARDS do Track foi criado para ser facilmente compatível com Questões Comentadas (Quizzes) e flashcards (cards) criados pelo NotebookLM. Utilizem a extensão para navegador NotebookLM Quiz Exporter para exportar facilmente Quizzes e Cards em .CSV ou .JSON compatíveis com o Track Concursos.
 - **Importação** de Flashcards por JSON e CSV no mesmo fluxo.
 - Compatibilidade com CSV simples: frente/pergunta na primeira coluna e verso/resposta na segunda.
 - Compatibilidade com CSV com **cabeçalho**, incluindo campos como `frente`, `verso`, `tipo`, `gabarito`, `alternativas`, **explicação** e `tags`.
@@ -45,6 +45,7 @@ Essa atualização é focada em produtividade real dentro do app: sistema de Fla
 - A dica importada do CSV/JSON fica protegida atrás do botão `Mostrar dica`, evitando spoiler antes da resposta.
 - Textos longos agora expandem a página naturalmente, sem cortar enunciados, alternativas ou explicações.
 - Cards comuns do tipo `Flip` preservam o efeito de virar.
+
 ### Ciclo de estudos
 
 - O card `Carga estudada / Meta do ciclo` agora abre um comparativo por matéria.
@@ -53,6 +54,7 @@ Essa atualização é focada em produtividade real dentro do app: sistema de Fla
 - Matérias finalizadas manualmente abaixo da meta aparecem com saldo negativo em vermelho.
 - O ciclo não reinicia automaticamente ao terminar.
 - Novo botão `Reiniciar ciclo` para iniciar a próxima rodada apenas quando o usuário quiser.
+
 ### Métricas e dashboard
 
 - Dashboard semanal reorganizado com gráficos doughnut para horas estudadas por matéria e questões certas/erradas.
@@ -79,22 +81,21 @@ Essa atualização é focada em produtividade real dentro do app: sistema de Fla
 - O app tenta fechar popup, modal, menu contextual, estudo ativo, detalhe de baralho, aba Flashcards, sub‑tópico aberto e tópico aberto antes de navegar para outra tela.
 - Isso reduz saídas acidentais da dashboard ao tentar apenas fechar uma camada aberta.
 
-## Atualizacao e seguranca do projeto
+## Atualização e segurança do projeto
 
-### Verificador de versao
+### Verificador de versão
 
 - O app agora mostra `v1.0.1` abaixo do logo.
-- Checagem de nova versao pela release mais recente do GitHub: `michel-softwares/track-concursos`.
-- Consulta cacheada em `localStorage`, no maximo uma vez por dia.
-- Falhas de internet ou GitHub ficam silenciosas e nao travam o app.
-- O usuario pode ignorar temporariamente uma versao; o aviso volta quando surgir uma tag diferente.
-
+- Checagem de nova versão pela release mais recente do GitHub: `michel-softwares/track-concursos`.
+- Consulta cacheada em `localStorage`, no máximo uma vez por dia.
+- Falhas de internet ou GitHub ficam silenciosas e não travam o app.
+- O usuário pode ignorar temporariamente uma versão; o aviso volta quando surgir uma tag diferente.
 
 ## Compatibilidade de dados
 
-- Os dados do usuario continuam fora da pasta do programa, em `%LOCALAPPDATA%\Track Concursos`.
-- Profiles, backups, snapshots e logos do usuario nao sao apagados pelo instalador.
-- A atualizacao de `1.0.0` para `1.0.1` foi validada com simulacao de perfil avancado antigo.
-- A simulacao preservou concursos, materias, topicos, subtopicos, sessoes, questoes, simulados, revisoes, cronometro, logos e metadados do perfil.
+- Os dados do usuário continuam fora da pasta do programa, em `%LOCALAPPDATA%\Track Concursos`.
+- Profiles, backups, snapshots e logos do usuário não são apagados pelo instalador.
+- A atualização de `1.0.0` para `1.0.1` foi validada com simulação de perfil avançado antigo.
+- A simulação preservou concursos, matérias, tópicos, subtópicos, sessões, questões, simulados, revisões, cronômetro, logos e metadados do perfil.
 - A limpeza de snapshots afeta somente arquivos `.json` dentro de `profiles/<perfil>/snapshots`.
-- `profile.json`, `manifest.json`, logos e backups externos nao sao alterados por essa rotina.
+- `profile.json`, `manifest.json`, logos e backups externos não são alterados por essa rotina.
