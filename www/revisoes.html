@@ -188,7 +188,7 @@
   </div>
   <nav class="nav">
     <div class="nav-label">Menu</div>
-    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
     <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
     <div class="nav-item active" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
@@ -356,7 +356,10 @@
   // Rev badge
   const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
   if (rev) {
-    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const urgentes = [...(rev.atrasadas||[]), ...(rev.hoje||[])].filter(r => {
+      const ctx = CT.getContextoRevisao(r);
+      return ctx.concursoId === cId;
+    }).length;
     const b = document.getElementById('revBadge');
     if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
   }
@@ -374,11 +377,14 @@ function diasAtraso(d){return Math.floor((new Date(CT._today())-new Date(d))/864
 function fmtDate(d){const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
 
 function cardRevisao(r, tipo) {
-  const t = CT.getTopico(r.topicoId);
+  const ctx = CT.getContextoRevisao(r);
+  const t = ctx.topico;
   if (!t) return '';
-  const mat = CT.getMateria(t.materiaId);
-  const q   = CT.calcStats(CT.getQuestoes({ topicoId: t.id }));
-  const cor = tipo==='atrasada'?'var(--red)':tipo==='hoje'?'var(--yellow)':'var(--accent)';
+  const mat = ctx.materia;
+  const alvoId = ctx.subtopId || ctx.topicoId;
+  const q = ctx.subtopId
+    ? CT.calcStats(CT.getQuestoes({ subtopId: ctx.subtopId }))
+    : CT.calcStats(CT.getQuestoes({ topicoId: t.id }));
 
   const badge = tipo==='atrasada'
     ? `<span style="background:rgba(245,90,90,0.1);border:1px solid var(--red);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:var(--red);font-family:var(--mono)">🔴 ${diasAtraso(r.data)}d atrasada</span>`
@@ -393,21 +399,25 @@ function cardRevisao(r, tipo) {
   return `
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
     <div style="flex:1;min-width:0">
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${t.nome}</div>
-      <div style="font-size:12px;color:var(--text3)">${mat?'📘 '+mat.nome:'—'}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${ctx.nome}</div>
+      <div style="font-size:12px;color:var(--text3)">${mat ? mat.nome + (ctx.subtopId ? ' • ' + t.nome : '') : '—'}</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
       ${badge}
       ${pctBadge}
       ${tipo!=='futura'?`
-      <button onclick="adiarRevisao('${r.topicoId}')"
+      <button onclick="adiarRevisao('${alvoId}')"
         style="padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s"
         onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
         onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">Adiar</button>
-      <button onclick="abrirPopupRevisao('${r.topicoId}')"
-        style="padding:6px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✓ Revisei</button>`
-      :`<button onclick="abrirPopupRevisao('${r.topicoId}')"
-        style="padding:6px 14px;border:none;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">Revisar agora</button>`}
+      <button onclick="abrirPopupRevisao('${alvoId}')"
+        style="padding:6px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">✓ Revisei</button>
+      <button onclick="excluirRevisao('${r.id}')"
+        style="padding:6px 10px;border:1px solid rgba(245,90,90,0.35);border-radius:8px;background:rgba(245,90,90,0.08);color:var(--red);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">Excluir</button>`
+      :`<button onclick="abrirPopupRevisao('${alvoId}')"
+        style="padding:6px 14px;border:none;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">Revisar agora</button>
+      <button onclick="excluirRevisao('${r.id}')"
+        style="padding:6px 10px;border:1px solid rgba(245,90,90,0.35);border-radius:8px;background:rgba(245,90,90,0.08);color:var(--red);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">Excluir</button>`}
     </div>
   </div>`;
 }
@@ -418,8 +428,8 @@ function render() {
   // Filtra pelo concurso ativo
   function filtraConcurso(lista) {
     return lista.filter(r => {
-      const t = CT.getTopico(r.topicoId);
-      return t && t.concursoId === cId;
+      const ctx = CT.getContextoRevisao(r);
+      return ctx.concursoId === cId;
     });
   }
 
@@ -548,6 +558,15 @@ function adiarConfirmar() {
   render();
 }
 
+function excluirRevisao(revisaoId) {
+  if (!confirm('Excluir esta revisão agendada?')) return;
+  if (!CT.excluirRevisao(revisaoId)) {
+    alert('Não foi possível excluir a revisão.');
+    return;
+  }
+  render();
+}
+
 function closePopup() { document.getElementById('popupOverlay').classList.remove('visible'); }
 function closeOutside(e) { if (e.target===document.getElementById('popupOverlay')) closePopup(); }
 function selOpt(el) { document.querySelectorAll('.popup-opt').forEach(o=>o.classList.remove('selected')); el.classList.add('selected'); }
@@ -557,6 +576,7 @@ render();
 
 
 
+<script src="nav.js"></script>
 <script src="timer-popup.js"></script>
 </body>
 </html>

@@ -52,8 +52,11 @@
   .back-link:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,142,247,0.08); }
   .topbar-divider { width:1px; height:20px; background:var(--border); flex-shrink:0; }
   .topbar-materia { font-size:16px; font-weight:700; color:var(--text); flex:1; }
+  .topbar-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .ia-toolbar-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .topbar-cadernos-btn { display:flex; align-items:center; gap:7px; padding:7px 14px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
   .topbar-cadernos-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .materia-cadernos-bar .topbar-actions { display:none !important; }
 
   /* PROGRESSO DA MATÉRIA */
   .materia-progress { padding:20px 32px; background:var(--bg2); border-bottom:1px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:16px; align-items:center; }
@@ -98,8 +101,19 @@
   .topico-expand { font-size:12px; color:var(--text3); transition:transform 0.2s; flex-shrink:0; width:16px; }
   .topico-card.open .topico-expand { transform:rotate(90deg); }
 
-  .topico-nome { flex:1; font-size:14px; font-weight:600; color:var(--text); line-height:1.3; }
+  .topico-nome { flex:1; min-width:0; font-size:14px; font-weight:600; color:var(--text); line-height:1.35; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
   .topico-card.estudado .topico-nome { color:var(--green); }
+  .tips-wrap { position:relative; display:inline-flex; align-items:center; gap:8px; }
+  .tips-btn { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--border); border-radius:999px; background:var(--bg3); color:var(--text2); font-family:var(--sans); font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+  .tips-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,142,247,0.08); }
+  .tips-mark { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:rgba(79,142,247,0.12); color:var(--accent); font-size:12px; font-weight:800; }
+  .tips-popover { display:none; position:absolute; top:calc(100% + 10px); left:0; z-index:30; width:min(520px, calc(100vw - 64px)); padding:16px 18px; border:1px solid var(--border2); border-radius:10px; background:var(--bg2); box-shadow:0 12px 36px rgba(0,0,0,0.36); color:var(--text2); font-size:13px; line-height:1.45; }
+  .tips-popover.open { display:block; }
+  .tips-popover strong { color:var(--text); }
+  .tips-popover ul { margin:0; padding-left:18px; }
+  .tips-popover li { margin:0 0 9px; }
+  .tips-popover li:last-child { margin-bottom:0; }
+  .tips-popover li::marker { color:var(--accent); }
 
   /* AÇÕES DO TÓPICO */
   .topico-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
@@ -136,6 +150,12 @@
   .questoes-inline-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .questoes-inline-title { font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
   .questoes-hist { display:flex; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .btn-registrar-sessao { padding:8px 12px; border:1px solid rgba(79,142,247,0.38); border-radius:8px; background:rgba(79,142,247,0.10); color:var(--accent); font-family:var(--sans); font-size:12px; font-weight:800; cursor:pointer; transition:all 0.15s; }
+  .btn-registrar-sessao:hover { border-color:var(--accent); background:rgba(79,142,247,0.16); }
+  .sessao-modal-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:14px 0; }
+  .sessao-modal-field label { display:block; margin-bottom:4px; font-size:11px; font-weight:800; letter-spacing:0.7px; text-transform:uppercase; color:var(--text3); }
+  .sessao-modal-field input { width:100%; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:10px 8px; color:var(--text); font-family:var(--mono); font-size:17px; font-weight:800; text-align:center; outline:none; }
+  .sessao-modal-field input:focus { border-color:var(--accent); box-shadow:0 0 0 2px rgba(79,142,247,0.12); }
   .qhist-item { font-size:12px; color:var(--text2); font-family:var(--mono); }
   .qhist-item span { font-weight:700; }
   .qhist-item span.c { color:var(--green); }
@@ -164,6 +184,8 @@
   .quick-field { width:46px; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:5px 6px; color:var(--text); font-family:var(--mono); font-size:12px; font-weight:700; text-align:center; outline:none; transition:all 0.15s; }
   .quick-field.acertos:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(62,207,142,0.12); }
   .quick-field.erros:focus   { border-color:var(--red);   box-shadow:0 0 0 2px rgba(245,90,90,0.12); }
+  .questoes-inline .quick-inputs,
+  .sub-body .sub-quick { display:none !important; }
   .quick-field::placeholder  { color:var(--text3); font-size:12px; }
 
   /* SUBTÓPICO ROW */
@@ -172,7 +194,7 @@
   .sub-main { display:flex; align-items:center; gap:8px; }
   .sub-dot { width:6px; height:6px; border-radius:50%; background:var(--border2); flex-shrink:0; }
   .sub-dot.done { background:var(--green); }
-  .sub-nome { flex:1; font-size:12px; color:var(--text2); line-height:1.3; }
+  .sub-nome { flex:1; min-width:0; font-size:12px; color:var(--text2); line-height:1.35; white-space:normal; overflow-wrap:anywhere; word-break:break-word; }
   .sub-nome.done { color:var(--green); text-decoration:line-through; opacity:0.7; }
   .sub-actions { display:flex; align-items:center; gap:5px; flex-shrink:0; }
 
@@ -304,7 +326,7 @@
   </div>
   <nav class="nav">
     <div class="nav-label">Menu</div>
-    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
     <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
     <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
@@ -342,6 +364,10 @@
     <button class="back-link" onclick="location.href='dashboard.html'">← Voltar</button>
     <div class="topbar-divider"></div>
     <div class="topbar-materia" id="topbarNome">📘 Matéria</div>
+
+
+
+
   </div>
 
   <!-- PROGRESSO -->
@@ -376,7 +402,18 @@
   <!-- TÓPICOS -->
   <div class="content">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div class="section-label" style="margin:0">Tópicos</div>
+    <div class="tips-wrap">
+      <div class="section-label" style="margin:0">Tópicos</div>
+      <button class="tips-btn" type="button" onclick="toggleDicasTopicos(event)"><span class="tips-mark">?</span> Dicas</button>
+      <div id="dicasTopicos" class="tips-popover">
+        <ul>
+          <li><strong>Pressione Ctrl + clique esquerdo</strong> em cima de um tópico para copiar todo seu texto.</li>
+          <li>Sempre que concluir um tópico ou subtópico, clique no símbolo <strong>✓</strong> para marcar a matéria como <strong>estudada</strong> e marcar uma revisão.</li>
+          <li>Se você lançou manualmente questões, horas de estudos, e deseja excluí-las, clique no balão de <strong>Horas - Questões - Acertos</strong> no canto superior direito da página, verifique o histórico de ações e exclua o que desejar.</li>
+          <li><strong>Smart Links:</strong> no Track é possível importar seus materiais de estudo de outros concursos. Você pode importar uma matéria completa com todos os materiais de outro concurso ou só importar materiais de um tópico semelhante pelo símbolo <strong>🔗</strong>. Exemplo: se deseja importar a matéria de Português do Banco do Brasil completa, ela aparecerá com seus materiais, flashcards e tudo linkado no seu novo concurso. Para importar uma matéria completa, vá em <strong>Dashboard</strong> e depois em <strong>＋ Nova Matéria</strong>.</li>
+        </ul>
+      </div>
+    </div>
     <button onclick="adicionarTopico()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:8px;color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s">＋ Novo tópico</button>
   </div>
   <div id="topicos-container">
@@ -514,7 +551,10 @@
   // Rev badge
   const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
   if (rev) {
-    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const urgentes = [...(rev.atrasadas||[]), ...(rev.hoje||[])].filter(r => {
+      const ctx = CT.getContextoRevisao(r);
+      return ctx.concursoId === cId;
+    }).length;
     const b = document.getElementById('revBadge');
     if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
   }
@@ -565,7 +605,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ensureAjusteHistoryHost();
 });
 
-// ── PROGRESSO ─────────────────────────────
 function updateProgresso() {
   const topicos   = CT.getTopicos(mId);
   const estudados = topicos.filter(t => t.estudado).length;
@@ -612,6 +651,9 @@ function CT_MigratePDFEmojis() {
       if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
         c.emoji = '📙'; ch = true;
       }
+      if (c.rotulo === 'FLASH' && c.emoji === '\uD83C\uDCC4') {
+        c.emoji = '🎴'; ch = true;
+      }
     });
     if (ch) CT.saveTopico(t);
   });
@@ -623,6 +665,9 @@ function CT_MigratePDFEmojis() {
     s.cadernos.forEach(c => {
       if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
         c.emoji = '📙'; ch = true;
+      }
+      if (c.rotulo === 'FLASH' && c.emoji === '\uD83C\uDCC4') {
+        c.emoji = '🎴'; ch = true;
       }
     });
     if (ch) CT.saveSubtopico(s);
@@ -636,6 +681,9 @@ function CT_MigratePDFEmojis() {
       if (c.rotulo === 'PDF' && (c.emoji === '📄' || c.emoji === '📖' || !c.emoji)) {
         c.emoji = '📙'; ch = true;
       }
+      if (c.rotulo === 'FLASH' && c.emoji === '\uD83C\uDCC4') {
+        c.emoji = '🎴'; ch = true;
+      }
     });
     if (ch) CT.saveMateria(m);
   });
@@ -647,7 +695,7 @@ function renderCadernos() {
   const cadernos = m.cadernos || [];
   const el = document.getElementById('cadernos-materia');
   el.innerHTML = cadernos.map((cad, i) => `
-    <div class="caderno-chip" title="${cad.nome}" onclick="window.open('${cad.url}','_blank')">
+    <div class="caderno-chip" title="${cad.nome}" onclick="abrirCaderno(event, '${cad.url}', '${cad.rotulo}')">
       <div class="caderno-emoji">${cad.emoji||'📓'}</div>
       <div class="caderno-label">${cad.rotulo}</div>
     </div>`).join('') +
@@ -657,6 +705,18 @@ function renderCadernos() {
 function adicionarCadernoMateria() {
   abrirModalCaderno(null, null, true);
 }
+
+function toggleDicasTopicos(event) {
+  event.stopPropagation();
+  document.getElementById('dicasTopicos')?.classList.toggle('open');
+}
+
+document.addEventListener('click', (event) => {
+  const pop = document.getElementById('dicasTopicos');
+  if (!pop || !pop.classList.contains('open')) return;
+  if (event.target.closest('.tips-wrap')) return;
+  pop.classList.remove('open');
+});
 
 function deletarCadernoMateria(idx) {
   const m = CT.getMateria(mId);
@@ -686,7 +746,7 @@ function renderTopicos() {
   const htmlStr = topicos.map(t => {
     const subs  = CT.getSubtopicos(t.id);
     const q     = CT.calcStats(CT.getQuestoes({ topicoId: t.id }));
-    const rev   = revisoes.find(r => r.topicoId === t.id && !r.concluida);
+    const rev   = revisoes.find(r => CT.revisaoPertenceAoTopico(r, t.id) && !r.concluida);
     const revBadge = rev
       ? rev.data < hoje
         ? `<span class="revisao-badge atrasada">🔴 ${diasAtraso(rev.data)}d atrasada</span>`
@@ -704,7 +764,7 @@ function renderTopicos() {
       : `<button class="btn-estudado pendente" data-tid="${t.id}" onclick="event.stopPropagation();abrirPopupTopico('${t.id}')">✓</button>`;
 
     const cadChips = (t.cadernos||[]).map(cad =>
-      `<div class="chip" onclick="event.stopPropagation();window.open('${cad.url}','_blank')" title="${cad.nome}">
+      `<div class="chip" onclick="abrirCaderno(event, '${cad.url}', '${cad.rotulo}')" title="${cad.nome}">
         <div class="chip-emoji">${cad.emoji||'📓'}</div><div class="chip-label">${cad.rotulo}</div>
       </div>`).join('');
 
@@ -721,8 +781,8 @@ function renderTopicos() {
     <div class="topico-card${t.estudado?' estudado':''}" id="tc_${t.id}" draggable="true" ondragstart="dragStart(event, 'topico', '${t.id}')" ondragend="dragEnd(event)" ondragover="dragOver(event, 'topico')" ondragleave="dragLeave(event)" ondrop="drop(event, 'topico', '${t.id}')">
       <div class="topico-header" onclick="toggleTopico('tc_${t.id}')">
         <span class="topico-expand">›</span>
-        <div style="flex:1; display:flex; align-items:center; gap:6px; overflow:hidden">
-          <span class="topico-nome" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${t.nome}</span>
+        <div style="flex:1; min-width:0; display:flex; align-items:flex-start; gap:6px">
+          <span class="topico-nome" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${t.nome}</span>
           ${(t.cadernos && t.cadernos.length > 0) ? '' : (function(){
             const m = CT.findMatches(t.nome, cId, 'topico');
             return m.length > 0 ? `<span class="link-glow" title="Encontramos materiais deste tópico em outros concursos!" onclick="event.stopPropagation();abrirModalLink('${t.id}', '${t.nome.replace(/'/g, "\\'")}', 'topico')">🔗</span>` : '';
@@ -750,12 +810,7 @@ function renderTopicos() {
                 <div class="quick-group"><span class="quick-label e">＋ Erros</span>
                   <input class="quick-field erros" id="qe_${t.id}" type="number" min="0" placeholder="0" onkeydown="if(event.key==='Enter')lancarAmbos('${t.id}',null,this)"></div>
               </div>
-              <button onclick="desfazerLancamento('${t.id}', null)" class="cole-btn undo" title="Desfazer">↩</button>
-              <button onclick="toggleEditarQ('${t.id}', null)"
-                id="btnEditQ_${t.id}"
-                style="padding:3px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s"
-                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">📊 Editar</button>
+              <button class="btn-registrar-sessao" onclick="abrirModalSessaoQuestoes('${t.id}', null)" id="btnEditQ_${t.id}">Registrar sessão de questões e horas de estudo</button>
             </div>
           </div>
 
@@ -816,9 +871,18 @@ function renderTopicos() {
 function renderSubtopico(s) {
   const q    = CT.calcStats(CT.getQuestoes({ subtopId: s.id }));
   const pctB = q.pct != null ? `<span class="pct-badge ${pctClass(q.pct)}">${q.pct}%</span>` : '';
+  const rev  = CT.getRevisoes().find(r => CT.revisaoPertenceAoSubtopico(r, s.id) && !r.concluida);
+  const hoje = CT._today();
+  const revBadge = rev
+    ? rev.data < hoje
+      ? `<span class="revisao-badge atrasada">🔴 ${diasAtraso(rev.data)}d atrasada</span>`
+      : rev.data === hoje
+        ? `<span class="revisao-badge hoje">🟡 Revisão hoje</span>`
+        : `<span class="revisao-badge agendada">🗓 rev. ${fmtDate(rev.data)}</span>`
+    : '';
 
   const cadChips = (s.cadernos||[]).map(cad =>
-    `<div class="chip" onclick="window.open('${cad.url}','_blank')" title="${cad.nome}" style="cursor:pointer">
+    `<div class="chip" onclick="abrirCaderno(event, '${cad.url}', '${cad.rotulo}')" title="${cad.nome}" style="cursor:pointer">
       <div class="chip-emoji">${cad.emoji||'📓'}</div><div class="chip-label">${cad.rotulo}</div>
     </div>`).join('');
 
@@ -842,14 +906,15 @@ function renderSubtopico(s) {
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;flex-wrap:wrap;cursor:pointer" onclick="toggleSub('sc_${s.id}')">
       <span style="font-size:12px;color:var(--text3);transition:transform 0.2s;display:inline-block" class="sub-expand">›</span>
       <div class="sub-dot${s.estudado?' done':''}"></div>
-      <div style="flex:1; display:flex; align-items:center; gap:6px; min-width:0">
-        <span class="sub-nome${s.estudado?' done':''}" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${s.nome}</span>
+      <div style="flex:1; display:flex; align-items:flex-start; gap:6px; min-width:0">
+        <span class="sub-nome${s.estudado?' done':''}" onclick="if(event.ctrlKey){event.stopPropagation();CT.copy(this.innerText)}">${s.nome}</span>
         ${(s.cadernos && s.cadernos.length > 0) ? '' : (function(){
           const matches = CT.findMatches(s.nome, cId, 'subtopico');
           return matches.length > 0 ? `<span class="link-glow" title="Encontramos materiais deste subtópico em outros concursos!" onclick="event.stopPropagation();abrirModalLink('${s.id}', '${s.nome.replace(/'/g, "\\'")}', 'subtopico')">🔗</span>` : '';
         })()}
       </div>
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0">
+        ${revBadge}
         ${cadChips}
         <div class="caderno-add" style="width:22px;height:22px;font-size:12px" onclick="event.stopPropagation();abrirModalCaderno(null,'${s.id}',false)">＋</div>
         ${btnEst}
@@ -862,8 +927,7 @@ function renderSubtopico(s) {
     <div class="sub-body" style="display:none;padding:0 0 10px 16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px" onclick="event.stopPropagation()">
         <div class="questoes-inline-title" style="font-size:12px">📝 Questões</div>
-        <button onclick="toggleEditarQ('${s.topicoId}','${s.id}')" id="btnEditQ_${s.id}"
-          style="padding:2px 8px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">📊 Editar</button>
+        <button class="btn-registrar-sessao" onclick="abrirModalSessaoQuestoes('${s.topicoId}','${s.id}')" id="btnEditQ_${s.id}">Registrar sessão de questões e horas de estudo</button>
       </div>
       ${qHist}
       <div id="editQ_${s.id}" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:8px">
@@ -892,8 +956,6 @@ function renderSubtopico(s) {
             <input class="sub-quick-field e" id="sqe_${s.id}" type="number" min="0" placeholder="0"
               onkeydown="if(event.key==='Enter')lancarAmbos('${s.topicoId}','${s.id}',this)"></div>
         </div>
-        <button class="cole-btn undo" title="Desfazer" onclick="desfazerLancamento('${s.topicoId}','${s.id}')" style="margin-top:14px">↩</button>
-        <button onclick="abrirAddHorasSub('${s.id}','${s.topicoId}')" style="margin-top:14px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer">⏱ + horas</button>
       </div>
     </div>
   </div>`;
@@ -1099,6 +1161,75 @@ function salvarHoras(tid) {
   }
 }
 
+function abrirModalSessaoQuestoes(tid, sid) {
+  const existente = document.getElementById('modalSessaoQuestoes');
+  if (existente) existente.remove();
+
+  const topico = CT.getTopico(tid);
+  const subtopico = sid ? CT.getSubtopicos().find(s => s.id === sid) : null;
+  const alvoNome = subtopico ? subtopico.nome : (topico ? topico.nome : 'item selecionado');
+  const overlay = document.createElement('div');
+  overlay.className = 'popup-overlay visible';
+  overlay.id = 'modalSessaoQuestoes';
+  overlay.onclick = e => { if (e.target === overlay) fecharModalSessaoQuestoes(); };
+  overlay.innerHTML = `
+    <div class="popup-card" style="max-width:460px" onclick="event.stopPropagation()">
+      <div class="popup-title">Registrar sessão</div>
+      <div class="popup-subtitle" style="margin-bottom:12px">${alvoNome}</div>
+      <div class="sessao-modal-grid">
+        <div class="sessao-modal-field"><label for="sessaoAcertos">Acertos</label><input id="sessaoAcertos" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="sessao-modal-field"><label for="sessaoErros">Erros</label><input id="sessaoErros" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="sessao-modal-field"><label for="sessaoHoras">Horas</label><input id="sessaoHoras" type="number" min="0" step="1" placeholder="0"></div>
+        <div class="sessao-modal-field"><label for="sessaoMinutos">Minutos</label><input id="sessaoMinutos" type="number" min="0" max="59" step="1" placeholder="0"></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="popup-btn-skip" onclick="fecharModalSessaoQuestoes()">Cancelar</button>
+        <button class="popup-btn-ok" onclick="salvarModalSessaoQuestoes('${tid}','${sid || ''}')">Salvar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('sessaoAcertos')?.focus(), 0);
+}
+
+function fecharModalSessaoQuestoes() {
+  document.getElementById('modalSessaoQuestoes')?.remove();
+}
+
+function lerInteiroNaoNegativo(id) {
+  const el = document.getElementById(id);
+  const n = parseInt(el?.value, 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function salvarModalSessaoQuestoes(tid, sid) {
+  const acertos = lerInteiroNaoNegativo('sessaoAcertos');
+  const erros = lerInteiroNaoNegativo('sessaoErros');
+  const horas = lerInteiroNaoNegativo('sessaoHoras');
+  const minutos = lerInteiroNaoNegativo('sessaoMinutos');
+  const segundos = horas * 3600 + minutos * 60;
+
+  if (acertos + erros <= 0 && segundos <= 0) {
+    alert('Informe quest?es ou pelo menos 1 minuto de estudo.');
+    return;
+  }
+
+  if (segundos > 0) {
+    const sessao = { concursoId: cId, materiaId: mId, topicoId: tid, duracaoSegundos: segundos };
+    if (sid) sessao.subtopId = sid;
+    CT.registrarSessao(sessao);
+  }
+
+  if (acertos + erros > 0) {
+    const questoes = { concursoId: cId, materiaId: mId, topicoId: tid, resolvidas: acertos + erros, acertos, erros };
+    if (sid) questoes.subtopId = sid;
+    CT.lancarQuestoes(questoes);
+  }
+
+  fecharModalSessaoQuestoes();
+  updateProgresso();
+  renderTopicos();
+}
+
 // mantido por compatibilidade com cole input
 function lancarRapido(tid, sid, tipo, val, inputEl) {
   const n = parseInt(val);
@@ -1301,6 +1432,15 @@ function deletarCadernoTopico(tid, sid, idx) {
   renderTopicos();
 }
 
+function abrirCaderno(event, url, rotulo) {
+  if (event) event.stopPropagation();
+  if (rotulo === 'FLASH') {
+    window.location.href = url;
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
 // ── TÓPICO ────────────────────────────────
 function deletarTopico(tid) {
   const t = CT.getTopico(tid);
@@ -1308,7 +1448,10 @@ function deletarTopico(tid) {
   localStorage.setItem('ct_topicos', JSON.stringify(CT.getTopicos().filter(x => x.id !== tid)));
   localStorage.setItem('ct_subtopicos', JSON.stringify(CT.getSubtopicos().filter(x => x.topicoId !== tid)));
   localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(x => x.topicoId !== tid)));
-  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(x => x.topicoId !== tid)));
+  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(x => {
+    const ctx = CT.getContextoRevisao(x);
+    return ctx.topicoId !== tid;
+  })));
   renderTopicos(); updateProgresso();
 }
 
@@ -1348,6 +1491,7 @@ function deletarSubtopico(sid) {
   if (!s || !confirm(`Excluir o subtópico "${s.nome}"?`)) return;
   localStorage.setItem('ct_subtopicos', JSON.stringify(CT.getSubtopicos().filter(x => x.id !== sid)));
   localStorage.setItem('ct_questoes', JSON.stringify(CT.getQuestoes().filter(x => x.subtopId !== sid)));
+  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(x => !CT.revisaoPertenceAoSubtopico(x, sid))));
   renderTopicos(); updateProgresso();
 }
 
@@ -1402,7 +1546,7 @@ function abrirModalLink(targetId, name, type) {
       <div style="flex:1">
         <div style="font-size:10px;color:var(--yellow);font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:5px">${logo} ${m.contestName}</div>
         <div style="font-size:13px;font-weight:600;color:var(--text)">${m.nome}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">${m.cadernos?.length || 0} materiais</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${m.cadernos?.length || 0} materiais${m.flashcardsCount ? ' - ' + m.flashcardsCount + ' flashcards' : ''}</div>
       </div>
       <button onclick="confirmarImportacao('${targetId}', '${m.id}', '${type}')" style="padding:8px 14px;background:var(--yellow);border:none;border-radius:8px;color:#000;font-size:11px;font-weight:700;cursor:pointer">📥 Importar</button>
     </div>`;
@@ -1424,9 +1568,12 @@ function abrirModalLink(targetId, name, type) {
 
 function confirmarImportacao(targetId, sourceId, type) {
   if (!confirm('Deseja importar todos os materiais deste tópico?')) return;
-  CT.importMaterials(targetId, sourceId, type);
+  const res = CT.importMaterials(targetId, sourceId, type);
   document.getElementById('modalSmartLink')?.remove();
   renderTopicos();
+  if (res && res.flashcardsCopiados) {
+    alert(res.flashcardsCopiados + ' flashcard(s) tambem foram trazidos para este concurso.');
+  }
 }
 
 // ── CADERNOS ──────────────────────────────
@@ -1880,7 +2027,10 @@ function zerarEstatisticasMateria() {
   localStorage.setItem('ct_topicos', JSON.stringify(topicos));
   const subs = CT.getSubtopicos(); subs.forEach(s => { if (s.materiaId === mId) { s.estudado = false; s.estudadoEm = null; } });
   localStorage.setItem('ct_subtopicos', JSON.stringify(subs));
-  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(r => !tIds.includes(r.topicoId))));
+  localStorage.setItem('ct_revisoes', JSON.stringify(CT.getRevisoes().filter(r => {
+    const ctx = CT.getContextoRevisao(r);
+    return !ctx.topicoId || !tIds.includes(ctx.topicoId);
+  })));
   location.reload();
 }
 
@@ -1900,7 +2050,7 @@ function closeCtxMenu() { document.getElementById('ctxMenu').style.display = 'no
 function ctxAcao(acao) {
   const { tid, sid, cid } = _ctxTarget;
   const obj = tid ? CT.getTopico(tid) : CT.getSubtopicos().find(x=>x.id===sid);
-  if (acao === 'abrir') { const cad = obj.cadernos.find(x=>x.id===cid); if(cad) window.open(cad.url, '_blank'); }
+  if (acao === 'abrir') { const cad = obj.cadernos.find(x=>x.id===cid); if(cad) abrirCaderno(null, cad.url, cad.rotulo); }
   else if (acao === 'deletar') {
     if(!confirm('Remover este material?')) return;
     obj.cadernos = obj.cadernos.filter(x=>x.id!==cid);
@@ -1982,5 +2132,6 @@ function drop(e, type, targetId, targetParentId) {
   <div onclick="ctxAcao('abrir')" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--text2)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔗 Abrir link</div>
   <div onclick="ctxAcao('deletar')" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--red)" onmouseover="this.style.background='rgba(245,90,90,0.08)'" onmouseout="this.style.background=''">✕ Remover</div>
 </div>
+<script src="timer-popup.js"></script>
 </body>
 </html>

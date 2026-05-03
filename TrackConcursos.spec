@@ -6,7 +6,7 @@ from pathlib import Path
 project_root = Path.cwd()
 www_dir = project_root / 'www'
 build_resources_dir = project_root / 'build-resources'
-icon_file = build_resources_dir / 'track_concursos_tc.ico'
+icon_file = build_resources_dir / 'track_concursos_oficial.ico'
 version_file = build_resources_dir / 'version_info.txt'
 
 datas = [

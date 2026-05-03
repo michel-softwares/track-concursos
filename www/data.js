@@ -16,18 +16,26 @@
  */
 
 const CT = {
-
-  // ─────────────────────────────────────────
-  // UTILS
-  // ─────────────────────────────────────────
-
-  _get(key) {
+_get(key) {
     try { return JSON.parse(localStorage.getItem(key)) || []; }
     catch { return []; }
   },
 
   _set(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+  },
+
+  _emitDataUpdated(tipo, detail = {}) {
+    try {
+      if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+      window.dispatchEvent(new CustomEvent('ct-data-updated', {
+        detail: {
+          tipo,
+          ts: Date.now(),
+          ...detail
+        }
+      }));
+    } catch {}
   },
 
   _id() {
@@ -44,6 +52,10 @@ const CT = {
 
   _today() {
     return this._dateString();
+  },
+
+  _formatMateriaNome(nome) {
+    return String(nome || '').trim().toLocaleUpperCase('pt-BR');
   },
 
   setBackupNome(nome) {
@@ -131,6 +143,234 @@ const CT = {
     }, 2500);
   },
 
+  _alertQueue: Promise.resolve(),
+  _nativeAlert: typeof window !== 'undefined' && typeof window.alert === 'function' ? window.alert.bind(window) : null,
+
+  _ensureAlertDialogStyle() {
+    if (document.getElementById('ct-alert-style')) return;
+    const style = document.createElement('style');
+    style.id = 'ct-alert-style';
+    style.textContent = `
+      @keyframes ctAlertFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes ctAlertCardIn {
+        from { opacity: 0; transform: translateY(14px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      #ct-alert-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 120000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(79, 142, 247, 0.16), transparent 32%),
+          rgba(9, 12, 20, 0.52);
+        backdrop-filter: blur(14px);
+        animation: ctAlertFadeIn 0.18s ease;
+      }
+      #ct-alert-overlay .ct-alert-card {
+        width: min(520px, calc(100vw - 32px));
+        overflow: hidden;
+        border-radius: 22px;
+        border: 1px solid var(--border2, rgba(255,255,255,0.14));
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+          var(--bg2, #171c28);
+        box-shadow:
+          0 28px 80px rgba(0, 0, 0, 0.34),
+          0 8px 24px rgba(0, 0, 0, 0.18);
+        color: var(--text, #e8eaf2);
+        animation: ctAlertCardIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+      }
+      #ct-alert-overlay .ct-alert-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 22px 24px 18px;
+        border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+      }
+      #ct-alert-overlay .ct-alert-icon {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(79, 142, 247, 0.22), rgba(124, 93, 247, 0.2));
+        border: 1px solid rgba(79, 142, 247, 0.22);
+        font-size: 20px;
+      }
+      #ct-alert-overlay .ct-alert-head {
+        min-width: 0;
+        flex: 1;
+      }
+      #ct-alert-overlay .ct-alert-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text, #e8eaf2);
+        letter-spacing: -0.01em;
+      }
+      #ct-alert-overlay .ct-alert-subtitle {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: var(--text3, #8f96ad);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+      #ct-alert-overlay .ct-alert-close {
+        appearance: none;
+        border: 1px solid var(--border, rgba(255,255,255,0.08));
+        background: var(--bg3, #202635);
+        color: var(--text2, #b4bbcf);
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+      }
+      #ct-alert-overlay .ct-alert-close:hover {
+        transform: translateY(-1px);
+        border-color: var(--accent, #4f8ef7);
+        color: var(--accent, #4f8ef7);
+      }
+      #ct-alert-overlay .ct-alert-body {
+        padding: 18px 24px 24px;
+      }
+      #ct-alert-overlay .ct-alert-message {
+        margin: 0;
+        color: var(--text2, #b4bbcf);
+        font-size: 14px;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      #ct-alert-overlay .ct-alert-footer {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      #ct-alert-overlay .ct-alert-ok {
+        appearance: none;
+        min-width: 112px;
+        padding: 11px 18px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent, #4f8ef7), var(--accent2, #7c5df7));
+        color: #fff;
+        font-family: var(--sans, "Inter", sans-serif);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        box-shadow: 0 12px 24px rgba(79, 142, 247, 0.28);
+        transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      }
+      #ct-alert-overlay .ct-alert-ok:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 28px rgba(79, 142, 247, 0.34);
+      }
+      #ct-alert-overlay .ct-alert-ok:active,
+      #ct-alert-overlay .ct-alert-close:active {
+        transform: translateY(0);
+      }
+      html[data-theme="light"] #ct-alert-overlay {
+        background:
+          radial-gradient(circle at top, rgba(79, 142, 247, 0.14), transparent 34%),
+          rgba(16, 23, 38, 0.24);
+      }
+      html[data-theme="light"] #ct-alert-overlay .ct-alert-card {
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.82)),
+          var(--bg2, #ffffff);
+        box-shadow:
+          0 24px 60px rgba(15, 23, 42, 0.16),
+          0 8px 20px rgba(15, 23, 42, 0.08);
+      }
+    `;
+    document.head.appendChild(style);
+  },
+
+  showAlert(message, options = {}) {
+    const text = String(message == null ? '' : message);
+    const title = String(options.title || 'Aviso');
+    const subtitle = String(options.subtitle || 'Track Concursos');
+    const icon = options.icon || '✦';
+
+    if (typeof document === 'undefined' || !document.body) {
+      if (this._nativeAlert) this._nativeAlert(text);
+      return Promise.resolve();
+    }
+
+    this._ensureAlertDialogStyle();
+
+    this._alertQueue = this._alertQueue.finally(() => new Promise(resolve => {
+      const current = document.getElementById('ct-alert-overlay');
+      if (current) current.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'ct-alert-overlay';
+      overlay.innerHTML = `
+        <div class="ct-alert-card" role="alertdialog" aria-modal="true" aria-labelledby="ct-alert-title" aria-describedby="ct-alert-message">
+          <div class="ct-alert-top">
+            <div class="ct-alert-icon">${icon}</div>
+            <div class="ct-alert-head">
+              <h2 class="ct-alert-title" id="ct-alert-title">${title}</h2>
+              <div class="ct-alert-subtitle">${subtitle}</div>
+            </div>
+            <button class="ct-alert-close" type="button" aria-label="Fechar aviso">×</button>
+          </div>
+          <div class="ct-alert-body">
+            <p class="ct-alert-message" id="ct-alert-message"></p>
+            <div class="ct-alert-footer">
+              <button class="ct-alert-ok" type="button">OK</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const close = () => {
+        document.removeEventListener('keydown', onKeyDown, true);
+        overlay.remove();
+        resolve();
+      };
+
+      const onKeyDown = event => {
+        if (event.key === 'Escape' || event.key === 'Enter') {
+          event.preventDefault();
+          close();
+        }
+      };
+
+      overlay.querySelector('.ct-alert-message').textContent = text;
+      overlay.querySelector('.ct-alert-ok').addEventListener('click', close);
+      overlay.querySelector('.ct-alert-close').addEventListener('click', close);
+
+      document.addEventListener('keydown', onKeyDown, true);
+      document.body.appendChild(overlay);
+      overlay.querySelector('.ct-alert-ok').focus();
+    }));
+
+    return this._alertQueue;
+  },
+
+  installAlertOverride() {
+    if (typeof window === 'undefined' || window.__ctAlertOverrideInstalled) return;
+    window.__ctAlertOverrideInstalled = true;
+    window.__ctNativeAlert = this._nativeAlert;
+    window.alert = message => {
+      this.showAlert(message);
+    };
+  },
+
   // Copia texto para o clipboard e mostra toast
   copy(text) {
     if (!text) return;
@@ -211,7 +451,10 @@ const CT = {
     this._set('ct_materias', materiasAtualizadas);
     this._set('ct_topicos', topicosAtualizados);
     this._set('ct_subtopicos', this.getSubtopicos().filter(s => topicosAtivos.has(s.topicoId)));
-    this._set('ct_revisoes', this.getRevisoes().filter(r => topicosAtivos.has(r.topicoId)));
+    this._set('ct_revisoes', this.getRevisoes().filter(r => {
+      const ctx = this.getContextoRevisao(r);
+      return ctx.topicoId && topicosAtivos.has(ctx.topicoId);
+    }));
     this._set('ct_sessoes', this.getSessoes().filter(s =>
       concursosAtivos.has(s.concursoId) && (!s.materiaId || materiasAtivas.has(s.materiaId))
     ));
@@ -325,25 +568,27 @@ const CT = {
   // ─────────────────────────────────────────
 
   getMaterias(concursoId) {
-    const all = this._get('ct_materias');
+    const all = this._get('ct_materias').map(m => m && m.nome ? { ...m, nome: this._formatMateriaNome(m.nome) } : m);
     return concursoId ? all.filter(m => m.concursoId === concursoId || (m.concursosB && m.concursosB.includes(concursoId))) : all;
   },
 
   getMateria(id) {
-    return this._get('ct_materias').find(m => m.id === id) || null;
+    const materia = this._get('ct_materias').find(m => m.id === id) || null;
+    return materia && materia.nome ? { ...materia, nome: this._formatMateriaNome(materia.nome) } : materia;
   },
 
   saveMateria(data) {
     const list = this._get('ct_materias');
-    const isCollidable = data.id && data.id.startsWith('mat_');
-    const idx = list.findIndex(m => m.id === data.id);
+    const normalizedData = data && data.nome != null ? { ...data, nome: this._formatMateriaNome(data.nome) } : data;
+    const isCollidable = normalizedData.id && normalizedData.id.startsWith('mat_');
+    const idx = list.findIndex(m => m.id === normalizedData.id);
 
-    if (idx >= 0 && isCollidable && list[idx].concursoId !== data.concursoId) {
-      list.push({ ...data, id: this._id() });
+    if (idx >= 0 && isCollidable && list[idx].concursoId !== normalizedData.concursoId) {
+      list.push({ ...normalizedData, id: this._id() });
     } else if (idx >= 0) {
-      list[idx] = { ...list[idx], ...data };
+      list[idx] = { ...list[idx], ...normalizedData };
     } else {
-      list.push({ id: this._id(), ...data });
+      list.push({ id: this._id(), ...normalizedData });
     }
     this._set('ct_materias', list);
   },
@@ -359,6 +604,23 @@ const CT = {
         this._set('ct_materias', list);
       }
     }
+  },
+
+  _linkIaTypeMeta(tipo) {
+    const normalized = String(tipo || '').trim().toUpperCase();
+    if (['PDF', 'AULA', 'AULAPDF'].includes(normalized)) {
+      return { rotulo: 'PDF', nome: 'PDF de Aulas', emoji: '📙' };
+    }
+    if (['VIDEO', 'VIDEOAULA', 'VIDEOAULAS'].includes(normalized)) {
+      return { rotulo: 'VIDEO', nome: 'Link de Videoaulas', emoji: '🎥' };
+    }
+    if (['FLASH', 'FLASHCARD', 'FLASHCARDS'].includes(normalized)) {
+      return { rotulo: 'FLASH', nome: 'Flashcards', emoji: '🎴' };
+    }
+    if (['QUEST', 'QUESTAO', 'QUESTOES', 'CADERNO', 'CADERNODEQUESTOES'].includes(normalized)) {
+      return { rotulo: 'QUEST', nome: 'Caderno de Questoes', emoji: '📓' };
+    }
+    return null;
   },
 
   desvincularOuDeletarMateria(materiaId, concursoId) {
@@ -386,7 +648,10 @@ const CT = {
         this._set('ct_topicos', this.getTopicos().filter(t => t.materiaId !== m.id));
         this._set('ct_subtopicos', this.getSubtopicos().filter(s => !topIds.includes(s.topicoId)));
         this._set('ct_questoes', this.getQuestoes().filter(q => q.materiaId !== m.id));
-        this._set('ct_revisoes', this.getRevisoes().filter(r => !topIds.includes(r.topicoId)));
+    this._set('ct_revisoes', this.getRevisoes().filter(r => {
+      const ctx = this.getContextoRevisao(r);
+      return !ctx.topicoId || !topIds.includes(ctx.topicoId);
+    }));
         this._set('ct_sessoes', this.getSessoes().filter(s => s.materiaId !== m.id));
         return true; // Deletou pra valer
       }
@@ -502,6 +767,10 @@ const CT = {
     return topicoId ? all.filter(s => s.topicoId === topicoId) : all;
   },
 
+  getSubtopico(id) {
+    return this._get('ct_subtopicos').find(s => s.id === id) || null;
+  },
+
   saveSubtopico(data) {
     const list = this._get('ct_subtopicos');
     const isCollidable = data.id && data.id.startsWith('sub_');
@@ -536,30 +805,57 @@ const CT = {
   lancarQuestoes(dados) {
     // dados: { topicoId?, subtopId?, materiaId, concursoId, resolvidas, acertos, erros }
     const list = this._get('ct_questoes');
-    list.push({ id: this._id(), data: this._today(), horaInicio: new Date().toISOString(), ...dados });
+    const novoLancamento = { id: this._id(), data: this._today(), horaInicio: new Date().toISOString(), ...dados };
+    list.push(novoLancamento);
     this._set('ct_questoes', list);
+    this._emitDataUpdated('questoes:add', {
+      concursoId: novoLancamento.concursoId || null,
+      materiaId: novoLancamento.materiaId || null,
+      topicoId: novoLancamento.topicoId || null,
+      subtopId: novoLancamento.subtopId || null,
+      item: novoLancamento
+    });
+    return novoLancamento.id;
   },
 
   excluirLancamentoQuestoes(id) {
     if (!id) return false;
     const list = this._get('ct_questoes');
+    const removido = list.find(q => q.id === id);
     const next = list.filter(q => q.id !== id);
     if (next.length === list.length) return false;
     this._set('ct_questoes', next);
+    this._emitDataUpdated('questoes:remove', {
+      concursoId: removido?.concursoId || null,
+      materiaId: removido?.materiaId || null,
+      topicoId: removido?.topicoId || null,
+      subtopId: removido?.subtopId || null,
+      item: removido || null
+    });
     return true;
   },
 
   desfazerUltimoLancamento(filtro) {
     const list = this._get('ct_questoes');
-    // Encontra o último lançamento que bate com o filtro
+    let removido = null;
+    // Encontra o ultimo lancamento que bate com o filtro
     for (let i = list.length - 1; i >= 0; i--) {
       const q = list[i];
       const match =
         (!filtro.topicoId || q.topicoId === filtro.topicoId) &&
         (!filtro.subtopId || q.subtopId === filtro.subtopId);
-      if (match) { list.splice(i, 1); break; }
+      if (match) { removido = list.splice(i, 1)[0]; break; }
     }
     this._set('ct_questoes', list);
+    if (removido) {
+      this._emitDataUpdated('questoes:remove', {
+        concursoId: removido.concursoId || null,
+        materiaId: removido.materiaId || null,
+        topicoId: removido.topicoId || null,
+        subtopId: removido.subtopId || null,
+        item: removido
+      });
+    }
   },
 
   // Calcula estatísticas de questões para um conjunto de lançamentos
@@ -608,21 +904,200 @@ const CT = {
     });
   },
 
+  _cicloKey(concursoId) {
+    return concursoId ? `ct_ciclo_${concursoId}` : '';
+  },
+
+  _readCiclo(concursoId) {
+    const key = this._cicloKey(concursoId);
+    if (!key) return null;
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) || '{}');
+      if (!raw || !Array.isArray(raw.entries)) return null;
+      raw.sessionHistory = Array.isArray(raw.sessionHistory) ? raw.sessionHistory : [];
+      return raw;
+    } catch {
+      return null;
+    }
+  },
+
+  _writeCiclo(concursoId, raw) {
+    const key = this._cicloKey(concursoId);
+    if (!key || !raw) return;
+    localStorage.setItem(key, JSON.stringify(raw));
+    try {
+      window.dispatchEvent(new CustomEvent('ct-cycle-updated', { detail: { concursoId, data: raw } }));
+    } catch {}
+  },
+
+  _cicloEntryNome(entry, sessao) {
+    const materia = sessao && sessao.materiaId ? this.getMateria(sessao.materiaId) : null;
+    if (materia && materia.nome) return materia.nome;
+    if (entry && entry.nome) return entry.nome;
+    if (entry && entry.baseId) return String(entry.baseId).replace(/^base_/, '').replace(/_/g, ' ').toUpperCase();
+    return 'Materia';
+  },
+
+  _findCicloEntryIndex(raw, sessao) {
+    if (!raw || !Array.isArray(raw.entries) || !sessao || !sessao.materiaId) return -1;
+    const matches = raw.entries
+      .map((entry, idx) => ({ entry, idx }))
+      .filter(({ entry }) => entry && entry.materiaId === sessao.materiaId);
+    if (!matches.length) return -1;
+
+    const pending = matches.find(({ entry }) =>
+      entry.status !== 'done' &&
+      entry.status !== 'skipped' &&
+      Math.max(0, parseInt(entry.targetSeconds, 10) || 0) > 0 &&
+      Math.max(0, entry.remainingSeconds == null ? parseInt(entry.targetSeconds, 10) || 0 : parseInt(entry.remainingSeconds, 10) || 0) > 0
+    );
+    return (pending || matches[0]).idx;
+  },
+
+  _nextCicloPendingIndex(entries, fromIndex) {
+    const isPending = entry =>
+      entry &&
+      entry.status !== 'done' &&
+      entry.status !== 'skipped' &&
+      Math.max(0, parseInt(entry.targetSeconds, 10) || 0) > 0;
+
+    for (let i = fromIndex + 1; i < entries.length; i++) if (isPending(entries[i])) return i;
+    for (let i = 0; i < fromIndex; i++) if (isPending(entries[i])) return i;
+    return Math.max(0, Math.min(fromIndex, Math.max(entries.length - 1, 0)));
+  },
+
+  _logCicloStat(concursoId, entry) {
+    const key = concursoId ? `ct_ciclo_stats_${concursoId}` : '';
+    if (!key) return;
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch { list = []; }
+    list.push({
+      id: `cycle_stat_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`,
+      data: this._today(),
+      criadoEm: new Date().toISOString(),
+      concursoId,
+      ...entry
+    });
+    localStorage.setItem(key, JSON.stringify(list));
+  },
+
+  _syncCicloSessao(sessao) {
+    if (!sessao || sessao.skipCycleSync || !sessao.concursoId || !sessao.materiaId) return;
+    const dur = Math.max(0, parseInt(sessao.duracaoSegundos, 10) || 0);
+    if (!dur) return;
+
+    const raw = this._readCiclo(sessao.concursoId);
+    if (!raw || !raw.entries.length) return;
+    if (sessao.id && raw.sessionHistory.some(s => s.id === sessao.id || s.sessaoId === sessao.id)) return;
+
+    const idx = this._findCicloEntryIndex(raw, sessao);
+    if (idx < 0) return;
+
+    const entry = raw.entries[idx];
+    const target = Math.max(0, parseInt(entry.targetSeconds, 10) || 0);
+    const beforeRemaining = Math.max(0, entry.remainingSeconds == null ? target : parseInt(entry.remainingSeconds, 10) || 0);
+    const wasDone = entry.status === 'done';
+    const afterRemaining = entry.status === 'done' || entry.status === 'skipped'
+      ? 0
+      : Math.max(0, beforeRemaining - dur);
+
+    if (target > 0 && entry.status !== 'done' && entry.status !== 'skipped') {
+      entry.remainingSeconds = afterRemaining;
+      entry.status = afterRemaining === 0 ? 'done' : 'pending';
+      entry.skippedSeconds = 0;
+      entry.lastPendingSeconds = afterRemaining === 0 ? 0 : Math.max(0, parseInt(entry.lastPendingSeconds, 10) || 0);
+      entry.updatedAt = new Date().toISOString();
+      if (afterRemaining === 0) raw.currentIndex = this._nextCicloPendingIndex(raw.entries, idx);
+    }
+
+    raw.currentItemId = raw.entries[raw.currentIndex] ? raw.entries[raw.currentIndex].id : '';
+    raw.sessionHistory.push({
+      id: sessao.id || `cyc_sess_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`,
+      sessaoId: sessao.id || null,
+      itemId: entry.id,
+      nome: this._cicloEntryNome(entry, sessao),
+      duracao: dur,
+      ts: Date.now(),
+      origem: sessao.origem || 'sessao'
+    });
+
+    if (!wasDone && entry.status === 'done' && target > 0) {
+      this._logCicloStat(sessao.concursoId, {
+        materiaId: entry.materiaId || sessao.materiaId,
+        materiaNome: this._cicloEntryNome(entry, sessao),
+        targetSeconds: target,
+        studiedSeconds: target,
+        skippedSeconds: 0,
+        concluida: true,
+        round: Math.max(1, parseInt(raw.round, 10) || 1),
+        origem: 'sessao_estudo'
+      });
+    }
+
+    this._writeCiclo(sessao.concursoId, raw);
+  },
+
+  _refundCicloSessao(sessao) {
+    if (!sessao || !sessao.concursoId || !sessao.materiaId) return;
+    const dur = Math.max(0, parseInt(sessao.duracaoSegundos, 10) || 0);
+    if (!dur) return;
+
+    const raw = this._readCiclo(sessao.concursoId);
+    if (!raw || !raw.entries.length) return;
+    const histIdx = raw.sessionHistory.findIndex(s => s.id === sessao.id || s.sessaoId === sessao.id);
+    if (histIdx < 0) return;
+    const hist = raw.sessionHistory[histIdx];
+    const idx = raw.entries.findIndex(entry => entry.id === hist.itemId);
+    if (idx < 0) return;
+
+    const entry = raw.entries[idx];
+    const target = Math.max(0, parseInt(entry.targetSeconds, 10) || 0);
+    const current = Math.max(0, entry.remainingSeconds == null ? 0 : parseInt(entry.remainingSeconds, 10) || 0);
+    entry.remainingSeconds = Math.min(target, current + dur);
+    if (entry.remainingSeconds > 0 && target > 0) {
+      entry.status = 'pending';
+      raw.currentIndex = idx;
+      raw.currentItemId = entry.id;
+    }
+    entry.updatedAt = new Date().toISOString();
+    raw.sessionHistory.splice(histIdx, 1);
+    this._writeCiclo(sessao.concursoId, raw);
+  },
   registrarSessao(dados) {
     // dados: { concursoId, materiaId, duracaoSegundos, origem? }
     const list = this._get('ct_sessoes');
     const novaSessao = { id: this._id(), data: this._today(), horaInicio: new Date().toISOString(), origem: 'manual', ...dados };
     list.push(novaSessao);
     this._set('ct_sessoes', list);
+    this._syncCicloSessao(novaSessao);
+    this._emitDataUpdated('sessao:add', {
+      concursoId: novaSessao.concursoId || null,
+      materiaId: novaSessao.materiaId || null,
+      topicoId: novaSessao.topicoId || null,
+      subtopId: novaSessao.subtopId || novaSessao.subtopicoId || null,
+      item: novaSessao
+    });
+    if (typeof this.queueAutoSave === 'function') {
+      this.queueAutoSave('sessao-registrada', { delay: 1200, toast: true });
+    }
     return novaSessao.id;
   },
 
   excluirSessao(id) {
     if (!id) return false;
     const list = this._get('ct_sessoes');
+    const sessao = list.find(s => s.id === id);
     const next = list.filter(s => s.id !== id);
     if (next.length === list.length) return false;
     this._set('ct_sessoes', next);
+    this._refundCicloSessao(sessao);
+    this._emitDataUpdated('sessao:remove', {
+      concursoId: sessao?.concursoId || null,
+      materiaId: sessao?.materiaId || null,
+      topicoId: sessao?.topicoId || null,
+      subtopId: sessao?.subtopId || sessao?.subtopicoId || null,
+      item: sessao || null
+    });
     return true;
   },
 
@@ -647,29 +1122,113 @@ const CT = {
     return this._get('ct_revisoes');
   },
 
-  agendarRevisao(topicoId, data) {
+  _resolverAlvoRevisao(alvo) {
+    if (!alvo) return { topico: null, subtopico: null, topicoId: null, subtopId: null };
+
+    if (typeof alvo === 'object' && (alvo.topicoId || alvo.subtopId)) {
+      let topico = alvo.topicoId ? this.getTopico(alvo.topicoId) : null;
+      let subtopico = alvo.subtopId ? this.getSubtopico(alvo.subtopId) : null;
+
+      if (!subtopico && !topico && alvo.topicoId) {
+        subtopico = this.getSubtopico(alvo.topicoId);
+        if (subtopico) topico = this.getTopico(subtopico.topicoId);
+      }
+
+      if (!topico && subtopico) topico = this.getTopico(subtopico.topicoId);
+
+      return {
+        topico,
+        subtopico,
+        topicoId: topico ? topico.id : (alvo.topicoId || null),
+        subtopId: subtopico ? subtopico.id : null
+      };
+    }
+
+    const topico = this.getTopico(alvo);
+    if (topico) return { topico, subtopico: null, topicoId: topico.id, subtopId: null };
+
+    const subtopico = this.getSubtopico(alvo);
+    if (subtopico) {
+      return {
+        topico: this.getTopico(subtopico.topicoId),
+        subtopico,
+        topicoId: subtopico.topicoId || null,
+        subtopId: subtopico.id
+      };
+    }
+
+    return { topico: null, subtopico: null, topicoId: alvo, subtopId: null };
+  },
+
+  getContextoRevisao(revisao) {
+    const alvo = this._resolverAlvoRevisao(revisao);
+    const materia = alvo.topico ? this.getMateria(alvo.topico.materiaId) : null;
+    return {
+      ...alvo,
+      materia,
+      concursoId: alvo.topico?.concursoId || alvo.subtopico?.concursoId || materia?.concursoId || null,
+      nome: alvo.subtopico?.nome || alvo.topico?.nome || '—'
+    };
+  },
+
+  revisaoPertenceAoTopico(revisao, topicoId) {
+    const ctx = this.getContextoRevisao(revisao);
+    return ctx.topicoId === topicoId && !ctx.subtopId;
+  },
+
+  revisaoPertenceAoSubtopico(revisao, subtopId) {
+    const ctx = this.getContextoRevisao(revisao);
+    return ctx.subtopId === subtopId;
+  },
+
+  agendarRevisao(alvoId, data) {
+    const alvo = this._resolverAlvoRevisao(alvoId);
+    if (!alvo.topicoId && !alvo.subtopId) return;
     const list = this._get('ct_revisoes');
     // Marca revisões anteriores como concluídas/substituídas (preserva histórico)
     list.forEach(r => {
-      if (r.topicoId === topicoId && !r.concluida) {
+      const atual = this._resolverAlvoRevisao(r);
+      if (atual.topicoId === alvo.topicoId && atual.subtopId === alvo.subtopId && !r.concluida) {
         r.concluida = true;
         r.substituida = true;
         r.substituidaEm = this._today();
       }
     });
-    list.push({ id: this._id(), topicoId, data, concluida: false, agendadaEm: this._today() });
+    list.push({
+      id: this._id(),
+      topicoId: alvo.topicoId,
+      subtopId: alvo.subtopId || null,
+      data,
+      concluida: false,
+      agendadaEm: this._today()
+    });
     this._set('ct_revisoes', list);
   },
 
-  concluirRevisao(topicoId, proximaData) {
+  concluirRevisao(alvoId, proximaData) {
+    const alvo = this._resolverAlvoRevisao(alvoId);
     const list = this._get('ct_revisoes');
-    const idx = list.findIndex(r => r.topicoId === topicoId && !r.concluida);
+    const idx = list.findIndex(r => {
+      if (r.concluida) return false;
+      const atual = this._resolverAlvoRevisao(r);
+      return atual.topicoId === alvo.topicoId && atual.subtopId === alvo.subtopId;
+    });
     if (idx >= 0) list[idx].concluida = true;
     this._set('ct_revisoes', list);
-    if (proximaData) this.agendarRevisao(topicoId, proximaData);
+    if (proximaData) this.agendarRevisao(alvoId, proximaData);
   },
 
-  // Classifica revisões: atrasadas, hoje, futuras
+  excluirRevisao(revisaoId) {
+    if (!revisaoId) return false;
+    const list = this._get('ct_revisoes');
+    const next = list.filter(r => r.id !== revisaoId);
+    if (next.length === list.length) return false;
+    this._set('ct_revisoes', next);
+    return true;
+  },
+
+  // Classifica revis�es: atrasadas, hoje, futuras
+
   classificarRevisoes() {
     const hoje = this._today();
     const revisoes = this.getRevisoes().filter(r => !r.concluida);
@@ -787,8 +1346,238 @@ const CT = {
   },
 
   // ─────────────────────────────────────────
+
+  importarMateriaJson(json, concursoId) {
+    try {
+      const data = typeof json === 'string' ? JSON.parse(json) : json;
+      const materia = data.materia || (Array.isArray(data.materias) ? data.materias[0] : data);
+      if (!materia || !materia.nome) throw new Error('Informe uma materia com nome.');
+
+      const materiaId = this._id();
+      this.saveMateria({
+        id: materiaId,
+        concursoId,
+        nome: materia.nome,
+        ordem: materia.ordem || 0,
+      });
+
+      let totalTopicos = 0;
+      let totalSubtopicos = 0;
+      (materia.topicos || []).forEach((top, ti) => {
+        if (!top || !top.nome) return;
+        const topicoId = this._id();
+        this.saveTopico({
+          id: topicoId,
+          materiaId,
+          concursoId,
+          nome: top.nome,
+          ordem: top.ordem != null ? top.ordem : ti,
+        });
+        totalTopicos++;
+
+        (top.subtopicos || []).forEach((sub, si) => {
+          const nomeSub = typeof sub === 'string' ? sub : sub && sub.nome;
+          if (!nomeSub) return;
+          this.saveSubtopico({
+            id: this._id(),
+            topicoId,
+            materiaId,
+            concursoId,
+            nome: nomeSub,
+            ordem: sub && sub.ordem != null ? sub.ordem : si,
+          });
+          totalSubtopicos++;
+        });
+      });
+
+      return { ok: true, materiaId, materias: 1, topicos: totalTopicos, subtopicos: totalSubtopicos };
+    } catch(e) {
+      return { ok: false, erro: e.message };
+    }
+  },
   // SMART LINKING (Cross-Contest)
   // ─────────────────────────────────────────
+
+  _flashDeckUrl(deckId) {
+    return `dashboard.html#flashcards:${encodeURIComponent(deckId)}`;
+  },
+
+  _flashSrsInicial() {
+    return {
+      status: 'new',
+      ease: 2.5,
+      interval: 0,
+      reviews: 0,
+      lapses: 0,
+      nextReview: null,
+      lastReview: null,
+    };
+  },
+
+  _getFlashDecks() {
+    return this._get('ct_flashcard_decks');
+  },
+
+  _getFlashCards() {
+    return this._get('ct_flashcards');
+  },
+
+  _collectFlashDeckDescendants(decks, rootIds) {
+    const ids = new Set(rootIds || []);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      decks.forEach(deck => {
+        if (deck.parentId && ids.has(deck.parentId) && !ids.has(deck.id)) {
+          ids.add(deck.id);
+          changed = true;
+        }
+      });
+    }
+    return Array.from(ids);
+  },
+
+  _hasFlashcardsFor(type, sourceId) {
+    const allDecks = this._getFlashDecks();
+    const decks = allDecks.filter(d => d.sourceType === type && d.sourceId === sourceId);
+    if (!decks.length) return 0;
+    const deckIds = new Set(this._collectFlashDeckDescendants(allDecks, decks.map(d => d.id)));
+    return this._getFlashCards().filter(card => deckIds.has(card.deckId)).length;
+  },
+
+  _ensureFlashDeck(kind, target, decks) {
+    if (!target) return null;
+    const cId = sessionStorage.getItem('ct_concurso_ativo') || target.concursoId;
+    const now = new Date().toISOString();
+    let parentId = null;
+    let materiaId = target.materiaId || (kind === 'materia' ? target.id : null);
+    let topicoId = target.topicoId || (kind === 'topico' ? target.id : null);
+    let subtopicoId = kind === 'subtopico' ? target.id : null;
+
+    if (kind === 'topico') {
+      const materia = this.getMateria(target.materiaId);
+      parentId = this._ensureFlashDeck('materia', materia, decks);
+    } else if (kind === 'subtopico') {
+      const topico = this.getTopico(target.topicoId);
+      parentId = this._ensureFlashDeck('topico', topico, decks);
+      topicoId = target.topicoId;
+      materiaId = target.materiaId || (topico && topico.materiaId) || null;
+    }
+
+    let deck = decks.find(d => d.concursoId === cId && d.sourceType === kind && d.sourceId === target.id);
+    if (deck) {
+      deck.name = target.nome || deck.name;
+      deck.parentId = parentId || null;
+      deck.materiaId = materiaId || null;
+      deck.topicoId = topicoId || null;
+      deck.subtopicoId = subtopicoId || null;
+      deck.updatedAt = now;
+      return deck.id;
+    }
+
+    deck = {
+      id: 'fcdeck_' + this._id(),
+      concursoId: cId,
+      name: target.nome || 'Flashcards',
+      emoji: kind === 'materia' ? 'Books' : kind === 'topico' ? 'Stack' : 'Card',
+      parentId: parentId || null,
+      sourceType: kind,
+      sourceId: target.id,
+      materiaId: materiaId || null,
+      topicoId: topicoId || null,
+      subtopicoId: subtopicoId || null,
+      order: target.ordem || 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    decks.push(deck);
+    return deck.id;
+  },
+
+  _linkFlashDeck(target, kind, deckId, deckName) {
+    if (!target || !deckId) return;
+    const url = this._flashDeckUrl(deckId);
+    const cadernos = Array.isArray(target.cadernos) ? target.cadernos.slice() : [];
+    const exists = cadernos.some(item => String(item && item.rotulo || '').toUpperCase() === 'FLASH'
+      && (item.deckId === deckId || item.url === url));
+    if (!exists) {
+      cadernos.push({
+        id: 'fc_link_' + this._id(),
+        rotulo: 'FLASH',
+        nome: deckName || 'Flashcards',
+        emoji: '🎴',
+        url,
+        deckId,
+        createdAt: new Date().toISOString(),
+      });
+      target.cadernos = cadernos;
+      if (kind === 'materia') this.saveMateria(target);
+      else if (kind === 'topico') this.saveTopico(target);
+      else this.saveSubtopico(target);
+    }
+  },
+
+  _copyFlashcardsToDeck(sourceDeckIds, targetDeckId, targetConcursoId, cards) {
+    const now = new Date().toISOString();
+    const sourceSet = new Set(sourceDeckIds);
+    const sourceCards = cards.filter(card => sourceSet.has(card.deckId));
+    let copied = 0;
+
+    sourceCards.forEach(card => {
+      const originalId = card.originalFlashcardId || card.id;
+      const exists = cards.some(existing => existing.deckId === targetDeckId
+        && ((existing.originalFlashcardId || existing.id) === originalId));
+      if (exists) return;
+
+      const clone = {
+        ...card,
+        id: 'fc_' + this._id(),
+        concursoId: targetConcursoId,
+        deckId: targetDeckId,
+        originalFlashcardId: originalId,
+        copiedFromDeckId: card.deckId,
+        srs: this._flashSrsInicial(),
+        createdAt: now,
+        updatedAt: now,
+      };
+      cards.push(clone);
+      copied++;
+    });
+
+    return copied;
+  },
+
+  _copyFlashcardsBetweenTargets(sourceId, targetId, type) {
+    const decks = this._getFlashDecks();
+    const cards = this._getFlashCards();
+    let source = null;
+    let target = null;
+
+    if (type === 'materia') {
+      source = this.getMateria(sourceId);
+      target = this.getMateria(targetId);
+    } else if (type === 'topico') {
+      source = this.getTopico(sourceId);
+      target = this.getTopico(targetId);
+    } else if (type === 'subtopico') {
+      source = this.getSubtopico(sourceId);
+      target = this.getSubtopico(targetId);
+    }
+    if (!source || !target) return { copied: 0, deckId: null };
+
+    const sourceDecks = decks.filter(d => d.sourceType === type && d.sourceId === sourceId);
+    if (!sourceDecks.length) return { copied: 0, deckId: null };
+
+    const targetDeckId = this._ensureFlashDeck(type, target, decks);
+    const targetConcursoId = sessionStorage.getItem('ct_concurso_ativo') || target.concursoId;
+    const sourceDeckIds = this._collectFlashDeckDescendants(decks, sourceDecks.map(d => d.id));
+    const copied = this._copyFlashcardsToDeck(sourceDeckIds, targetDeckId, targetConcursoId, cards);
+
+    this._set('ct_flashcard_decks', decks);
+    this._set('ct_flashcards', cards);
+    this._linkFlashDeck(target, type, targetDeckId, sourceDecks[0].name || target.nome || 'Flashcards');
+    return { copied, deckId: targetDeckId };
+  },
 
   findMatches(name, currentConcursoId, type) {
     if (!name || name.length < 3) return [];
@@ -804,8 +1593,9 @@ const CT = {
       const all = this._get('ct_materias');
       all.forEach(m => {
         if (m.concursoId !== currentConcursoId && m.nome.trim().toLowerCase() === searchName) {
-          if (m.cadernos && m.cadernos.length > 0) {
-            candidates.push({ ...m, contestName: contestMap[m.concursoId] || 'Outro Concurso' });
+          const flashcardsCount = this._hasFlashcardsFor('materia', m.id);
+          if ((m.cadernos && m.cadernos.length > 0) || flashcardsCount > 0) {
+            candidates.push({ ...m, flashcardsCount, contestName: contestMap[m.concursoId] || 'Outro Concurso' });
           }
         }
       });
@@ -813,8 +1603,9 @@ const CT = {
       const all = this._get('ct_topicos');
       all.forEach(t => {
         if (t.concursoId !== currentConcursoId && t.nome.trim().toLowerCase() === searchName) {
-          if (t.cadernos && t.cadernos.length > 0) {
-            candidates.push({ ...t, contestName: contestMap[t.concursoId] || 'Outro Concurso' });
+          const flashcardsCount = this._hasFlashcardsFor('topico', t.id);
+          if ((t.cadernos && t.cadernos.length > 0) || flashcardsCount > 0) {
+            candidates.push({ ...t, flashcardsCount, contestName: contestMap[t.concursoId] || 'Outro Concurso' });
           }
         }
       });
@@ -822,8 +1613,9 @@ const CT = {
       const all = this._get('ct_subtopicos');
       all.forEach(s => {
         if (s.concursoId !== currentConcursoId && s.nome.trim().toLowerCase() === searchName) {
-          if (s.cadernos && s.cadernos.length > 0) {
-            candidates.push({ ...s, contestName: contestMap[s.concursoId] || 'Outro Concurso' });
+          const flashcardsCount = this._hasFlashcardsFor('subtopico', s.id);
+          if ((s.cadernos && s.cadernos.length > 0) || flashcardsCount > 0) {
+            candidates.push({ ...s, flashcardsCount, contestName: contestMap[s.concursoId] || 'Outro Concurso' });
           }
         }
       });
@@ -834,6 +1626,7 @@ const CT = {
 
   importMaterials(targetId, sourceId, type) {
     let source;
+    let flash = { copied: 0, deckId: null };
     if (type === 'materia') {
       source = this.getMateria(sourceId);
       const target = this.getMateria(targetId);
@@ -841,6 +1634,7 @@ const CT = {
         target.cadernos = [...(target.cadernos || []), ...source.cadernos];
         this.saveMateria(target);
       }
+      flash = this._copyFlashcardsBetweenTargets(sourceId, targetId, type);
     } else if (type === 'topico') {
       source = this.getTopico(sourceId);
       const target = this.getTopico(targetId);
@@ -848,17 +1642,19 @@ const CT = {
         target.cadernos = [...(target.cadernos || []), ...source.cadernos];
         this.saveTopico(target);
       }
+      flash = this._copyFlashcardsBetweenTargets(sourceId, targetId, type);
     } else if (type === 'subtopico') {
-      source = this.getSubtopicos().find(x => x.id === sourceId);
-      const target = this.getSubtopicos().find(x => x.id === targetId);
+      source = this.getSubtopico(sourceId);
+      const target = this.getSubtopico(targetId);
       if (source && target && source.cadernos) {
         target.cadernos = [...(target.cadernos || []), ...source.cadernos];
         this.saveSubtopico(target);
       }
+      flash = this._copyFlashcardsBetweenTargets(sourceId, targetId, type);
     }
+    return { ok: true, flashcardsCopiados: flash.copied || 0, deckId: flash.deckId || null };
   },
 
-  // ─────────────────────────────────────────
   // ESTATÍSTICAS GERAIS
   // ─────────────────────────────────────────
 
@@ -1030,94 +1826,6 @@ const CT = {
   // SINGLE CONCURSO: EXPORT & IMPORT
   // ─────────────────────────────────────────
 
-  async exportarConcurso(id) {
-    const c = this.getConcurso(id);
-    if (!c) return;
-
-    // Obter logo se existir no disco
-    let logoData = c.logoBase64 || null;
-    if (window.pywebview && window.pywebview.api) {
-        try {
-            const resp = await window.pywebview.api.get_logo_base64(id);
-            if (resp && resp.ok) logoData = `data:image/png;base64,${resp.base64}`;
-        } catch(e) {}
-    }
-
-    const materias = this.getMaterias(id).map(m => {
-      const tAll = this.getTopicos(m.id).map(t => {
-        const sAll = (this._get('ct_subtopicos') || []).filter(s => s.topicoId === t.id).map(s => {
-            const { id, topicoId, concursoId, estudado, estudadoEm, ...sRest } = s;
-            return sRest;
-        });
-            const { id, materiaId, concursoId, estudado, estudadoEm, revisaoData, logEstudo, _esperandoReset, ...tRest } = t;
-            return { ...tRest, subtopicos: sAll };
-        });
-        const { id, concursoId, ...mRest } = m;
-        return { id, ...mRest, topicos: tAll };
-    });
-    const simulados = this.getSimulados(id).map(sim => {
-      const { id: simId, concursoId, ...simData } = sim;
-      return { ...simData };
-    });
-
-    const concursoTemplate = {
-      nome: c.nome || '',
-      cargo: c.cargo || '',
-      banca: c.banca || '',
-      logoEmoji: c.logoEmoji || null,
-      logoBase64: logoData,
-      dataProva: c.dataProva || null,
-      preEdital: !!c.preEdital,
-      pontuacaoMax: c.pontuacaoMax ?? null,
-      vagas: c.vagas ?? null,
-    };
-
-    const exportData = {
-      type: 'track_concursos_template_export',
-      version: '2.0',
-      templateKind: 'contest',
-      rights: {
-        copyright: 'Copyright (c) 2026 Michel Araujo. Todos os direitos reservados.',
-        licenseType: 'uso-pessoal-nao-comercial',
-        allowPersonalUse: true,
-        allowCommercialUse: false,
-        allowModification: false,
-        allowRedistribution: false,
-        notice: 'Este arquivo foi gerado pelo Track Concursos para uso pessoal e nao comercial. Nao e permitida sua revenda, redistribuicao ou modificacao sem autorizacao previa do autor.'
-      },
-      concurso: concursoTemplate,
-      materias: materias,
-      simulados: simulados,
-      estrutura: {
-          cronoWeekly: localStorage.getItem(`ct_crono_${id}`),
-          cronoMats: localStorage.getItem(`ct_crono_mats_${id}`),
-          cronoMode: localStorage.getItem(`ct_crono_modo_${id}`),
-          ciclo: localStorage.getItem(`ct_ciclo_${id}`),
-          configProva: localStorage.getItem(`ct_config_prova_${id}`)
-      }
-    };
-
-    if (window.pywebview && window.pywebview.api) {
-        const jsonStr = JSON.stringify(exportData, null, 2);
-        const fileName = ('template_' + (c.nome || 'concurso')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        window.pywebview.api.salvar_json_concurso(fileName, jsonStr).then(res => {
-            if (res && res.ok) {
-                alert('✅ Template do edital exportado com sucesso!\nSalvo em: ' + res.caminho);
-            } else if (res && res.motivo !== 'cancelado') {
-                alert('❌ Erro ao exportar template: ' + res.motivo);
-            }
-        });
-    } else {
-        const json = JSON.stringify(exportData, null, 2);
-        const a = document.createElement('a');
-        a.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(json));
-        a.setAttribute('download', 'Track_Concursos_template_' + (c.nome||'concurso') + '.json');
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-  },
-
   importarConcurso(jsonStr) {
     try {
         const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
@@ -1166,11 +1874,14 @@ const CT = {
             criadoEm: this._today(),
             nome: cData.nome || 'Novo Concurso',
             cargo: cData.cargo || '',
+            salario: cData.salario || '',
             banca: cData.banca || '',
             logoBase64: cData.logoBase64 || null,
             logoEmoji: cData.logoEmoji || null,
             logoPath: null,
             dataProva: cData.dataProva || null,
+            localProva: cData.localProva || '',
+            linkEdital: cData.linkEdital || '',
             preEdital: !!cData.preEdital,
             pontuacaoMax: cData.pontuacaoMax ?? null,
             vagas: cData.vagas ?? null,
@@ -1185,7 +1896,7 @@ const CT = {
             pontuacao: null,
             notaCorte: null,
             redacao: null,
-            obs: '',
+            obs: cData.obs || '',
             coberto: 0,
             cobertoPre: 0,
             nomeado: { ativo: false },
@@ -1224,7 +1935,7 @@ const CT = {
                     const newSId = this._id();
                     const listS = this._get('ct_subtopicos') || [];
                     const { estudado, estudadoEm, ...sData } = s;
-                    listS.push({ ...sData, id: newSId, topicoId: newTId, concursoId: newCId, estudado: false, estudadoEm: null });
+                    listS.push({ ...sData, id: newSId, topicoId: newTId, materiaId: newMId, concursoId: newCId, estudado: false, estudadoEm: null });
                     this._set('ct_subtopicos', listS);
                 });
             });
@@ -1474,6 +2185,8 @@ let _ctSavedStateSignature = null;
 let _ctDirty = false;
 let _ctAutoSaveTimer = null;
 let _ctAutoSaveBusy = false;
+let _ctQueuedAutoSaveTimer = null;
+let _ctQueuedAutoSavePending = false;
 
 const _ctOriginalSetItem = localStorage.setItem.bind(localStorage);
 const _ctOriginalRemoveItem = localStorage.removeItem.bind(localStorage);
@@ -1523,18 +2236,53 @@ CT.hasUnsavedChanges = function() {
   return _ctDirty || this._buildStateSignature() !== _ctSavedStateSignature;
 };
 
+CT.queueAutoSave = function(reason = 'autosave', options = {}) {
+  if (!window.pywebview || !window.pywebview.api) return false;
+  const delay = Math.max(0, Number(options.delay ?? 1200) || 0);
+  const showToast = options.toast === true;
+
+  if (_ctQueuedAutoSaveTimer) window.clearTimeout(_ctQueuedAutoSaveTimer);
+  _ctQueuedAutoSaveTimer = window.setTimeout(() => {
+    _ctQueuedAutoSaveTimer = null;
+    if (_ctAutoSaveBusy) {
+      _ctQueuedAutoSavePending = true;
+      return;
+    }
+    if (!this.hasUnsavedChanges()) return;
+    _ctAutoSaveBusy = true;
+    if (showToast) CT.toast('Salvando...', '💾');
+    this.autoBackup({ reason })
+      .then(res => {
+        if (!showToast) return res;
+        if (res && res.ok) {
+          CT.toast('Salvo com sucesso!', '✅');
+        } else {
+          CT.toast('Erro ao salvar backup.', '❌');
+        }
+        return res;
+      })
+      .catch(() => {
+        if (showToast) CT.toast('Erro ao salvar backup.', '❌');
+        return null;
+      })
+      .finally(() => {
+        _ctAutoSaveBusy = false;
+        if (_ctQueuedAutoSavePending) {
+          _ctQueuedAutoSavePending = false;
+          this.queueAutoSave(reason, { delay: 500, toast: showToast });
+        }
+      });
+  }, delay);
+  return true;
+};
+
 CT.startAutoSave = function() {
   if (_ctAutoSaveTimer) return true;
   if (!window.pywebview || !window.pywebview.api) return false;
 
   _ctAutoSaveTimer = window.setInterval(() => {
-    if (_ctAutoSaveBusy || !this.hasUnsavedChanges()) return;
-    _ctAutoSaveBusy = true;
-    this.autoBackup({ reason: 'autosave' })
-      .catch(() => null)
-      .finally(() => {
-        _ctAutoSaveBusy = false;
-      });
+    if (!this.hasUnsavedChanges()) return;
+    this.queueAutoSave('autosave', { delay: 0 });
   }, 5 * 60 * 1000);
   return true;
 };
@@ -1673,6 +2421,7 @@ window.mostrarDialogFechamento = function() {
 };
 
 // Executa limpeza automática ao carregar
+CT.installAlertOverride();
 CT.limparLixo();
 CT.markSavedState();
 if (typeof window.addEventListener === 'function') {

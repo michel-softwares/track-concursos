@@ -12,6 +12,7 @@ __pycache__/
 # Dados locais do usuário
 profiles/
 backups/
+www/assets/logos/
 
 # Builds e empacotamento
 build/
@@ -32,3 +33,15 @@ desktop.ini
 1f680 (1).gif
 verify_persistence.js
 /logoMichelSoftwares.png
+notes.md
+PRIVATE_AI_NOTES.md
+AI_ORIENTATION.md
+deploy_installed.ps1
+
+# Ferramentas privadas locais (nao publicar)
+_private_dev_tools/
+docs/
+tools/
+# Workspaces locais de testes PDF/IA
+pdf_ai_prompt_workspace_test/
+pdf_ai_workspace_test/

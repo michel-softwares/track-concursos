@@ -618,6 +618,36 @@
       background: rgba(79, 142, 247, 0.06);
     }
 
+    .result-option {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-option.selected {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, rgba(79, 142, 247, 0.14), rgba(79, 142, 247, 0.05));
+      box-shadow: 0 0 0 1px rgba(79, 142, 247, 0.45) inset, 0 12px 28px rgba(79, 142, 247, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .result-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 6px 16px rgba(79, 142, 247, 0.35);
+    }
+
     .date-option-icon {
       font-size: 22px;
       margin-bottom: 8px;
@@ -1255,7 +1285,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Local da prova</label>
-                <input class="form-input" type="text" placeholder="Ex: Teresina — PI">
+                <input class="form-input" id="a_local_prova" type="text" placeholder="Ex: Teresina — PI">
               </div>
             </div>
           </div>
@@ -1477,25 +1507,25 @@
         <div class="form-section">
           <div class="form-section-title">Status</div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
-            <div class="date-option" id="res_aprovado" onclick="selecionarResultado('aprovado')"
+            <div class="date-option result-option" id="res_aprovado" onclick="selecionarResultado('aprovado')"
               style="text-align:center;padding:20px 12px">
-              <div style="font-size:32px;margin-bottom:8px">👑</div>
+              <div style="font-size:32px;margin-bottom:8px">🥇</div>
               <div class="date-option-title" style="color:var(--green)">Aprovado</div>
               <div class="date-option-desc" style="font-size:11px">Dentro das vagas</div>
             </div>
-            <div class="date-option" id="res_cr" onclick="selecionarResultado('cr')"
+            <div class="date-option result-option" id="res_cr" onclick="selecionarResultado('cr')"
               style="text-align:center;padding:20px 12px">
               <div style="font-size:32px;margin-bottom:8px">📋</div>
               <div class="date-option-title" style="color:#f5d060">Class. CR</div>
               <div class="date-option-desc" style="font-size:11px">Cadastro de Reserva</div>
             </div>
-            <div class="date-option" id="res_aguardando" onclick="selecionarResultado('aguardando')"
+            <div class="date-option result-option" id="res_aguardando" onclick="selecionarResultado('aguardando')"
               style="text-align:center;padding:20px 12px">
               <div style="font-size:32px;margin-bottom:8px">⏳</div>
               <div class="date-option-title" style="color:var(--text)">Aguardando</div>
               <div class="date-option-desc" style="font-size:11px">Aguardando Resultado</div>
             </div>
-            <div class="date-option" id="res_reprovado" onclick="selecionarResultado('reprovado')"
+            <div class="date-option result-option" id="res_reprovado" onclick="selecionarResultado('reprovado')"
               style="text-align:center;padding:20px 12px">
               <div style="font-size:32px;margin-bottom:8px">❌</div>
               <div class="date-option-title" style="color:var(--red)">Reprovado</div>
@@ -1510,6 +1540,16 @@
             <div class="form-group">
               <label class="form-label">Total de candidatos</label>
               <input class="form-input" id="r_total_candidatos" type="number" min="1" placeholder="Ex: 5000">
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label class="form-label">Número de vagas</label>
+              <input class="form-input" id="r_vagas" type="number" min="0" placeholder="Ex: 200">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Local da prova</label>
+              <input class="form-input" id="r_local_prova" type="text" placeholder="Ex: Maceió — AL">
             </div>
           </div>
         </div>
@@ -1763,8 +1803,8 @@
 
     function selecionarResultado(tipo) {
       resultadoSelecionado = tipo;
-      document.querySelectorAll('.btn-resultado').forEach(b => b.classList.remove('selected'));
-      const actBtn = document.querySelector(`.btn-resultado[onclick="selecionarResultado('${tipo}')"]`);
+      document.querySelectorAll('.result-option').forEach(b => b.classList.remove('selected'));
+      const actBtn = document.getElementById(`res_${tipo}`);
       if (actBtn) actBtn.classList.add('selected');
     }
     function preencherResumoRealizado() {
@@ -1781,7 +1821,7 @@
       const pts = document.getElementById('r_pontuacao')?.value || '—';
       const ptsMax = document.getElementById('r_pontuacao_maxima')?.value || '';
 
-      const resLabel = resultadoSelecionado === 'aprovado' ? '👑 Aprovado'
+      const resLabel = resultadoSelecionado === 'aprovado' ? '🥇 Aprovado'
         : resultadoSelecionado === 'cr' ? '📋 Cadastro de Reserva'
           : resultadoSelecionado === 'aguardando' ? '⏳ Aguardando Resultado'
             : resultadoSelecionado === 'reprovado' ? '❌ Reprovado' : '— não selecionado';
@@ -1838,6 +1878,7 @@
         obs: document.getElementById('r_obs')?.value || '',
         notaCorte: parseFloat(document.getElementById('r_nota_corte')?.value) || null,
         vagas: parseInt(document.getElementById('r_vagas')?.value) || null,
+        localProva: document.getElementById('r_local_prova')?.value || '',
         realizado: true,
         contarEstatisticas: document.getElementById('r_contar')?.checked || false,
         preEdital: false,
@@ -2218,6 +2259,8 @@
         document.getElementById('r_cargo').value = c.cargo || '';
         document.getElementById('r_banca').value = c.banca || '';
         document.getElementById('r_data').value = c.dataProva || '';
+        document.getElementById('r_vagas').value = c.vagas || '';
+        document.getElementById('r_local_prova').value = c.localProva || '';
         selecionarResultado('aguardando');
         
         if (c.logoPath || c.logoBase64) {
@@ -2244,6 +2287,7 @@
         const ids = {
           r_colocacao: c.colocacao, r_total_candidatos: c.totalCand,
           r_nota_corte: c.notaCorte, r_vagas: c.vagas,
+          r_local_prova: c.localProva,
           r_certas: c.certas, r_erradas: c.erradas,
           r_branco: c.branco, r_pontuacao: c.pontuacao, r_pontuacao_maxima: c.pontuacaoMax,
           r_redacao: c.redacao,
@@ -2280,6 +2324,10 @@
         if (inNome) inNome.value = c.nome || '';
         if (inCargo) inCargo.value = c.cargo || '';
         if (inBanca) inBanca.value = c.banca || '';
+        const inVagas = document.getElementById('a_vagas');
+        const inLocal = document.getElementById('a_local_prova');
+        if (inVagas) inVagas.value = c.vagas || '';
+        if (inLocal) inLocal.value = c.localProva || '';
 
         const dataOpts = document.querySelectorAll('.date-option');
         if (c.preEdital) {
@@ -2334,6 +2382,8 @@
       const cargo = document.getElementById('a_cargo')?.value.trim();
       const banca = document.getElementById('inputBanca')?.value.trim();
       const dataProva = document.getElementById('a_data')?.value;
+      const vagas = parseInt(document.getElementById('a_vagas')?.value, 10) || null;
+      const localProva = document.getElementById('a_local_prova')?.value.trim() || '';
       const preEdital = modoAtual === 'pre';
 
       if (!nome) { alert('Por favor, informe o nome do concurso.'); return; }
@@ -2349,6 +2399,8 @@
         logoBase64: logoInstBase64 || (old ? old.logoBase64 : null),
         logoEmoji: logoInstBase64 ? null : selectedEmoji,
         dataProva: preEdital ? null : (dataProva || null),
+        vagas,
+        localProva,
         preEdital: !!preEdital,
         coberto: old ? (old.coberto || 0) : 0,
         contarEstatisticas: old ? old.contarEstatisticas : true,

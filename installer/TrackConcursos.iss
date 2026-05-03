@@ -1,5 +1,5 @@
 #define MyAppName "Track Concursos"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Michel Softwares"
 #define MyAppExeName "TrackConcursos.exe"
 #define MyAppSourceDir "..\dist\TrackConcursos"
@@ -15,11 +15,11 @@ DefaultDirName={autopf}\Track Concursos
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
-SetupIconFile=..\build-resources\track_concursos_tc.ico
+SetupIconFile=..\build-resources\track_concursos_oficial.ico
 WizardImageFile=..\build-resources\wizard_michel_large.bmp
 WizardSmallImageFile=..\build-resources\wizard_michel_small.bmp
 OutputDir=output
-OutputBaseFilename=TrackConcursos-Setup
+OutputBaseFilename=TrackConcursos-Setup-v{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -28,7 +28,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
 SetupLogging=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
-VersionInfoVersion=1.0.0.0
+VersionInfoVersion=1.0.1.0
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription=Instalador do Track Concursos
 VersionInfoProductName={#MyAppName}

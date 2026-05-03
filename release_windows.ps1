@@ -124,7 +124,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $ExePath = Join-Path $ProjectRoot "dist\\TrackConcursos\\TrackConcursos.exe"
-$SetupPath = Join-Path $ProjectRoot "installer\\output\\TrackConcursos-Setup.exe"
+$SetupPath = Get-ChildItem (Join-Path $ProjectRoot "installer\\output") -Filter "TrackConcursos-Setup*.exe" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1 -ExpandProperty FullName
+
+if (-not $SetupPath) {
+    throw "Instalador compilado nao encontrado em installer\\output."
+}
 
 if ($Sign) {
     $ResolvedSignTool = Resolve-SignToolPath -PreferredPath $SignToolPath

@@ -7,6 +7,7 @@
 <title>Track Concursos — Métricas</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e2a; --bg4:#1f2330;
@@ -115,6 +116,21 @@
   .heatmap-day{font-size:8px;color:var(--text3);height:13px;display:flex;align-items:center;}
   .heatmap-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end;}
   .heatmap-legend span{font-size:12px;color:var(--text3);}
+  .heatmap-day-btn{appearance:none;border:0;font-family:var(--sans);text-align:left;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+  .heatmap-day-btn:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.45)!important}
+  .heatmap-day-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .heatmap-day-out{cursor:default}
+  .heatmap-month-card{background:linear-gradient(180deg, var(--surface-soft), var(--surface-subtle));border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;min-height:238px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+  .heatmap-month-card:hover{transform:translateY(-1px);border-color:rgba(79,142,247,.34);box-shadow:0 14px 34px rgba(0,0,0,.18)}
+  .heatmap-month-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .heatmap-period-btn{appearance:none;border:1px solid transparent;background:transparent;color:inherit;font-family:var(--sans);cursor:pointer;border-radius:8px;padding:3px 6px;margin:-3px -6px;transition:all .12s ease}
+  .heatmap-period-btn:hover{background:rgba(79,142,247,.10);border-color:rgba(79,142,247,.28);color:var(--accent)}
+  .heatmap-period-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .annual-analysis{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .annual-analysis-label{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .annual-analysis select{height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:var(--sans);font-size:12px;font-weight:700;padding:0 8px;outline:none}
+  .annual-analysis button{height:30px;border-radius:8px;border:1px solid rgba(79,142,247,.35);background:rgba(79,142,247,.10);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:800;padding:0 10px;cursor:pointer}
+  .annual-analysis button:hover{background:rgba(79,142,247,.16)}
 
   /* PROGRESSO POR MATÉRIA */
   .materias-list{display:flex;flex-direction:column;gap:10px;}
@@ -137,6 +153,96 @@
   .best-day-date{font-size:12px;color:var(--text2);flex:1;}
   .best-day-hours{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);}
   .best-day-q{font-size:12px;color:var(--text3);width:50px;text-align:right;}
+  .today-summary-card{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 14px 16px;overflow:hidden}
+  .today-summary-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .today-summary-grid{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,.86fr) minmax(0,1.08fr);gap:8px;align-items:stretch}
+  .today-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;display:flex;flex-direction:column;min-height:0}
+  .today-panel-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+  .today-panel-sub{font-size:10px;color:var(--text3);margin-bottom:6px;line-height:1.2}
+  .today-chart-wrap{position:relative;height:102px}
+  .today-legend{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+  .today-sessions-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;display:flex;flex-direction:column;min-height:0}
+  .today-sessions-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px}
+  .today-session-item{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:6px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.02)}
+  .today-session-hour{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
+  .today-session-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-session-meta{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-session-duration{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2)}
+  .today-share-btn{min-width:86px;height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--border2);background:rgba(255,255,255,0.03);color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.4px;cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;transition:all .15s ease}
+  .today-share-btn:hover{background:rgba(79,142,247,0.10);border-color:rgba(79,142,247,0.35);transform:translateY(-1px)}
+  .today-summary-card.capture-mode{padding-bottom:66px}
+  .today-summary-card.capture-mode .today-brand{opacity:1}
+  .today-summary-card.capture-mode .today-share-btn{display:none}
+  .today-brand{position:absolute;bottom:16px;width:110px;opacity:0;transition:opacity .15s ease;pointer-events:none}
+  .today-brand.left{left:16px}
+  .today-brand.right{right:16px}
+  .today-brand img{max-width:100%;max-height:35px;object-fit:contain;display:block}
+  .today-capture-flash{animation:todayFlash .35s ease}
+  .today-summary-card .today-legend > div{padding:2px 0 !important}
+  .today-summary-card .today-legend > div div{font-size:9px !important}
+  .day-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+  .day-detail-modal{width:min(1040px,96vw);max-height:92vh;overflow:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.45);padding:20px}
+  .day-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+  .day-detail-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .day-detail-sub{font-size:12px;color:var(--text3)}
+  .day-detail-close{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:18px;font-weight:800}
+  .day-detail-close:hover{border-color:var(--accent);color:var(--accent)}
+  .day-detail-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+  .day-detail-stat{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px}
+  .day-detail-stat-value{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text)}
+  .day-detail-stat-label{font-size:11px;color:var(--text3);margin-top:4px}
+  .day-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .day-detail-panel{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;min-width:0}
+  .day-detail-panel-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px}
+  .day-detail-panel-sub{font-size:11px;color:var(--text3);margin-bottom:10px}
+  .day-detail-chart{height:160px}
+  .day-detail-chart-layout{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center}
+  .day-detail-chart-legend{display:flex;flex-direction:column;gap:8px}
+  .day-detail-legend-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px;color:var(--text2)}
+  .day-detail-legend-dot{width:10px;height:10px;border-radius:3px}
+  .day-detail-legend-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-detail-legend-meta{font-family:var(--mono);font-size:11px;color:var(--text3);text-align:right}
+  .day-detail-materia-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 74px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .day-detail-materia-row:last-child{border-bottom:0}
+  .day-detail-materia-name{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .day-detail-materia-meta{font-size:11px;color:var(--text3);margin-top:3px}
+  .day-detail-bar{height:7px;background:rgba(255,255,255,.04);border-radius:99px;overflow:hidden;margin-top:7px}
+  .day-detail-bar-fill{height:100%;border-radius:99px;background:var(--accent)}
+  .day-detail-bar-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--text3)}
+  .day-detail-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding-right:2px}
+  .day-detail-empty{font-size:12px;color:var(--text3);text-align:center;padding:18px;border:1px dashed var(--border);border-radius:12px}
+  .cycle-goal-panel{background:linear-gradient(135deg,rgba(79,142,247,.10),rgba(62,207,142,.06));border:1px solid rgba(79,142,247,.24);border-radius:14px;padding:14px;margin-bottom:12px}
+  .cycle-goal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .cycle-goal-title{font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px}
+  .cycle-goal-sub{font-size:11px;color:var(--text3);line-height:1.4}
+  .cycle-goal-badge{font-family:var(--mono);font-size:12px;font-weight:900;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);white-space:nowrap}
+  .cycle-goal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+  .cycle-goal-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+  .cycle-goal-value{font-family:var(--mono);font-size:16px;font-weight:900;color:var(--text)}
+  .cycle-goal-label{font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+  .cycle-goal-matters{display:flex;flex-direction:column;gap:8px}
+  .cycle-goal-row{display:grid;grid-template-columns:minmax(0,1fr) 74px 74px 74px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
+  .cycle-goal-name{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .question-result{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:260px}
+  .question-result span{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text2)}
+  .question-result small{font-family:var(--sans);font-size:9px;text-transform:uppercase;letter-spacing:.45px;color:var(--text3);font-weight:800}
+  @keyframes todayFlash{
+    0%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+    35%{box-shadow:0 0 0 999px rgba(255,255,255,0.08)}
+    100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}
+  }
+  @media (max-width: 1480px){
+    .today-summary-grid{grid-template-columns:1fr}
+    .today-chart-wrap{height:126px}
+    .today-sessions-list{max-height:none}
+  }
+  @media (max-width: 900px){
+    .day-detail-overlay{padding:12px}
+    .day-detail-stats,.day-detail-grid{grid-template-columns:1fr}
+    .day-detail-materia-row{grid-template-columns:minmax(0,1fr);gap:6px}
+    .day-detail-chart-layout,.cycle-goal-grid,.cycle-goal-row{grid-template-columns:1fr}
+    .question-result{min-width:0;justify-content:flex-start;flex-wrap:wrap}
+  }
   /* Esconder botões nativos de scroll numérico */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
@@ -153,7 +259,7 @@
   </div>
   <nav class="nav">
     <div class="nav-label">Menu</div>
-    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
     <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
     <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
     <div class="nav-item active" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
@@ -192,10 +298,10 @@
       <div class="page-sub" id="histSub">Carregando...</div>
     </div>
     <div class="header-controls">
-      <div class="filtro-chip active" onclick="setJanela(7,this)">7 dias</div>
+      <div class="filtro-chip" onclick="setJanela(7,this)">7 dias</div>
       <div class="filtro-chip" onclick="setJanela(14,this)">14 dias</div>
       <div class="filtro-chip" onclick="setJanela(30,this)">30 dias</div>
-      <div class="filtro-chip" onclick="setJanela(0,this)">Desde o início</div>
+      <div class="filtro-chip active" onclick="setJanela(0,this)">Desde o início</div>
     </div>
   </div>
 
@@ -219,7 +325,7 @@
     </div>
   </div>
 
-  <!-- RANKING DE MATÉRIAS + ATIVIDADE RECENTE -->
+  <!-- RANKING DE MATÉRIAS + ESTUDOS DO DIA -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
     <!-- Distribuição por Matéria (Pizza) -->
@@ -232,10 +338,36 @@
       </div>
     </div>
 
-    <!-- Atividade recente -->
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px">
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">🕐 Atividade recente</div>
-      <div id="atividadeRecente"></div>
+    <!-- Estudos do dia -->
+    <div class="today-summary-card" id="todayShareCard">
+      <div class="today-brand left"><img src="assets/Track Concursos logo.png" alt="Track Concursos"></div>
+      <div class="today-brand right"><img src="assets/logoMichelSoftwares.png" alt="Michel Softwares"></div>
+      <div class="today-summary-header">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)">Estudos do dia</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px" id="todaySummarySub">Resumo do dia atual</div>
+        </div>
+        <button id="todayShareBtn" class="today-share-btn" type="button" title="Clique para tirar um PRINT, ficará salvo para colar com CTRL + V">PRINT 📷</button>
+      </div>
+      <div class="today-summary-grid">
+        <div class="today-panel">
+          <div class="today-panel-title">Horas estudadas hoje</div>
+          <div class="today-panel-sub" id="todayHoursSub">Distribuição por matéria no dia atual</div>
+          <div class="today-chart-wrap"><canvas id="chartTodayHours"></canvas></div>
+          <div class="today-legend" id="todayHoursLegend"></div>
+        </div>
+        <div class="today-panel">
+          <div class="today-panel-title">Questões feitas hoje</div>
+          <div class="today-panel-sub" id="todayQuestionsSub">Acertos e erros no dia atual</div>
+          <div class="today-chart-wrap"><canvas id="chartTodayQuestions"></canvas></div>
+          <div class="today-legend" id="todayQuestionsLegend"></div>
+        </div>
+        <div class="today-sessions-panel">
+          <div class="today-panel-title">Sessões de estudo de hoje</div>
+          <div class="today-panel-sub" id="todaySessionsSub"></div>
+          <div id="todaySessionsList" class="today-sessions-list"></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -291,7 +423,7 @@
   // Rev badge
   const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
   if (rev) {
-    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const ctx=CT.getContextoRevisao(r);return ctx.concursoId===cId;}).length;
     const b = document.getElementById('revBadge');
     if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
   }
@@ -301,8 +433,9 @@
 const cId = sessionStorage.getItem('ct_concurso_ativo');
 if (!cId) location.href = 'concursos.html';
 
-let _janela = 7;
-let _chartHoras = null, _chartQuestoes = null, _chartPizza = null;
+let _janela = 0;
+let _chartHoras = null, _chartQuestoes = null, _chartPizza = null, _chartTodayHours = null, _chartTodayQuestions = null;
+let _chartDayHours = null, _chartDayQuestions = null;
 
 const PIZZA_COLORS = [
   '#4f8ef7','#7c5cfc','#3ecf8e','#f5874a','#f55a5a',
@@ -331,11 +464,11 @@ function themePalette() {
     chartSurfaceBorder: '#0d0f14',
     heatOut: 'rgba(255,255,255,0.02)',
     heatEmpty: 'rgba(255,255,255,0.035)',
-    heat1: '#3f2435',
-    heat2: '#6e365a',
-    heat3: '#a74482',
-    heat4: '#d65db1',
-    heat5: '#fe7bd0'
+    heat1: '#17382b',
+    heat2: '#1f5f46',
+    heat3: '#268b61',
+    heat4: '#2fbd7b',
+    heat5: '#3ecf8e'
   };
 }
 
@@ -348,6 +481,452 @@ function getPizzaColors() {
     '#6366f1', '#22c55e', '#eab308', '#ef4444', '#0ea5e9'
   ];
 }
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+function buildLegendRows(items, formatter, emptyText) {
+  if (!items.length) return `<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px 0">${emptyText}</div>`;
+  return items.map(item => `
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <div style="width:10px;height:10px;border-radius:3px;flex-shrink:0;background:${item.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.label}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);flex-shrink:0">${formatter(item)}</div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${item.color};flex-shrink:0;width:38px;text-align:right">${item.pct}%</div>
+    </div>
+  `).join('');
+}
+function makeDoughnutChart(target, currentChart, items, theme, tooltipFormatter) {
+  const ctx = document.getElementById(target).getContext('2d');
+  if (currentChart) currentChart.destroy();
+  if (!items.length) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return null;
+  }
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: items.map(item => item.label),
+      datasets: [{
+        data: items.map(item => item.value),
+        backgroundColor: items.map(item => item.color),
+        borderColor: theme.chartSurfaceBorder,
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '55%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: theme.tooltipBg,
+          borderColor: theme.tooltipBorder,
+          borderWidth: 1,
+          titleColor: theme.tooltipTitle,
+          bodyColor: theme.tooltipBody,
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(ctx) {
+              return tooltipFormatter(items[ctx.dataIndex]);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+function formatSignedStudyTime(seconds) {
+  const abs = Math.abs(Math.round(seconds || 0));
+  return (seconds >= 0 ? '+' : '-') + formatStudyTime(abs);
+}
+function daysBetweenInclusive(startKey, endKey) {
+  const start = new Date(startKey + 'T00:00:00');
+  const end = new Date(endKey + 'T00:00:00');
+  return Math.max(1, Math.round((end - start) / 86400000) + 1);
+}
+function readCycleGoalComparison(info) {
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem('ct_ciclo_' + (cId || '')) || '{}'); } catch (e) { raw = null; }
+  const entries = raw && Array.isArray(raw.entries) ? raw.entries : [];
+  const activeEntries = entries.filter(entry => (parseInt(entry.targetSeconds, 10) || 0) > 0);
+  const weeklyTarget = activeEntries.reduce((acc, entry) => acc + (parseInt(entry.targetSeconds, 10) || 0), 0);
+  if (!weeklyTarget) return null;
+
+  const periodDays = daysBetweenInclusive(info.startKey, info.endKey);
+  const weekFactor = periodDays / 7;
+  const expectedTotal = Math.round(weeklyTarget * weekFactor);
+  const studiedTotal = info.totalSeg || 0;
+  const balance = studiedTotal - expectedTotal;
+  const byMateria = new Map(info.materiasDia.map(m => [m.id, m]));
+  const targetByMateria = new Map();
+  activeEntries.forEach(entry => {
+    if (!entry.materiaId) return;
+    targetByMateria.set(entry.materiaId, (targetByMateria.get(entry.materiaId) || 0) + Math.round((parseInt(entry.targetSeconds, 10) || 0) * weekFactor));
+  });
+  const materias = CT.getMaterias(cId);
+  const materiaMap = new Map(materias.map(m => [m.id, m]));
+  const rows = [...new Set([...targetByMateria.keys(), ...byMateria.keys()])].map(id => {
+    const target = targetByMateria.get(id) || 0;
+    const studied = byMateria.get(id)?.seg || 0;
+    return {
+      id,
+      nome: materiaMap.get(id)?.nome || byMateria.get(id)?.nome || 'Matéria',
+      target,
+      studied,
+      balance: studied - target
+    };
+  }).filter(row => row.target > 0 || row.studied > 0)
+    .sort((a,b) => Math.abs(b.balance) - Math.abs(a.balance));
+  return { weeklyTarget, periodDays, weekFactor, expectedTotal, studiedTotal, balance, rows };
+}
+function buildChartLegend(items, formatter, emptyText) {
+  if (!items.length) return `<div class="day-detail-empty">${emptyText}</div>`;
+  return items.map(item => `
+    <div class="day-detail-legend-row">
+      <div class="day-detail-legend-dot" style="background:${item.color}"></div>
+      <div class="day-detail-legend-name">${escapeHtml(item.label)}</div>
+      <div class="day-detail-legend-meta">${formatter(item)}</div>
+    </div>
+  `).join('');
+}
+function buildCycleGoalPanel(info) {
+  const comparison = readCycleGoalComparison(info);
+  if (!comparison) return '';
+  const reached = comparison.balance >= 0;
+  const pct = comparison.expectedTotal > 0 ? Math.round((comparison.studiedTotal / comparison.expectedTotal) * 100) : 0;
+  const badgeColor = reached ? 'var(--green)' : 'var(--yellow)';
+  const message = reached
+    ? 'Meta batida. Excelente consistência: você entregou a carga prevista para este período.'
+    : 'Você estudou, e isso conta. Abaixo dá para ver onde faltou carga em relação ao ciclo planejado.';
+  const rows = comparison.rows.length ? comparison.rows.map(row => {
+    const color = row.balance >= 0 ? 'var(--green)' : 'var(--yellow)';
+    return `
+      <div class="cycle-goal-row">
+        <div class="cycle-goal-name">${escapeHtml(row.nome)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text2);text-align:right">${formatStudyTime(row.studied)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:var(--text3);text-align:right">${formatStudyTime(row.target)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:900;color:${color};text-align:right">${formatSignedStudyTime(row.balance)}</div>
+      </div>`;
+  }).join('') : '<div class="day-detail-empty">Nenhuma matéria do ciclo apareceu neste período.</div>';
+
+  return `
+    <div class="cycle-goal-panel">
+      <div class="cycle-goal-head">
+        <div>
+          <div class="cycle-goal-title">Meta do ciclo x tempo estudado</div>
+          <div class="cycle-goal-sub">${message}</div>
+        </div>
+        <div class="cycle-goal-badge" style="color:${badgeColor}">${pct}% da meta</div>
+      </div>
+      <div class="cycle-goal-grid">
+        <div class="cycle-goal-stat"><div class="cycle-goal-value">${formatStudyTime(comparison.studiedTotal)}</div><div class="cycle-goal-label">Estudado</div></div>
+        <div class="cycle-goal-stat"><div class="cycle-goal-value">${formatStudyTime(comparison.expectedTotal)}</div><div class="cycle-goal-label">Previsto pelo ciclo</div></div>
+        <div class="cycle-goal-stat"><div class="cycle-goal-value" style="color:${badgeColor}">${formatSignedStudyTime(comparison.balance)}</div><div class="cycle-goal-label">Saldo</div></div>
+      </div>
+      <div class="cycle-goal-row" style="border-top:0;padding-top:0;color:var(--text3);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.45px">
+        <div>Matéria</div><div style="text-align:right">Estudado</div><div style="text-align:right">Meta</div><div style="text-align:right">Saldo</div>
+      </div>
+      <div class="cycle-goal-matters">${rows}</div>
+    </div>`;
+}
+function closeDayDetail() {
+  document.getElementById('dayDetailOverlay')?.remove();
+  if (_chartDayHours) { _chartDayHours.destroy(); _chartDayHours = null; }
+  if (_chartDayQuestions) { _chartDayQuestions.destroy(); _chartDayQuestions = null; }
+}
+function buildDayActivity(startKey, endKey = startKey) {
+  const materias = CT.getMaterias(cId);
+  const materiaMap = new Map(materias.map(m => [m.id, m]));
+  const topicoMap = new Map(CT.getTopicos().map(t => [t.id, t]));
+  const subtopicoMap = new Map(CT.getSubtopicos().map(s => [s.id, s]));
+  const inRange = item => item.data >= startKey && item.data <= endKey;
+  const compareActivity = (a,b) =>
+    String(a.data || '').localeCompare(String(b.data || '')) ||
+    String(a.horaInicio || '').localeCompare(String(b.horaInicio || ''));
+  const sessoes = CT.getSessoes({ concursoId: cId })
+    .filter(inRange)
+    .sort(compareActivity);
+  const questoes = CT.getQuestoes({ concursoId: cId })
+    .filter(inRange)
+    .sort(compareActivity);
+  const totalSeg = CT.totalSegundos(sessoes);
+  const stats = CT.calcStats(questoes);
+  const diasComEstudo = new Set(sessoes.filter(s => (s.duracaoSegundos || 0) > 0).map(s => s.data)).size;
+  const diasComAtividade = new Set([...sessoes.map(s => s.data), ...questoes.map(q => q.data)]).size;
+  const colors = getPizzaColors();
+  const theme = themePalette();
+
+  const materiasDia = materias.map((m, i) => {
+    const sessoesMateria = sessoes.filter(s => s.materiaId === m.id);
+    const questoesMateria = questoes.filter(q => q.materiaId === m.id);
+    const seg = CT.totalSegundos(sessoesMateria);
+    const qStats = CT.calcStats(questoesMateria);
+    return {
+      id: m.id,
+      nome: m.nome,
+      seg,
+      sessoes: sessoesMateria.length,
+      resolvidas: qStats.resolvidas || 0,
+      acertos: qStats.acertos || 0,
+      erros: qStats.erros || 0,
+      pct: qStats.pct,
+      color: colors[i % colors.length]
+    };
+  }).filter(m => m.seg > 0 || m.resolvidas > 0);
+
+  const maxSeg = Math.max(...materiasDia.map(m => m.seg), 0);
+  const maxQuestoes = Math.max(...materiasDia.map(m => m.resolvidas), 0);
+  const horasItems = materiasDia
+    .filter(m => m.seg > 0)
+    .map(m => ({
+      label: m.nome,
+      value: m.seg,
+      color: m.color,
+      pct: totalSeg > 0 ? Math.round((m.seg / totalSeg) * 100) : 0
+    }));
+  const questoesItems = [
+    { label: 'Certas', value: stats.acertos || 0, color: theme.green, pct: stats.resolvidas > 0 ? Math.round(((stats.acertos || 0) / stats.resolvidas) * 100) : 0 },
+    { label: 'Erradas', value: stats.erros || 0, color: theme.red, pct: stats.resolvidas > 0 ? Math.round(((stats.erros || 0) / stats.resolvidas) * 100) : 0 }
+  ].filter(item => item.value > 0);
+
+  function itemLabel(item) {
+    const mat = item.materiaId ? materiaMap.get(item.materiaId) : null;
+    const topico = item.topicoId ? topicoMap.get(item.topicoId) : null;
+    const subtopicoId = item.subtopId || item.subtopicoId;
+    const sub = subtopicoId ? subtopicoMap.get(subtopicoId) : null;
+    return {
+      materia: mat ? mat.nome : 'Sessão livre',
+      detalhe: [topico?.nome, sub?.nome].filter(Boolean).join(' > ')
+    };
+  }
+
+  return { startKey, endKey, sessoes, questoes, totalSeg, stats, diasComEstudo, diasComAtividade, materiasDia, maxSeg, maxQuestoes, horasItems, questoesItems, itemLabel, theme };
+}
+function openDayDetail(dateKey, options = {}) {
+  closeDayDetail();
+  const startKey = options.startKey || dateKey;
+  const endKey = options.endKey || dateKey;
+  const info = buildDayActivity(startKey, endKey);
+  const titleText = options.title || `Atividades de ${formatHeatmapDate(dateKey)}`;
+  const scopeText = options.scopeText || 'neste dia';
+  const emptyLabel = options.emptyLabel || 'nesse dia';
+  const periodLabel = options.periodLabel || 'no dia';
+  const questionsTitle = options.questionsTitle || 'Questões do dia';
+  const showCycleGoal = options.showCycleGoal === true;
+  const totalAtividades = info.sessoes.length + info.questoes.length;
+  const overlay = document.createElement('div');
+  overlay.className = 'day-detail-overlay';
+  overlay.id = 'dayDetailOverlay';
+  overlay.onclick = e => { if (e.target === overlay) closeDayDetail(); };
+
+  const materiaRows = info.materiasDia.length ? info.materiasDia.map(m => {
+    const horaPct = info.maxSeg > 0 ? Math.max(4, Math.round((m.seg / info.maxSeg) * 100)) : 0;
+    const questPct = info.maxQuestoes > 0 ? Math.max(4, Math.round((m.resolvidas / info.maxQuestoes) * 100)) : 0;
+    return `
+      <div class="day-detail-materia-row">
+        <div style="min-width:0">
+          <div class="day-detail-materia-name">${escapeHtml(m.nome)}</div>
+          <div class="day-detail-materia-meta">${m.sessoes} sessões de estudo | ${m.acertos} acertos | ${m.resolvidas} questões | ${m.pct != null ? m.pct + '% de acerto' : 'sem questões'}</div>
+          <div class="day-detail-bar-label"><span>Tempo estudado</span><span>${formatStudyTime(m.seg)}</span></div>
+          <div class="day-detail-bar"><div class="day-detail-bar-fill" style="width:${horaPct}%;background:${m.color}"></div></div>
+          ${m.resolvidas > 0 ? `<div class="day-detail-bar-label"><span>Questões feitas</span><span>${m.resolvidas}</span></div>` : ''}
+          ${m.resolvidas > 0 ? `<div class="day-detail-bar"><div class="day-detail-bar-fill" style="width:${questPct}%;background:${info.theme.yellow}"></div></div>` : ''}
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:800;color:var(--text2);text-align:right">${formatStudyTime(m.seg)}</div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:800;color:${pctColor(m.pct)};text-align:right">${m.pct != null ? m.pct + '%' : '-'}</div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma matéria estudada ${emptyLabel}.</div>`;
+
+  const sessaoRows = info.sessoes.length ? info.sessoes.map(s => {
+    const labels = info.itemLabel(s);
+    const hora = s.horaInicio ? new Date(s.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+    const tipo = formatStudyTypeLabel(s);
+    return `
+      <div class="today-session-item">
+        <div class="today-session-hour">${hora}</div>
+        <div style="min-width:0">
+          <div class="today-session-name">${escapeHtml(labels.materia)}</div>
+          <div class="today-session-meta">${escapeHtml([labels.detalhe, tipo].filter(Boolean).join(' | '))}</div>
+        </div>
+        <div class="today-session-duration">${formatStudyTime(s.duracaoSegundos)}</div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma sessão de estudo registrada ${emptyLabel}.</div>`;
+
+  const questaoRows = info.questoes.length ? info.questoes.map(q => {
+    const labels = info.itemLabel(q);
+    const hora = q.horaInicio ? new Date(q.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+    const pct = q.resolvidas > 0 ? Math.round(((q.acertos || 0) / q.resolvidas) * 100) : null;
+    const pctText = pct != null ? pct + '%' : '-';
+    return `
+      <div class="today-session-item">
+        <div class="today-session-hour">${hora}</div>
+        <div style="min-width:0">
+          <div class="today-session-name">${escapeHtml(labels.materia)}</div>
+          <div class="today-session-meta">${escapeHtml(labels.detalhe || 'Lançamento de questões')}</div>
+        </div>
+        <div class="question-result">
+          <span style="color:var(--green)">${q.acertos || 0}<small>acertos</small></span>
+          <span>${q.resolvidas || 0}<small>questões</small></span>
+          <span style="color:${pctColor(pct)}">${pctText}<small>acerto</small></span>
+        </div>
+      </div>`;
+  }).join('') : `<div class="day-detail-empty">Nenhuma questão registrada ${emptyLabel}.</div>`;
+  const cycleGoalPanel = showCycleGoal ? buildCycleGoalPanel(info) : '';
+
+  overlay.innerHTML = `
+    <div class="day-detail-modal" onclick="event.stopPropagation()">
+      <div class="day-detail-head">
+        <div>
+          <div class="day-detail-title">${titleText}</div>
+          <div class="day-detail-sub">${totalAtividades ? totalAtividades + ' registros encontrados ' + scopeText : 'Nenhuma atividade registrada ' + scopeText}</div>
+        </div>
+        <button class="day-detail-close" onclick="closeDayDetail()" title="Fechar">x</button>
+      </div>
+      <div class="day-detail-stats">
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${formatStudyTime(info.totalSeg)}</div><div class="day-detail-stat-label">Horas estudadas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.stats.resolvidas || 0}</div><div class="day-detail-stat-label">Questões feitas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value" style="color:${pctColor(info.stats.pct)}">${info.stats.pct != null ? info.stats.pct + '%' : '-'}</div><div class="day-detail-stat-label">Taxa de acerto</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.materiasDia.length}</div><div class="day-detail-stat-label">Matérias movimentadas</div></div>
+        <div class="day-detail-stat"><div class="day-detail-stat-value">${info.diasComEstudo || 0}</div><div class="day-detail-stat-label">Dias com estudo</div></div>
+      </div>
+      <div class="day-detail-grid">
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Horas por matéria</div>
+          <div class="day-detail-panel-sub">${info.totalSeg > 0 ? formatStudyTime(info.totalSeg) + ' distribuídos ' + periodLabel : 'Sem horas ' + periodLabel}</div>
+          <div class="day-detail-chart-layout">
+            <div class="day-detail-chart"><canvas id="chartDayHours"></canvas></div>
+            <div class="day-detail-chart-legend">${buildChartLegend(info.horasItems, item => `${formatStudyTime(item.value)} | ${item.pct}%`, 'Sem horas para mostrar.')}</div>
+          </div>
+        </div>
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">${questionsTitle}</div>
+          <div class="day-detail-panel-sub">${info.stats.resolvidas ? (info.stats.acertos || 0) + ' acertos e ' + (info.stats.erros || 0) + ' erros' : 'Sem questões ' + periodLabel}</div>
+          <div class="day-detail-chart-layout">
+            <div class="day-detail-chart"><canvas id="chartDayQuestions"></canvas></div>
+            <div class="day-detail-chart-legend">
+              ${buildChartLegend(info.questoesItems, item => `${item.value} | ${item.pct}%`, 'Sem questões para mostrar.')}
+              ${info.stats.resolvidas ? `<div class="day-detail-legend-row" style="border-top:1px solid var(--border);padding-top:8px"><div></div><div class="day-detail-legend-name">Taxa de acerto</div><div class="day-detail-legend-meta" style="color:${pctColor(info.stats.pct)}">${info.stats.pct}%</div></div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+      ${cycleGoalPanel}
+      <div class="day-detail-grid">
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Resumo por matéria</div>
+          <div class="day-detail-list">${materiaRows}</div>
+        </div>
+        <div class="day-detail-panel">
+          <div class="day-detail-panel-title">Sessões de estudo</div>
+          <div class="day-detail-list">${sessaoRows}</div>
+        </div>
+      </div>
+      <div class="day-detail-panel">
+        <div class="day-detail-panel-title">Lançamentos de questões</div>
+        <div class="day-detail-list">${questaoRows}</div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  _chartDayHours = makeDoughnutChart(
+    'chartDayHours',
+    _chartDayHours,
+    info.horasItems,
+    info.theme,
+    item => `${item.label}: ${formatStudyTime(item.value)} (${item.pct}%)`
+  );
+  _chartDayQuestions = makeDoughnutChart(
+    'chartDayQuestions',
+    _chartDayQuestions,
+    info.questoesItems,
+    info.theme,
+    item => `${item.label}: ${item.value} (${item.pct}%)`
+  );
+}
+function openMonthDetail(year, monthIndex) {
+  const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const start = `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`;
+  const end = CT._dateString(new Date(year, monthIndex + 1, 0));
+  openDayDetail(start, {
+    startKey: start,
+    endKey: end,
+    title: `Estatísticas de ${monthNames[monthIndex]} de ${year}`,
+    scopeText: 'neste mês',
+    emptyLabel: 'nesse mês',
+    periodLabel: 'no mês',
+    questionsTitle: 'Questões do mês',
+    showCycleGoal: true
+  });
+}
+function openYearDetail(year) {
+  openDayDetail(`${year}-01-01`, {
+    startKey: `${year}-01-01`,
+    endKey: `${year}-12-31`,
+    title: `Retrospectiva de estudos de ${year}`,
+    scopeText: 'neste ano',
+    emptyLabel: 'nesse ano',
+    periodLabel: 'no ano',
+    questionsTitle: 'Questões do ano',
+    showCycleGoal: true
+  });
+}
+function openSelectedYearDetail() {
+  const select = document.getElementById('annualAnalysisYear');
+  const year = select ? parseInt(select.value, 10) : null;
+  if (year) openYearDetail(year);
+}
+async function shareTodaySummary() {
+  const card = document.getElementById('todayShareCard');
+  if (!card || typeof html2canvas === 'undefined') return;
+  card.classList.add('capture-mode', 'today-capture-flash');
+  await new Promise(resolve => setTimeout(resolve, 120));
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Falha ao gerar imagem');
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      CT.toast('O de hoje tá pago 💪 Print pronto para colar com Ctrl + V! Poste no Twitter e marque o Track Concursos! @TrackConcursos', '📸');
+      const toastEl = document.getElementById('ct-main-toast');
+      if (toastEl) {
+        if (toastEl.hideTimeout) clearTimeout(toastEl.hideTimeout);
+        toastEl.hideTimeout = setTimeout(() => {
+          toastEl.style.transform = 'translateX(150%)';
+        }, 9500);
+      }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'track-concursos-estudos-de-hoje.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      CT.toast('Clipboard não suportado aqui. O print foi baixado.', '📸');
+    }
+  } catch (err) {
+    console.error(err);
+    CT.toast('Não foi possível gerar o print agora.', '❌');
+  } finally {
+    card.classList.remove('capture-mode');
+    setTimeout(() => card.classList.remove('today-capture-flash'), 380);
+  }
+}
 
 function setJanela(dias, el) {
   _janela = dias;
@@ -357,6 +936,19 @@ function setJanela(dias, el) {
 }
 
 function pctColor(p){return CT.pctColor?CT.pctColor(p):'var(--text3)';}
+function formatStudyTime(segundos) {
+  return CT.formatarTempo(Math.max(0, Math.round(segundos || 0))) || '0min';
+}
+function formatHoursAsStudyTime(horas) {
+  return formatStudyTime((horas || 0) * 3600);
+}
+function formatStudyTypeLabel(sessao) {
+  if (sessao && sessao.tipoEstudo) return String(sessao.tipoEstudo);
+  if (!sessao || !sessao.origem) return '';
+  if (sessao.origem === 'pomodoro') return 'Pomodoro';
+  if (sessao.origem === 'manual_ciclo') return 'Ciclo de estudos';
+  return '';
+}
 
 function formatHeatmapDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
@@ -377,6 +969,19 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
   const last = new Date(datas[datas.length - 1] + 'T00:00:00');
   const totalDiasComEstudo = horasPorDia.filter(h => h > 0).length;
   const maiorCarga = Math.max(...horasPorDia, 0);
+  const annualYears = [...new Set([
+    ...CT.getSessoes({ concursoId: cId }).filter(s => s.data).map(s => String(s.data).slice(0, 4)),
+    ...CT.getQuestoes({ concursoId: cId }).filter(q => q.data).map(q => String(q.data).slice(0, 4))
+  ])].filter(Boolean).sort((a,b) => Number(b) - Number(a));
+  const annualControl = annualYears.length ? `
+    <div class="annual-analysis">
+      <span class="annual-analysis-label">Análise anual</span>
+      <select id="annualAnalysisYear" title="Escolha um ano com estudos registrados">
+        ${annualYears.map(year => `<option value="${year}">${year}</option>`).join('')}
+      </select>
+      <button type="button" onclick="openSelectedYearDetail()">Ver</button>
+    </div>
+  ` : '';
   const monthLabels = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
   const weekLabels = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
 
@@ -389,6 +994,12 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
     if (ratio >= 0.5) return theme.heat3;
     if (ratio >= 0.28) return theme.heat2;
     return theme.heat1;
+  }
+
+  function heatTextColor(horas, inRange) {
+    if (!inRange || horas <= 0) return 'var(--text3)';
+    const ratio = maxHoras > 0 ? horas / maxHoras : 0;
+    return ratio >= 0.72 ? '#082016' : 'var(--text)';
   }
 
   const months = [];
@@ -424,6 +1035,7 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
     months.push({
       title: monthLabels[monthCursor.getMonth()],
       year: monthCursor.getFullYear(),
+      monthIndex: monthCursor.getMonth(),
       cells
     });
     monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
@@ -432,7 +1044,7 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
   container.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;align-items:start">
       ${months.map(month => `
-        <div style="background:linear-gradient(180deg, var(--surface-soft), var(--surface-subtle));border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;min-height:238px">
+        <div class="heatmap-month-card" role="button" tabindex="0" onclick="openMonthDetail(${month.year},${month.monthIndex})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMonthDetail(${month.year},${month.monthIndex});}" title="Ver retrospectiva de ${month.title}/${month.year}">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text)">${month.title}</div>
             <div style="font-size:11px;color:var(--text3)">${month.year}</div>
@@ -441,26 +1053,45 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
             ${weekLabels.map(label => `
               <div style="font-size:10px;color:var(--text3);text-align:center;font-weight:700;letter-spacing:.4px;padding-bottom:2px">${label}</div>
             `).join('')}
-            ${month.cells.map(day => `
-              <div
-                title="${formatHeatmapDate(day.key)} - ${day.horas.toFixed(1)}h"
-                style="
+            ${month.cells.map(day => {
+              const commonStyle = `
+                  width:100%;
                   min-height:30px;
                   border-radius:10px;
                   padding:4px 4px 3px;
-                  border:1px solid ${day.horas > 0 && day.inCurrentMonth && day.inRange ? (window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.24) : 'rgba(254,123,208,0.22)') : 'var(--border)'};
+                  border:1px solid ${day.horas > 0 && day.inCurrentMonth && day.inRange ? (window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.24) : 'rgba(62,207,142,0.22)') : 'var(--border)'};
                   background:${day.inCurrentMonth ? heatColor(day.horas, day.inRange) : 'var(--surface-subtle)'};
-                  color:${day.inCurrentMonth ? 'var(--text)' : 'var(--text3)'};
-                  box-shadow:${day.horas > 0 && day.inCurrentMonth && day.inRange ? 'inset 0 1px 0 var(--surface-strong), 0 10px 20px ' + (window.TrackTheme ? TrackTheme.alpha(theme.heat4, 0.12) : 'rgba(214,93,177,0.08)') : 'none'};
+                  color:${day.inCurrentMonth ? heatTextColor(day.horas, day.inRange) : 'var(--text3)'};
+                  box-shadow:${day.horas > 0 && day.inCurrentMonth && day.inRange ? 'inset 0 1px 0 var(--surface-strong), 0 10px 20px ' + (window.TrackTheme ? TrackTheme.alpha(theme.heat4, 0.12) : 'rgba(47,189,123,0.08)') : 'none'};
                   display:flex;
                   flex-direction:column;
                   justify-content:space-between;
-                "
-              >
+                `;
+              const content = `
                 <div style="font-size:10px;font-weight:700;line-height:1">${day.day}</div>
-                <div style="font-size:9px;line-height:1;text-align:left;color:${day.horas > 0 && day.inCurrentMonth && day.inRange ? (theme.theme === 'light' ? 'var(--text)' : 'rgba(255,240,250,0.92)') : 'transparent'}">${day.horas > 0 && day.inCurrentMonth && day.inRange ? day.horas.toFixed(1).replace('.', ',') + 'h' : '&nbsp;'}</div>
-              </div>
-            `).join('')}
+                <div style="font-size:9px;line-height:1;text-align:left;color:${day.horas > 0 && day.inCurrentMonth && day.inRange ? heatTextColor(day.horas, day.inRange) : 'transparent'}">${day.horas > 0 && day.inCurrentMonth && day.inRange ? formatHoursAsStudyTime(day.horas) : '&nbsp;'}</div>
+              `;
+              if (!day.inCurrentMonth) {
+                return `
+                  <div
+                    class="heatmap-day-out"
+                    onclick="event.stopPropagation()"
+                    title="Fora de ${month.title}/${month.year}"
+                    style="${commonStyle}"
+                  >${content}</div>
+                `;
+              }
+              return `
+                <button
+                  type="button"
+                  class="heatmap-day-btn"
+                  onclick="event.stopPropagation(); openDayDetail('${day.key}')"
+                  onkeydown="event.stopPropagation()"
+                  title="${formatHeatmapDate(day.key)} - ${formatHoursAsStudyTime(day.horas)}"
+                  style="${commonStyle}"
+                >${content}</button>
+              `;
+            }).join('')}
           </div>
         </div>
       `).join('')}
@@ -468,15 +1099,16 @@ function renderHorasHeatmap(container, datas, horasPorDia) {
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text3);font-size:11px">
         <span>${totalDiasComEstudo} dias com estudo</span>
-        <span>Maior carga: ${maiorCarga.toFixed(1)}h</span>
+        <span>Maior carga: ${formatHoursAsStudyTime(maiorCarga)}</span>
       </div>
+      ${annualControl}
       <div style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px">
         <span>Menos</span>
         <span style="width:14px;height:14px;border-radius:4px;background:${theme.heatEmpty};border:1px solid var(--border)"></span>
-        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat1};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
-        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat2};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
-        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat3};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
-        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat5};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(254,123,208,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat1};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat2};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat3};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
+        <span style="width:14px;height:14px;border-radius:4px;background:${theme.heat5};border:1px solid ${window.TrackTheme ? TrackTheme.alpha(theme.heat5, 0.12) : 'rgba(62,207,142,0.12)'}"></span>
         <span>Mais</span>
       </div>
     </div>
@@ -549,7 +1181,7 @@ function render() {
 
   // Labels subheader
   document.getElementById('lblHoras').textContent =
-    totalHorasPeriodo.toFixed(1) + 'h em ' + diasAtivos + ' dias ativos';
+    formatStudyTime(totalHorasPeriodo * 3600) + ' em ' + diasAtivos + ' dias ativos';
   document.getElementById('lblQuestoes').textContent =
     totalQuestoesPeriodo + ' questões no período';
 
@@ -740,9 +1372,8 @@ function render() {
             cornerRadius: 8,
             callbacks: {
               label: function(ctx) {
-                const hrs = ctx.parsed;
                 const pct = totalSeg > 0 ? Math.round((ranking[ctx.dataIndex].seg / totalSeg) * 100) : 0;
-                return ' ' + hrs.toFixed(1) + 'h (' + pct + '%)';
+                return ' ' + formatStudyTime(ranking[ctx.dataIndex].seg) + ' (' + pct + '%)';
               }
             }
           }
@@ -771,29 +1402,79 @@ function render() {
       }).join('')
     : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão registrada ainda.</div>';
 
-  // Atividade recente — últimas sessões
-  const recentes = [...todasSessoes].sort((a,b)=>b.data.localeCompare(a.data)).slice(0,10);
-  document.getElementById('atividadeRecente').innerHTML = recentes.length
-    ? recentes.map(s => {
+  const hojeKey = CT._today();
+  const sessoesHoje = todasSessoes
+    .filter(s => s.data === hojeKey)
+    .sort((a,b) => String(b.horaInicio || '').localeCompare(String(a.horaInicio || '')));
+  const questoesHoje = todasQuestoes.filter(q => q.data === hojeKey);
+  const totalSegHoje = CT.totalSegundos(sessoesHoje);
+  const statsHoje = CT.calcStats(questoesHoje);
+  const colorByMateria = new Map();
+  ranking.forEach((m, i) => colorByMateria.set(m.nome, paletteColors[i % paletteColors.length]));
+  const horasHojeByMateria = materias.map((m, i) => {
+    const segMateria = CT.totalSegundos(sessoesHoje.filter(s => s.materiaId === m.id));
+    return {
+      label: m.nome,
+      value: segMateria,
+      color: colorByMateria.get(m.nome) || paletteColors[i % paletteColors.length],
+      pct: totalSegHoje > 0 ? Math.round((segMateria / totalSegHoje) * 100) : 0
+    };
+  }).filter(item => item.value > 0);
+  const questoesHojeItens = [
+    { label: 'Certas', value: statsHoje.acertos || 0, color: theme.green, pct: statsHoje.resolvidas > 0 ? Math.round(((statsHoje.acertos || 0) / statsHoje.resolvidas) * 100) : 0 },
+    { label: 'Erradas', value: statsHoje.erros || 0, color: theme.red, pct: statsHoje.resolvidas > 0 ? Math.round(((statsHoje.erros || 0) / statsHoje.resolvidas) * 100) : 0 }
+  ].filter(item => item.value > 0);
+
+  document.getElementById('todaySummarySub').textContent = `Hoje (${hojeKey.split('-').reverse().join('/')})`;
+  document.getElementById('todayHoursSub').textContent = totalSegHoje > 0
+    ? formatStudyTime(totalSegHoje) + ' estudados hoje'
+    : 'Nenhuma hora registrada hoje';
+  document.getElementById('todayQuestionsSub').textContent = statsHoje.resolvidas > 0
+    ? statsHoje.resolvidas + ' questões feitas hoje'
+    : 'Nenhuma questão registrada hoje';
+  document.getElementById('todaySessionsSub').textContent = '';
+  document.getElementById('todayHoursLegend').innerHTML = buildLegendRows(horasHojeByMateria, item => formatStudyTime(item.value), 'Nenhuma sessão de estudo hoje.');
+  document.getElementById('todayQuestionsLegend').innerHTML = buildLegendRows(questoesHojeItens, item => String(item.value), 'Nenhuma questão feita hoje.');
+  document.getElementById('todaySessionsList').innerHTML = sessoesHoje.length
+    ? sessoesHoje.map(s => {
         const mat = s.materiaId ? CT.getMateria(s.materiaId) : null;
-        const d   = s.data.split('-'); const dFmt = d[2]+'/'+d[1];
+        const hora = s.horaInicio ? new Date(s.horaInicio).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '--:--';
+        const tipoEstudo = formatStudyTypeLabel(s);
         return `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-          <div style="font-family:var(--mono);font-size:12px;color:var(--text3);flex-shrink:0;width:38px">${dFmt}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mat?mat.nome:'Sessão livre'}</div>
-          </div>
-          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">${CT.formatarTempo(s.duracaoSegundos)}</div>
-        </div>`;
+          <div class="today-session-item">
+            <div class="today-session-hour">${hora}</div>
+            <div style="min-width:0">
+              <div class="today-session-name">${mat ? mat.nome : 'Sessão livre'}</div>
+              ${tipoEstudo ? `<div class="today-session-meta">${tipoEstudo}</div>` : ''}
+            </div>
+            <div class="today-session-duration">${formatStudyTime(s.duracaoSegundos)}</div>
+          </div>`;
       }).join('')
-    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão registrada ainda.</div>';
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Nenhuma sessão de estudo hoje.</div>';
+
+  _chartTodayHours = makeDoughnutChart(
+    'chartTodayHours',
+    _chartTodayHours,
+    horasHojeByMateria.map(item => ({ label: item.label, value: Number((item.value / 3600).toFixed(2)), color: item.color, rawSeconds: item.value, pct: item.pct })),
+    theme,
+    item => `${item.label}: ${formatStudyTime(item.rawSeconds)} (${item.pct}%)`
+  );
+  _chartTodayQuestions = makeDoughnutChart(
+    'chartTodayQuestions',
+    _chartTodayQuestions,
+    questoesHojeItens,
+    theme,
+    item => `${item.label}: ${item.value} (${item.pct}%)`
+  );
 }
 
+document.getElementById('todayShareBtn')?.addEventListener('click', shareTodaySummary);
 render();
 </script>
 
 
 
+<script src="nav.js"></script>
 <script src="timer-popup.js"></script>
 </body>
 </html>

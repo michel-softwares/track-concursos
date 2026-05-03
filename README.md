@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="Logo Oficial Track Concursos.png" alt="Logo Oficial Track Concursos" width="200">
+</p>
+
+<p align="center">
   <img src="www/assets/readme/logo-track.png" alt="Track Concursos" width="660">
 </p>
 
@@ -11,7 +15,7 @@
   <a href="#requisitos-para-instalacao"><img src="https://img.shields.io/badge/platform-Windows-0A84FF.svg" alt="Windows"></a>
   <a href="#instalacao"><img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-via%20Release-2ea44f.svg" alt="Instalação via Release"></a>
   <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ"><img src="https://img.shields.io/badge/TUTORIAL-YouTube-FF0000?logo=youtube&logoColor=white" alt="Tutorial no YouTube"></a>
-  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0.0-6C63FF.svg" alt="Status"></a>
+  <a href="#visao-geral"><img src="https://img.shields.io/badge/status-v1.0.1-6C63FF.svg" alt="Status"></a>
   <a href="#licenca-de-uso"><img src="https://img.shields.io/badge/licen%C3%A7a-uso%20pessoal-red.svg" alt="Licença Proprietária"></a>
 </p>
 
@@ -57,7 +61,6 @@ QR Code Pix
 - [Visão Geral](#visao-geral)
 - [Por Que Este Projeto Existe](#por-que-este-projeto-existe)
 - [Principais Funcionalidades](#principais-funcionalidades)
-- [Modelos de Prova Suportados](#modelos-de-prova-suportados)
 - [Manual de uso inicial](#manual-de-uso-inicial)
 - [Requisitos para Instalação](#requisitos-para-instalacao)
 - [Instalação](#instalacao)
@@ -77,16 +80,18 @@ O Track Concursos foi criado para ser o centro da sua preparação. Aqui, cada c
 Com ele, é possível:
 
 - cadastrar concursos em pré-edital, pós-edital ou já realizados
-- organizar matérias, tópicos e subtópicos
-- montar ciclo de estudos ou cronograma semanal
-- registrar horas, questões, revisões e sessões de estudo
+- organizar matérias, tópicos e subtópicos automaticamente com auxílio de prompts para ferramentas de IA
+- escolher entre ciclo de estudos ou cronograma semanal
+- registrar horas, questões, revisões, sessões de estudo e analisar todos essas métricas semanal, mensal e anualmente
 - configurar o painel da prova com quantidade de questões e pesos
-- lançar simulados com cálculo automático de nota
+- lançar simulados com cálculo automático de nota de acordo com seu Painel de Prova
 - analisar desempenho geral e por matéria
 - importar estruturas prontas via Edital Premium
 - usar perfis separados no mesmo computador sem misturar dados
+- criar flashcards ou importá-los via .CSV ou .JSON / ferramenta de Flashcards criada especialmente para ser compatível com Cards e Quizzes (questões comentadas) criadas pelo NotebookLM, mas que também é compatível com Anki
 
 > [!TIP]
+> Utilize a extensão "NotebookLM Quiz Exporter" para exportar facilmente Cards e Quizzes criado pelo NOTEBOOK LM
 > Entre no grupo do Telegram para ter acesso a Editais Premium gratuitos.
 > Entre em contato se quiser um em específico.
 
@@ -94,7 +99,7 @@ Com ele, é possível:
 
 ## Por Que Este Projeto Existe
 
-Como concurseiro, eu sei que a nossa preparação para concursos costuma ficar espalhada entre PDFs, cronômetros, planilhas, cadernos e plataformas de questões. O Track Concursos nasceu para reunir essas camadas em um único ambiente organizado, reduzindo a fragmentação e permitindo um acompanhamento mais claro da jornada, inclusive com acesso rápido aos seus materiais de estudo.
+Como concurseiro, eu sei que a nossa preparação para concursos costuma ficar espalhada entre PDFs, cronômetros, planilhas, cadernos e plataformas de questões. O Track Concursos nasceu para reunir essas camadas em um único ambiente organizado, reduzindo a fragmentação e permitindo um acompanhamento mais claro da jornada, inclusive com acesso instantâneo aos seus materiais de estudo.
 
 Ele centraliza:
 
@@ -102,6 +107,7 @@ Ele centraliza:
 - rotina diária de estudo com ciclo de estudos
 - registro de horas estudadas e questões, com análise dos pontos fortes e fracos
 - revisões periódicas
+- flashcards com baralhos criados automaticamente de acordo com seu edital
 - simulados com uma área de análise de dados específica
 - histórico de resultados, desde reprovações até aprovações e nomeações
 
@@ -168,6 +174,9 @@ O programa suporta importação de estruturas prontas em JSON, incluindo:
 - simulados vinculados
 - configurações estruturais do concurso
 
+> [!TIP]
+> É possível importar um Edital Premium Completaço, com seus materiais (livros, PDFs, etc) já linkados em cada tópico!!! Fale comigo para saber mais informações.
+
 ### 7. Perfis separados e backups locais
 
 Mais de uma pessoa pode usar o programa no mesmo computador sem misturar:
@@ -177,24 +186,6 @@ Mais de uma pessoa pode usar o programa no mesmo computador sem misturar:
 - backups
 - preferências do perfil
 
----
-
-## Modelos de Prova Suportados
-
-O Painel da Prova suporta atualmente dois formatos principais:
-
-| Modelo | Lógica de cálculo |
-|---|---|
-| Tradicional por peso | questões x peso por matéria |
-| CESPE / CEBRASPE | +1 por acerto, penalidade configurável por erro e 0 para questão em branco |
-
-O painel também pode contemplar:
-
-- conhecimentos gerais
-- conhecimentos específicos
-- redação
-
-Isso permite que o cálculo dos simulados fique mais fiel ao edital cadastrado pelo usuário. Ao registrar a quantidade de questões e peso previstos no edital do concurso, o cálculo da sua nota é automaticamente mostrado após registrar um simulado feito.
 
 ---
 
@@ -229,8 +220,6 @@ Para a instalação manual pelo código-fonte, você também precisa de:
 
 <h2 id="instalacao">Instalação</h2>
 
-Este passo a passo foi pensado para quem nunca usou GitHub antes.
-
 ### Tutorial em vídeo
 
 Veja o tutorial no youtube para fácil instalação e como usar a aplicação
@@ -244,6 +233,8 @@ Veja o tutorial no youtube para fácil instalação e como usar a aplicação
 <p align="center">
   <a href="https://www.youtube.com/watch?v=YrqFyPrqRSQ"><strong>Assistir tutorial de instalação no YouTube</strong></a>
 </p>
+
+Este passo a passo foi pensado para quem nunca usou GitHub antes.
 
 > [!IMPORTANT]
 > A forma recomendada de instalação agora é pelo instalador `.exe` disponível na área de Releases.
@@ -373,6 +364,11 @@ Isso inclui:
 - configurações auxiliares
 - logos e arquivos complementares
 
+Os snapshots de segurança dos perfis ficam em `profiles/<perfil>/snapshots`.
+O app limpa snapshots antigos automaticamente ao salvar: mantém sempre os 20
+mais recentes e também 1 snapshot por dia dos últimos 30 dias. A limpeza atua
+somente em arquivos `.json` dentro da pasta `snapshots` de cada perfil.
+
 Na instalação manual, os dados continuam locais e podem ficar na própria pasta do projeto, principalmente em:
 
 - `profiles/`
@@ -384,6 +380,7 @@ Na prática:
 - no modo manual/portátil, a pasta do projeto continua concentrando os dados locais
 
 ---
+
 
 <h2 id="licenca-de-uso">Licença de Uso</h2>
 
@@ -407,9 +404,9 @@ O projeto foi idealizado por mim e desenvolvido com apoio de ferramentas de inte
 Tecnologias utilizadas:
 
 - Linguagens: HTML, CSS, JavaScript e Python
-- Claude Sonnet 4.6: utilizado no início do projeto
+- Claude Sonnet 4.5: utilizado no início do projeto
 - Antigravity Gemini 3 Flash e Gemini 3.1 Pro: utilizados em grande parte do desenvolvimento
-- Codex GPT-5.4: utilizado em correções, melhorias e na finalização do projeto
+- Codex GPT-5.4 e 5.5: utilizado em correções, melhorias e na finalização do projeto
 
 No processo de empacotamento da versão Windows, o projeto também utiliza:
 

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="theme.js"></script>
+  <title>Track Concursos - Notas v1.0.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg2: #13161e;
+      --bg3: #1a1e2a;
+      --border: #252836;
+      --accent: #4f8ef7;
+      --accent2: #7c5cfc;
+      --text: #e8eaf2;
+      --text2: #f1f2f6;
+      --text3: #a1a6c2;
+      --green: #3ecf8e;
+      --yellow: #FFD700;
+      --sans: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      padding: 42px 22px
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px
+    }
+
+    .logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      flex-shrink: 0
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.1;
+      margin-bottom: 8px
+    }
+
+    .lead {
+      color: var(--text3);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 760px
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 5px 11px;
+      border: 1px solid rgba(79, 142, 247, .32);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 10px
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 16px
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--text2)
+    }
+
+    h3 {
+      font-size: 14px;
+      margin: 16px 0 8px;
+      color: var(--text2)
+    }
+
+    p,
+    li {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text3)
+    }
+
+    ul {
+      padding-left: 18px
+    }
+
+    li+li {
+      margin-top: 4px
+    }
+
+    code {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 5px;
+      color: var(--text2)
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px
+    }
+
+    .back {
+      display: inline-flex;
+      margin-top: 8px
+    }
+
+    .hash {
+      word-break: break-all
+    }
+
+    @media (max-width:760px) {
+      body {
+        padding: 28px 16px
+      }
+
+      .head {
+        align-items: flex-start
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px
+      }
+
+      h1 {
+        font-size: 25px
+      }
+
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="head">
+      <img class="logo" src="assets/logo-oficial-track-concursos.png" alt="Track Concursos">
+      <div>
+        <span class="badge">v1.0.1</span>
+        <h1>Notas da atualização</h1>
+        <p class="lead">Atualização focada em produtividade real: ferramenta de flashcards integrado ao edital, ciclo de
+          estudos mais controlado, métricas mais claras, revisões mais confiáveis, melhorias de conforto e correção de
+          inúmeros bugs.</p>
+      </div>
+    </div>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Flashcards integrados</h2>
+        <ul>
+          <li>Nova área de Flashcards no menu lateral.</li>
+          <li>Baralhos criados automaticamente por matéria, tópico e subtópico de acordo com o edital.</li>
+          <li>Criação de cards do tipo <code>Flip</code> e <code>Questões Comentadas</code>.</li>
+          <li>SRS simples, estatísticas próprias e sincronização dos baralhos com seus tópicos correspondetes na aba da
+            matéria para facilitar o acesso através de links.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Importação e exportação</h2>
+        <ul>
+          <li>Importação de flashcards por JSON e CSV.</li>
+          <li>Pensado especialmente para importar Cards e Quiz gerados pelo NOTEBOOK LM e exportados via extensão
+            "NotebookLM Quiz Exporter" CSV e JSON. Compatibilidade também com CSV simples, CSV de questões comentadas e
+            arquivos do Anki.</li>
+          <li>Exportação de flashcards para JSON e CSV.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Questões Comentadas</h2>
+      <ul>
+        <li>Gabarito correto aparece em verde, alternativa errada escolhida aparece em vermelho.</li>
+        <li>Comentários por alternativa aparecem dentro da própria opção quando o arquivo importado trouxer
+          justificativas individuais.</li>
+        <li>A DICA fica protegida no botão <code>Mostrar dica</code>, evitando spoiler antes da resposta.</li>
+        <li>Textos longos expandem a página naturalmente, sem cortar enunciados, alternativas ou explicações.</li>
+      </ul>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Ciclo e métricas</h2>
+        <ul>
+          <li>Comparativo por matéria entre meta planejada e tempo estudado.</li>
+          <li>Ciclo concluído não reinicia sozinho; o usuário decide quando começar a próxima rodada.</li>
+          <li>Dashboard semanal com gráficos doughnut e semana fixa de domingo a sábado.</li>
+          <li>Painel <code>Estudos do dia</code> com horas, questões e sessões do dia.</li>
+          <li>Possibilidade de verificar métricas diárias, semanais, mensais e anuais.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Revisões e navegação</h2>
+        <ul>
+          <li>Revisões de subtópicos aparecem corretamente na matéria, dashboard e aba Revisões.</li>
+          <li>Exclusão manual de revisões na aba dedicada.</li>
+          <li>Botão lateral de voltar do mouse fecha camadas internas antes de trocar de página.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Atualização e dados do usuário</h2>
+      <ul>
+        <li>O app agora mostra <code>v1.0.1</code> abaixo do logo e consulta o GitHub no máximo uma vez por dia para
+          avisar sobre novas versões.</li>
+        <li>Dados do usuário continuam fora da pasta do programa, em <code>%LOCALAPPDATA%\Track Concursos</code>.</li>
+        <li>Profiles, backups, snapshots e logos do usuário não são apagados pelo instalador.</li>
+        <li>A atualização de <code>1.0.0</code> para <code>1.0.1</code> foi validada com simulação de perfil avançado
+          antigo.</li>
+      </ul>
+    </section>
+
+
+
+    <a class="back" href="ajuda.html">Voltar para Ajuda</a>
+  </main>
+</body>
+
+</html>

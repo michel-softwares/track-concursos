@@ -219,7 +219,7 @@
   </div>
   <nav class="nav">
     <div class="nav-label">Menu</div>
-    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
     <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
     <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
@@ -356,7 +356,7 @@
   // Rev badge
   const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
   if (rev) {
-    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const urgentes = [...(rev.atrasadas||[]), ...(rev.hoje||[])].filter(r => { const ctx = CT.getContextoRevisao(r); return ctx.concursoId === cId; }).length;
     const b = document.getElementById('revBadge');
     if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
   }
@@ -3178,6 +3178,7 @@ render();
 
 
 
+<script src="nav.js"></script>
 <script src="timer-popup.js"></script>
 </body>
 </html>

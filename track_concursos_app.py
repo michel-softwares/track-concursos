@@ -8,8 +8,10 @@ import os
 import re
 import shutil
 import sys
-from datetime import datetime
+import webbrowser
+from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 import webview
 
@@ -78,6 +80,8 @@ DEFAULT_PROFILE_NAME = 'Perfil Principal'
 DEFAULT_PROFILE_GENDER = 'masculino'
 PROFILE_FILE_NAME = 'profile.json'
 SNAPSHOTS_DIR_NAME = 'snapshots'
+SNAPSHOT_KEEP_LATEST = 20
+SNAPSHOT_KEEP_DAILY_DAYS = 30
 
 PROFILE_ARRAY_KEYS = (
     'concursos',
@@ -90,6 +94,10 @@ PROFILE_ARRAY_KEYS = (
     'revisoes',
 )
 PROFILE_OBJECT_KEYS = ('crono', 'logos')
+
+APP_VERSION = '1.0.1'
+GITHUB_REPO = 'michel-softwares/track-concursos'
+GITHUB_RELEASES_URL = f'https://github.com/{GITHUB_REPO}/releases/latest'
 
 _window = None
 _perfil_carregado = False
@@ -404,6 +412,82 @@ def _count_snapshots(paths):
     )
 
 
+def _snapshot_datetime(path):
+    name = os.path.basename(path)
+    stamp = name.split('__', 1)[0]
+    try:
+        return datetime.strptime(stamp, '%Y-%m-%d_%H-%M-%S-%f')
+    except Exception:
+        return datetime.fromtimestamp(os.path.getmtime(path))
+
+
+def _list_snapshot_entries(paths):
+    snapshots_dir = paths['snapshots_dir']
+    if not os.path.isdir(snapshots_dir):
+        return []
+
+    entries = []
+    for name in os.listdir(snapshots_dir):
+        path = os.path.join(snapshots_dir, name)
+        if not name.lower().endswith('.json') or not os.path.isfile(path):
+            continue
+        try:
+            snapshot_dt = _snapshot_datetime(path)
+        except Exception:
+            continue
+        entries.append(
+            {
+                'path': path,
+                'name': name,
+                'datetime': snapshot_dt,
+            }
+        )
+
+    entries.sort(key=lambda entry: (entry['datetime'], entry['name']), reverse=True)
+    return entries
+
+
+def _prune_snapshots(paths):
+    snapshots_dir = os.path.abspath(paths['snapshots_dir'])
+    entries = _list_snapshot_entries(paths)
+    if len(entries) <= SNAPSHOT_KEEP_LATEST:
+        return {'apagados': 0, 'mantidos': len(entries)}
+
+    keep_paths = {
+        os.path.abspath(entry['path'])
+        for entry in entries[:SNAPSHOT_KEEP_LATEST]
+    }
+
+    cutoff = datetime.now() - timedelta(days=SNAPSHOT_KEEP_DAILY_DAYS)
+    seen_days = set()
+    for entry in entries:
+        snapshot_dt = entry['datetime']
+        if snapshot_dt < cutoff:
+            continue
+        day_key = snapshot_dt.date()
+        if day_key in seen_days:
+            continue
+        seen_days.add(day_key)
+        keep_paths.add(os.path.abspath(entry['path']))
+
+    deleted = 0
+    for entry in entries:
+        path = os.path.abspath(entry['path'])
+        if path in keep_paths:
+            continue
+        try:
+            if os.path.commonpath([snapshots_dir, path]) != snapshots_dir:
+                continue
+            if not path.lower().endswith('.json') or not os.path.isfile(path):
+                continue
+            os.remove(path)
+            deleted += 1
+        except Exception as exc:
+            print(f'[Track Concursos] Falha ao limpar snapshot antigo {path}: {exc}')
+
+    return {'apagados': deleted, 'mantidos': len(entries) - deleted}
+
+
 def _latest_snapshot_path(paths):
     snapshots_dir = paths['snapshots_dir']
     if not os.path.isdir(snapshots_dir):
@@ -427,6 +511,7 @@ def _save_snapshot(paths, data, reason):
     snapshot_name = f'{_snapshot_stamp()}__{_sanitize_reason(reason)}.json'
     snapshot_path = os.path.join(snapshots_dir, snapshot_name)
     _write_text_atomic(snapshot_path, _dump_json(normalized))
+    _prune_snapshots(paths)
     return snapshot_path
 
 
@@ -799,6 +884,50 @@ def on_closing():
 
 
 class Api:
+    def get_latest_release(self):
+        try:
+            from urllib.request import Request, urlopen
+
+            api_url = f'https://api.github.com/repos/{GITHUB_REPO}/releases/latest'
+            request = Request(
+                api_url,
+                headers={
+                    'Accept': 'application/vnd.github+json',
+                    'User-Agent': f'Track-Concursos/{APP_VERSION}',
+                },
+            )
+
+            with urlopen(request, timeout=5) as response:
+                data = json.loads(response.read().decode('utf-8'))
+
+            return {
+                'ok': True,
+                'version': APP_VERSION,
+                'tag_name': data.get('tag_name'),
+                'name': data.get('name'),
+                'html_url': data.get('html_url') or GITHUB_RELEASES_URL,
+                'published_at': data.get('published_at'),
+            }
+        except Exception as exc:
+            return {
+                'ok': False,
+                'version': APP_VERSION,
+                'motivo': str(exc),
+            }
+
+    def open_external_url(self, url):
+        try:
+            parsed = urlparse(str(url or ''))
+            if parsed.scheme not in ('http', 'https'):
+                raise ValueError('URL externa invalida')
+            if parsed.netloc.lower() not in ('github.com', 'www.github.com'):
+                raise ValueError('dominio externo nao permitido')
+
+            webbrowser.open(url, new=2)
+            return {'ok': True}
+        except Exception as exc:
+            return {'ok': False, 'motivo': str(exc)}
+
     def salvar_backup(self, json_str, reason='salvo-manual'):
         try:
             data = json.loads(json_str)
@@ -1014,6 +1143,84 @@ class Api:
 
             _write_text_atomic(path, json_str)
             return {'ok': True, 'caminho': path}
+        except Exception as exc:
+            return {'ok': False, 'motivo': str(exc)}
+
+    def salvar_arquivo_texto(self, nome_arquivo, conteudo, extensao='txt', descricao='Arquivo de texto'):
+        try:
+            safe_ext = re.sub(r'[^a-zA-Z0-9]+', '', str(extensao or 'txt')).lower() or 'txt'
+            base_name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', '_', str(nome_arquivo or 'arquivo')).strip(' ._')
+            base_name = base_name or 'arquivo'
+            if not base_name.lower().endswith(f'.{safe_ext}'):
+                save_name = f'{base_name}.{safe_ext}'
+            else:
+                save_name = base_name
+
+            label = str(descricao or 'Arquivo de texto').strip() or 'Arquivo de texto'
+            result = _window.create_file_dialog(
+                webview.SAVE_DIALOG,
+                directory=os.path.expanduser('~'),
+                save_filename=save_name,
+                file_types=(f'{label} (*.{safe_ext})',),
+            )
+            if not result:
+                return {'ok': False, 'motivo': 'cancelado'}
+
+            path = result[0] if isinstance(result, (list, tuple)) else result
+            if not path.lower().endswith(f'.{safe_ext}'):
+                path += f'.{safe_ext}'
+
+            _write_text_atomic(path, str(conteudo or ''))
+            return {'ok': True, 'caminho': path}
+        except Exception as exc:
+            return {'ok': False, 'motivo': str(exc)}
+
+    def salvar_jsons_em_lote(self, nome_pasta, arquivos, manifesto_md=None):
+        try:
+            result = _window.create_file_dialog(
+                webview.FOLDER_DIALOG,
+                directory=os.path.expanduser('~'),
+                allow_multiple=False,
+            )
+            if not result:
+                return {'ok': False, 'motivo': 'cancelado'}
+
+            base_dir = result[0] if isinstance(result, (list, tuple)) else result
+            if not base_dir:
+                return {'ok': False, 'motivo': 'cancelado'}
+
+            safe_folder = re.sub(r'[^a-zA-Z0-9._-]+', '_', str(nome_pasta or 'lotes_json')).strip('._')
+            safe_folder = safe_folder or 'lotes_json'
+            target_dir = os.path.join(base_dir, safe_folder)
+
+            suffix = 2
+            while os.path.exists(target_dir):
+                target_dir = os.path.join(base_dir, f'{safe_folder}_{suffix:02d}')
+                suffix += 1
+
+            os.makedirs(target_dir, exist_ok=True)
+
+            saved_files = []
+            for item in arquivos or []:
+                nome_arquivo = str((item or {}).get('nome_arquivo') or '').strip()
+                json_str = (item or {}).get('json_str')
+                if not nome_arquivo or not isinstance(json_str, str):
+                    continue
+                if not nome_arquivo.lower().endswith('.json'):
+                    nome_arquivo += '.json'
+                file_path = os.path.join(target_dir, nome_arquivo)
+                _write_text_atomic(file_path, json_str)
+                saved_files.append(file_path)
+
+            if manifesto_md:
+                _write_text_atomic(os.path.join(target_dir, 'README_lotes.md'), manifesto_md)
+
+            return {
+                'ok': True,
+                'pasta': target_dir,
+                'arquivos': saved_files,
+                'quantidade': len(saved_files),
+            }
         except Exception as exc:
             return {'ok': False, 'motivo': str(exc)}
 

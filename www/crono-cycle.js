@@ -18,6 +18,11 @@
   function sanitizeName(nome) {
     return (nome || '').toString().replace(/\s+/g, ' ').trim().slice(0, 80);
   }
+  function escapeHtml(value) {
+    return (value == null ? '' : String(value)).replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+    });
+  }
   function abbreviateSubjectName(nome) {
     var n = sanitizeName(nome);
     // Common exam abbreviations
@@ -283,7 +288,10 @@
   }
   function saveCycle(data) {
     var raw = data || {};
-    if (raw && raw.items && raw.items.length) raw.currentItemId = raw.items[raw.currentIndex] ? raw.items[raw.currentIndex].id : '';
+    if (raw && raw.items && raw.items.length) {
+      var current = raw.items[raw.currentIndex];
+      raw.currentItemId = current && current.status === 'pending' && current.targetSeconds > 0 ? current.id : '';
+    }
     saveCycleRaw({
       round: Math.max(1, parseInt(raw.round, 10) || 1),
       currentIndex: Math.max(0, parseInt(raw.currentIndex, 10) || 0),
@@ -339,6 +347,12 @@
 
     return { round: nextRound, currentIndex: items.findIndex(function (item) { return item.targetSeconds > 0; }), items: items, sessionHistory: [] };
   }
+  function restartCycle(data) {
+    var next = resetCycle(data || getCycleData({ skipAutoRestart: true }));
+    saveCycle(next);
+    if (typeof window.renderCrono === 'function') window.renderCrono();
+    return next;
+  }
   function getCycleData(options) {
     var config = options || {};
     var saved = loadCycleRaw();
@@ -359,8 +373,10 @@
       if (currentById >= 0) data.currentIndex = currentById;
     }
     var pendingIndexes = items.map(function (item, idx) { return item.status === 'pending' && item.targetSeconds > 0 ? idx : -1; }).filter(function (idx) { return idx >= 0; });
-    if (!pendingIndexes.length && !config.skipAutoRestart && items.some(function (item) { return item.targetSeconds > 0; })) data = resetCycle(data);
-    else if (!items[data.currentIndex] || items[data.currentIndex].status !== 'pending' || items[data.currentIndex].targetSeconds <= 0) data.currentIndex = pendingIndexes.length ? pendingIndexes[0] : 0;
+    if (!pendingIndexes.length && items.some(function (item) { return item.targetSeconds > 0; })) {
+      data.currentIndex = 0;
+      data.currentItemId = '';
+    } else if (!items[data.currentIndex] || items[data.currentIndex].status !== 'pending' || items[data.currentIndex].targetSeconds <= 0) data.currentIndex = pendingIndexes.length ? pendingIndexes[0] : 0;
     if (!config.skipPersist) saveCycle(data);
     return data;
   }
@@ -368,8 +384,8 @@
     var nextIndex = -1;
     for (var i = fromIndex + 1; i < data.items.length; i++) if (data.items[i].status === 'pending' && data.items[i].targetSeconds > 0) { nextIndex = i; break; }
     if (nextIndex < 0) for (var j = 0; j < fromIndex; j++) if (data.items[j].status === 'pending' && data.items[j].targetSeconds > 0) { nextIndex = j; break; }
-    if (nextIndex < 0 && data.items.some(function (item) { return item.targetSeconds > 0; })) { data = resetCycle(data); nextIndex = data.currentIndex >= 0 ? data.currentIndex : 0; }
-    data.currentIndex = nextIndex >= 0 ? nextIndex : 0;
+    data.currentIndex = nextIndex >= 0 ? nextIndex : fromIndex;
+    data.currentItemId = nextIndex >= 0 && data.items[nextIndex] ? data.items[nextIndex].id : '';
     return data;
   }
   function formatCycleTime(segundos) {
@@ -385,6 +401,16 @@
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
     return h + 'h' + String(m).padStart(2, '0');
+  }
+  function formatCycleDelta(segundos) {
+    var value = Math.round(segundos || 0);
+    var sign = value >= 0 ? '+' : '-';
+    var abs = Math.abs(value);
+    var h = Math.floor(abs / 3600);
+    var m = Math.floor((abs % 3600) / 60);
+    if (h > 0 && m > 0) return sign + h + 'h' + String(m).padStart(2, '0');
+    if (h > 0) return sign + h + 'h';
+    return sign + m + 'min';
   }
   function updateCycleHours(itemId, horas) {
     var data = getCycleData({ skipAutoRestart: true });
@@ -470,6 +496,7 @@
     if (index < 0) return data;
     var item = data.items[index];
     if (!item.targetSeconds) return data;
+    if (item.status === 'done' && Math.max(0, parseInt(item.remainingSeconds, 10) || 0) === 0) return data;
     var pendingSeconds = Math.max(0, parseInt(item.remainingSeconds, 10) || 0);
     var studiedSeconds = Math.max(0, parseInt(item.targetSeconds, 10) || 0) - pendingSeconds;
     item.status = pendingSeconds === 0 ? 'done' : 'skipped';
@@ -486,6 +513,7 @@
   function syncCycleSession(payload) {
     if (!payload || !payload.itemId) return null;
     var data = getCycleData({ skipAutoRestart: true });
+    if (payload.sessaoId && Array.isArray(data.sessionHistory) && data.sessionHistory.some(function (s) { return s.id === payload.sessaoId || s.sessaoId === payload.sessaoId; })) return data;
     var index = data.items.findIndex(function (item) { return item.id === payload.itemId; });
     if (index < 0) return null;
     var item = data.items[index];
@@ -498,7 +526,8 @@
     if (studiedSecs > 0) {
       data.sessionHistory = data.sessionHistory || [];
       data.sessionHistory.push({
-        id: 'cyc_sess_' + Date.now() + '_' + Math.random().toString(16).slice(2, 7),
+        id: payload.sessaoId || ('cyc_sess_' + Date.now() + '_' + Math.random().toString(16).slice(2, 7)),
+        sessaoId: payload.sessaoId || null,
         itemId: item.id,
         nome: item.nome,
         duracao: studiedSecs,
@@ -522,6 +551,7 @@
     handleTimerSave: function (payload) { return syncCycleSession(payload); },
     finalizeItem: function (itemId) { return finalizeCycleItem(itemId); },
     openTimerForItem: function (item) { openCycleTimer(item); },
+    restart: function () { return restartCycle(getCycleData({ skipAutoRestart: true })); },
     refundCycleTime: function (itemId, sec, sessaoId) { return refundCycleTime(itemId, sec, sessaoId); }
   };
   var cycleTimer = {
@@ -754,9 +784,7 @@
     });
     nodes.modalSave.addEventListener('click', function () {
       if (!cycleTimer.preset || !cycleTimer.pending) return;
-      var pending = { ...cycleTimer.pending };
       setTimeout(function () {
-        syncCycleSession(pending);
         clearCycleTimer();
       }, 0);
     });
@@ -857,6 +885,8 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
       updateDashboardCardHeader();
       return;
     }
+    var cycleComplete = data.items.some(function (item) { return item.targetSeconds > 0; })
+      && !data.items.some(function (item) { return item.status === 'pending' && item.targetSeconds > 0; });
     var pathWrapper = document.createElement('div');
     pathWrapper.style.cssText = 'position:relative;margin:8px 0;padding-right:24px;';
     
@@ -984,6 +1014,25 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
     pathWrapper.appendChild(itemsContainer);
     grid.appendChild(pathWrapper);
 
+    if (cycleComplete) {
+      var completeBox = document.createElement('div');
+      completeBox.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.35);border-radius:12px;margin-top:10px;color:var(--text);';
+      completeBox.innerHTML = '<div style="min-width:0;"><strong style="display:block;font-size:13px;color:var(--green);margin-bottom:2px;">Ciclo concluido</strong><span style="font-size:11px;color:var(--text3);">Confira a carga estudada antes de iniciar uma nova rodada.</span></div>';
+      var restartBtn = document.createElement('button');
+      restartBtn.type = 'button';
+      restartBtn.textContent = 'Reiniciar ciclo';
+      restartBtn.style.cssText = 'border:1px solid rgba(62,207,142,0.55);background:rgba(62,207,142,0.16);color:var(--green);border-radius:8px;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;';
+      restartBtn.onclick = function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (confirm('Reiniciar o ciclo agora? O resumo atual sera zerado para a nova rodada.')) {
+          restartCycle(data);
+        }
+      };
+      completeBox.appendChild(restartBtn);
+      grid.appendChild(completeBox);
+    }
+
     var totalTarget = 0;
     var totalStudied = 0;
     data.items.forEach(function (item) {
@@ -995,11 +1044,11 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
     footer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-top:10px;color:var(--text);font-size:13px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.2);';
     
     var leftStats = document.createElement('div');
-    leftStats.innerHTML = '<span style="color:var(--text3);font-size:10px;font-weight:800;letter-spacing:0.5px">CARGA ESTUDADA</span><br><span style="font-size:15px;color:var(--accent)">⏱️ ' + formatCycleClock(totalStudied) + '</span>';
+    leftStats.innerHTML = '<span style="color:var(--text3);font-size:10px;font-weight:800;letter-spacing:0.5px">CARGA ESTUDADA</span><br><span id="cycleCargaEstudadaValue" class="crono-cycle-studied-value" style="font-size:15px;color:var(--accent)">⏱️ ' + formatCycleClock(totalStudied) + '</span>';
     
     var rightStats = document.createElement('div');
     rightStats.style.textAlign = 'right';
-    rightStats.innerHTML = '<span style="color:var(--text3);font-size:10px;font-weight:800;letter-spacing:0.5px">META DO CICLO</span><br><span style="font-size:15px;color:var(--green)">🎯 ' + formatCycleClock(totalTarget) + '</span>';
+    rightStats.innerHTML = '<span style="color:var(--text3);font-size:10px;font-weight:800;letter-spacing:0.5px">META DO CICLO</span><br><span id="cycleMetaValue" class="crono-cycle-target-value" style="font-size:15px;color:var(--green)">🎯 ' + formatCycleClock(totalTarget) + '</span>';
 
     var progressWrapper = document.createElement('div');
     progressWrapper.style.cssText = 'flex:1;margin:0 24px;height:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:999px;position:relative;overflow:hidden;';
@@ -1013,7 +1062,7 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
     footer.appendChild(rightStats);
 
     footer.style.cursor = 'pointer';
-    footer.title = 'Ver histórico de sessões do ciclo';
+    footer.title = 'Ver carga estudada por materia';
     footer.addEventListener('mouseover', function() { footer.style.background = 'var(--bg2)'; footer.style.borderColor = 'var(--accent)'; });
     footer.addEventListener('mouseout', function() { footer.style.background = 'var(--bg3)'; footer.style.borderColor = 'var(--border)'; });
     footer.addEventListener('click', function() {
@@ -1023,6 +1072,44 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
     grid.appendChild(footer);
 
     updateDashboardCardHeader();
+  }
+
+  function buildCycleLoadSummary(data) {
+    var history = Array.isArray(data && data.sessionHistory) ? data.sessionHistory : [];
+    var studiedByItem = {};
+    history.forEach(function (session) {
+      if (!session || !session.itemId) return;
+      studiedByItem[session.itemId] = (studiedByItem[session.itemId] || 0) + Math.max(0, parseInt(session.duracao, 10) || 0);
+    });
+
+    var rows = (data && data.items || []).filter(function (item) {
+      return item && Math.max(0, parseInt(item.targetSeconds, 10) || 0) > 0;
+    }).map(function (item, index) {
+      var target = Math.max(0, parseInt(item.targetSeconds, 10) || 0);
+      var remaining = Math.max(0, item.remainingSeconds == null ? target : parseInt(item.remainingSeconds, 10) || 0);
+      var skipped = Math.max(0, parseInt(item.skippedSeconds || item.lastPendingSeconds, 10) || 0);
+      var inferredStudied = item.status === 'skipped'
+        ? Math.max(0, target - skipped)
+        : Math.max(0, target - remaining);
+      var studied = Math.max(studiedByItem[item.id] || 0, inferredStudied);
+      return {
+        id: item.id,
+        index: index + 1,
+        nome: item.nome || 'Materia',
+        cor: item.cor || 'var(--accent)',
+        target: target,
+        studied: studied,
+        diff: studied - target,
+        remaining: Math.max(0, target - studied),
+        status: item.status || 'pending'
+      };
+    });
+
+    return {
+      rows: rows,
+      target: rows.reduce(function (acc, row) { return acc + row.target; }, 0),
+      studied: rows.reduce(function (acc, row) { return acc + row.studied; }, 0)
+    };
   }
 
   function openCycleSessionsModal(data) {
@@ -1036,73 +1123,91 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
       overlay.innerHTML = '';
       overlay.style.display = 'flex';
     }
-    
+
     var panel = document.createElement('div');
-    panel.style.cssText = 'width:360px;max-width:100%;max-height:80vh;background:var(--bg2);border:1px solid var(--border2);border-radius:16px;display:flex;flex-direction:column;box-shadow:0 10px 50px rgba(0,0,0,0.6);overflow:hidden;';
-    
+    panel.style.cssText = 'width:460px;max-width:100%;max-height:84vh;background:var(--bg2);border:1px solid var(--border2);border-radius:16px;display:flex;flex-direction:column;box-shadow:0 10px 50px rgba(0,0,0,0.6);overflow:hidden;';
+
     var header = document.createElement('div');
     header.style.cssText = 'padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3);';
-    header.innerHTML = '<span style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;">Histórico do Ciclo</span>';
-    
+    header.innerHTML = '<span style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;text-transform:uppercase;">Carga estudada do ciclo</span>';
+
     var closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '✕';
+    closeBtn.innerHTML = 'x';
     closeBtn.style.cssText = 'background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1;transition:color 0.15s;';
     closeBtn.onmouseover = function() { this.style.color = 'var(--red)'; };
     closeBtn.onmouseout = function() { this.style.color = 'var(--text3)'; };
     closeBtn.onclick = function() { overlay.style.display = 'none'; };
     header.appendChild(closeBtn);
-    
+
     var listWrap = document.createElement('div');
     listWrap.style.cssText = 'padding:14px 16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;';
-    
-    var entries = data.sessionHistory || [];
-    if (entries.length === 0) {
-      listWrap.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 10px;line-height:1.5">Nenhuma sessão registrada.<br><span style="font-size:11px;opacity:0.7">Comece a estudar pelo botão do timer!</span></div>';
+
+    var summary = buildCycleLoadSummary(data || {});
+    if (summary.rows.length === 0) {
+      listWrap.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:30px 10px;line-height:1.5">Nenhuma meta de ciclo definida.<br><span style="font-size:11px;opacity:0.7">Defina a carga horaria das materias para acompanhar a comparacao.</span></div>';
     } else {
-      entries.slice().reverse().forEach(function(s) {
-         var row = document.createElement('div');
-         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:12px;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:transform 0.15s;';
-         row.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
-         row.onmouseout = function() { this.style.transform = 'translateY(0)'; };
-         
-         var left = document.createElement('div');
-         left.innerHTML = '<strong style="color:var(--text);display:block;margin-bottom:2px;font-size:13px;">' + s.nome + '</strong><span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">HOJE ÀS ' + new Date(s.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</span>';
-         
-         var right = document.createElement('div');
-         right.style.cssText = 'display:flex;align-items:center;gap:12px;';
-         right.innerHTML = '<span style="color:var(--accent);font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:-0.5px;">' + formatCycleClock(s.duracao) + '</span>';
-         
-         var delBtn = document.createElement('button');
-         delBtn.innerHTML = '✕';
-         delBtn.title = 'Excluir e estornar horas';
-         delBtn.style.cssText = 'background:rgba(245,90,90,0.1);border:1px solid rgba(245,90,90,0.2);color:var(--red);border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;';
-         delBtn.onmouseover = function() { this.style.background = 'rgba(245,90,90,0.2)'; };
-         delBtn.onmouseout = function() { this.style.background = 'rgba(245,90,90,0.1)'; };
-         delBtn.onclick = function() {
-           if (confirm('Restituir ' + formatCycleClock(s.duracao) + ' hrs de volta à meta de ' + s.nome + '?')) {
-              window.CTCycle.refundCycleTime(s.itemId, s.duracao, s.id);
-              overlay.style.display = 'none';
-              if (typeof window.renderCrono === 'function') window.renderCrono();
-              setTimeout(function() {
-                openCycleSessionsModal(window.CTCycle.getData({ skipAutoRestart:true }));
-              }, 50);
-           }
-         };
-         right.appendChild(delBtn);
-         
-         row.appendChild(left);
-         row.appendChild(right);
-         listWrap.appendChild(row);
+      summary.rows.forEach(function(rowData) {
+        var diff = rowData.diff;
+        var isPending = rowData.status === 'pending';
+        var isMissingFinalized = rowData.status === 'skipped' && diff < 0;
+        var statusColor = isPending ? 'var(--text3)' : (isMissingFinalized ? 'var(--red)' : 'var(--green)');
+        var pct = rowData.target > 0 ? Math.max(0, Math.min(130, (rowData.studied / rowData.target) * 100)) : 0;
+        var row = document.createElement('div');
+        row.style.cssText = 'padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:12px;box-shadow:0 2px 4px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:10px;';
+
+        var top = document.createElement('div');
+        top.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;';
+        top.innerHTML =
+          '<div style="min-width:0;display:flex;align-items:center;gap:8px;">' +
+            '<span style="width:8px;height:28px;border-radius:999px;background:' + rowData.cor + ';flex-shrink:0;"></span>' +
+            '<div style="min-width:0;">' +
+              '<strong style="color:var(--text);display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(rowData.nome) + '</strong>' +
+              '<span style="color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Meta ' + formatCycleClock(rowData.target) + ' | estudado ' + formatCycleClock(rowData.studied) + '</span>' +
+            '</div>' +
+          '</div>';
+
+        var right = document.createElement('div');
+        right.style.cssText = 'font-family:var(--mono);font-weight:800;font-size:14px;letter-spacing:-0.4px;white-space:nowrap;color:' + statusColor + ';';
+        right.textContent = isPending ? ('faltam ' + formatCycleClock(rowData.remaining)) : formatCycleDelta(diff);
+        top.appendChild(right);
+
+        var bar = document.createElement('div');
+        bar.style.cssText = 'height:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:999px;overflow:hidden;';
+        var fill = document.createElement('div');
+        fill.style.cssText = 'height:100%;width:' + pct + '%;background:' + (isPending ? 'var(--text3)' : (isMissingFinalized ? 'var(--red)' : 'var(--green)')) + ';border-radius:999px;';
+        bar.appendChild(fill);
+
+        row.appendChild(top);
+        row.appendChild(bar);
+        listWrap.appendChild(row);
       });
+
+      var totalDiff = summary.studied - summary.target;
+      var hasPending = summary.rows.some(function (row) { return row.status === 'pending'; });
+      var totalPositive = totalDiff >= 0;
+      var totalColor = hasPending ? 'var(--text3)' : (totalPositive ? 'var(--green)' : 'var(--red)');
+      var totalLabel = hasPending ? ('faltam ' + formatCycleClock(Math.max(0, summary.target - summary.studied))) : formatCycleDelta(totalDiff);
+      var totalCaption = hasPending ? 'ciclo em andamento' : (totalPositive ? 'extra, parabens!' : 'abaixo da meta');
+      var total = document.createElement('div');
+      total.style.cssText = 'margin-top:4px;padding:14px;background:var(--bg);border:1px solid ' + (hasPending ? 'var(--border2)' : (totalPositive ? 'rgba(50,213,131,0.35)' : 'rgba(245,90,90,0.35)')) + ';border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+      total.innerHTML =
+        '<div style="min-width:0;">' +
+          '<strong style="display:block;color:var(--text);font-size:13px;margin-bottom:3px;">Total do ciclo</strong>' +
+          '<span style="color:var(--text3);font-size:11px;">Meta ' + formatCycleClock(summary.target) + ' | estudado ' + formatCycleClock(summary.studied) + '</span>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0;">' +
+          '<div style="font-family:var(--mono);font-size:16px;font-weight:900;color:' + totalColor + ';">' + totalLabel + '</div>' +
+          '<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;color:' + totalColor + ';">' + totalCaption + '</div>' +
+        '</div>';
+      listWrap.appendChild(total);
     }
-    
+
     panel.appendChild(header);
     panel.appendChild(listWrap);
     overlay.appendChild(panel);
-    
+
     overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
   }
-
   function openManualEntryModal(item) {
     var overlay = document.getElementById('cycleManOverlay');
     if (!overlay) {
@@ -1137,13 +1242,13 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
     
     var timeGroup = document.createElement('div');
     timeGroup.style.cssText = 'display:flex;gap:10px;';
-    timeGroup.innerHTML = '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">HORAS</label><input type="number" id="man_h" min="0" max="23" value="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>' +
-                          '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">MINUTOS</label><input type="number" id="man_m" min="0" max="59" value="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>';
+    timeGroup.innerHTML = '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">HORAS</label><input type="number" id="man_h" min="0" max="23" placeholder="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>' +
+                          '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">MINUTOS</label><input type="number" id="man_m" min="0" max="59" placeholder="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>';
     
     var qsGroup = document.createElement('div');
     qsGroup.style.cssText = 'display:flex;gap:10px;';
-    qsGroup.innerHTML = '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">QUESTÕES</label><input type="number" id="man_q" min="0" value="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>' +
-                        '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">ACERTOS</label><input type="number" id="man_a" min="0" value="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>';
+    qsGroup.innerHTML = '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">QUESTÕES</label><input type="number" id="man_q" min="0" placeholder="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>' +
+                        '<div style="flex:1"><label style="display:block;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:700">ACERTOS</label><input type="number" id="man_a" min="0" placeholder="0" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-family:var(--sans);font-size:14px;text-align:center;"></div>';
     
     var toggleGroup = document.createElement('div');
     toggleGroup.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;';
@@ -1179,16 +1284,6 @@ empty.textContent = 'Monte as matérias e escolha o ciclo de estudos para organi
              var acertos = Math.min(a, q);
              window.CT.lancarQuestoes({ materiaId: matId, concursoId: cid, resolvidas: q, acertos: acertos, erros: q - acertos });
           }
-       }
-       
-       if (dur > 0) {
-          window.CTCycle.handleTimerSave({
-             itemId: item.id,
-             materiaId: matId,
-             studiedSeconds: dur,
-             remainingSeconds: Math.max(0, item.remainingSeconds - dur),
-             sessaoId: sessId
-          });
        }
        
        if (adv) {

@@ -649,6 +649,61 @@
       color: var(--text3);
     }
 
+    .stat-value {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ct-live-delta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 18px;
+      margin-left: 6px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      animation: ctLiveDelta 10s ease forwards;
+      vertical-align: middle;
+    }
+
+    .ct-live-delta.positive {
+      color: #b8ffd8;
+      background: rgba(62, 207, 142, 0.16);
+      border: 1px solid rgba(62, 207, 142, 0.34);
+      box-shadow: 0 0 18px rgba(62, 207, 142, 0.14);
+    }
+
+    .ct-live-delta.negative {
+      color: #ffc3c3;
+      background: rgba(245, 90, 90, 0.16);
+      border: 1px solid rgba(245, 90, 90, 0.34);
+      box-shadow: 0 0 18px rgba(245, 90, 90, 0.14);
+    }
+
+    .ct-live-pulse {
+      animation: ctLivePulse 0.72s ease;
+    }
+
+    @keyframes ctLivePulse {
+      0% { filter: brightness(1); }
+      35% { filter: brightness(1.35); }
+      100% { filter: brightness(1); }
+    }
+
+    @keyframes ctLiveDelta {
+      0% { opacity: 0; transform: translateY(5px) scale(0.94); }
+      12% { opacity: 1; transform: translateY(0) scale(1); }
+      82% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-5px) scale(0.98); }
+    }
+
     .prog-bar-wrap {
       display: flex;
       align-items: center;
@@ -1157,6 +1212,18 @@
       line-height: 1.3;
     }
 
+    .contest-clone-banca {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      line-height: 1.25;
+      margin-top: -6px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .subject-clone-container {
       margin-top: 15px;
       background: var(--bg3);
@@ -1278,12 +1345,14 @@
     </div>
     <nav class="nav">
       <div class="nav-label">Menu</div>
-      <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span>
+      <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span>
         Meus Concursos</div>
-      <div class="nav-item active" onclick="location.href='dashboard.html'" style="cursor:pointer"><span
+      <div class="nav-item active" id="navDashboardOverview" onclick="showDashTab('overview')" style="cursor:pointer"><span
           class="icon">🏠</span> Dashboard</div>
       <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span>
         Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
+      <div class="nav-item" id="navFlashcardsDashboard" onclick="showDashTab('flashcards')" style="cursor:pointer"><span
+          class="icon">🎴</span> Flashcards <span class="nav-badge" id="flashTabBadge" style="display:none">0</span></div>
       <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span>
         Métricas</div>
       <div class="nav-item" onclick="location.href='simulados.html'" style="cursor:pointer"><span class="icon">🏆</span>
@@ -1300,21 +1369,57 @@
       </a>
     </div>
     <div id="modalMerge" class="modal-overlay">
-      <div class="modal-content report-modal">
+      <div class="modal-content report-modal" style="max-width:860px">
         <div class="modal-close-btn" onclick="fecharModalMerge()">✕</div>
         <div class="report-header">
           <div class="report-main-info">
             <div id="modalLabel"
               style="font-size:12px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">
-              ✦ Ações do Concurso</div>
+              ✦ Informações do Concurso</div>
             <h2 id="mergeContestName">Concurso</h2>
             <p id="modalDesc" style="color:var(--text3);font-size:13px;margin-top:8px;line-height:1.5">Gerencie os dados
               e estatísticas deste certame.</p>
           </div>
         </div>
-        <div class="report-body">
+        <div class="report-body" style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <div class="report-card">
+              <div class="report-card-label">Banca</div>
+              <input id="infoBanca" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Quantidade de vagas</div>
+              <input id="infoVagas" type="number" min="0" placeholder="Ex: 200" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Data da prova</div>
+              <input id="infoDataProva" type="date" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+            </div>
+            <div class="report-card">
+              <div class="report-card-label">Local da prova</div>
+              <input id="infoLocalProva" placeholder="Ex: Maceió — AL" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+            </div>
+          </div>
           <div class="report-card">
-            <div class="report-card-label">Concurso de Destino (Já Realizado)</div>
+            <div class="report-card-label">Cargo do concurso</div>
+            <input id="infoCargo" placeholder="Cargo / área" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+            <div class="report-card-label" style="margin-top:12px">Salário</div>
+            <input id="infoSalario" placeholder="Digite e salve o salário" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+          </div>
+          <div class="report-card">
+            <div class="report-card-label">Link do edital</div>
+            <input id="infoLinkEdital" placeholder="https://..." style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;outline:none">
+          </div>
+          <div class="report-card">
+            <div class="report-card-label">Observações personalizadas</div>
+            <textarea id="infoObs" rows="4" placeholder="Anotações, cortes anteriores, estratégia, lembretes..." style="width:100%;resize:vertical;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-family:var(--sans);font-size:14px;line-height:1.5;outline:none"></textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn-modal primary" onclick="salvarInfoConcursoDashboard()">Salvar informações</button>
+          </div>
+          <div id="fusionToolCard" class="report-card">
+            <div class="report-card-label">J&aacute; realizou a prova desse concurso?</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.45;margin-bottom:10px">Se sim, fusione as estat&iacute;sticas deste pr&eacute;-edital com o card de Concurso J&aacute; Realizado correspondente.</div>
             <select id="selectDestino" onchange="verificarMerge()"
               style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:12px;width:100%;border-radius:10px;font-family:var(--sans);font-size:14px;outline:none">
               <option value="">Selecione para onde enviar estes dados...</option>
@@ -1331,7 +1436,6 @@
           </div>
         </div>
         <div class="report-footer" style="justify-content:space-between">
-          <button class="btn-modal secondary" onclick="CT.exportarConcurso(cId)" style="display:none">📤 Exportar Template</button>
           <div style="display:flex;gap:12px">
             <button class="btn-modal secondary" onclick="fecharModalMerge()">Fechar</button>
             <button class="btn-modal primary" id="btnConfirmMerge" disabled onclick="executarMerge()">Confirmar e
@@ -1400,6 +1504,7 @@
       <div class="header-date" id="dashDate">—</div>
     </div>
 
+    <div id="dashboardOverview">
     <div id="bannerExamDay" class="banner-exam-day">
       <div class="banner-icon">🎯</div>
       <div class="banner-content">
@@ -1433,6 +1538,7 @@
       <div class="stat-card yellow fade-in"><span class="stat-icon">✅</span>
         <div class="stat-value" id="sTopicos">—</div>
         <div class="stat-label">Tópicos concluídos</div>
+        <div id="sSubtopicos" style="font-size:11px;color:var(--text3);margin-top:6px;font-weight:500">Subtópicos: -</div>
       </div>
     </div>
     <div class="alert-section fade-in" id="alertSection" style="display:none">
@@ -1515,9 +1621,31 @@
     <div class="bottom-grid">
       <div class="table-card fade-in">
         <div class="card-header">
-          <div class="card-title">📊 Estudo semanal — últimos 7 dias</div>
+          <div class="card-title">📊 Estudo semanal - semana atual</div>
         </div>
-        <div style="padding:12px 16px"><canvas id="chartSemanal" height="130"></canvas></div>
+        <div style="padding:12px 16px">
+          <div id="weeklyChartSub" class="card-sub" style="margin-bottom:10px">Domingo a sábado</div>
+          <canvas id="chartSemanal" height="130" style="display:none"></canvas>
+          <div id="weeklyChartsGrid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:14px;min-height:280px;display:flex;flex-direction:column">
+              <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px">Horas estudadas</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:10px" id="weeklyHoursSub">Distribuição por matéria na semana</div>
+              <div style="position:relative;height:180px">
+                <canvas id="chartSemanalHoras"></canvas>
+              </div>
+              <div id="weeklyHoursLegend" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:14px;min-height:280px;display:flex;flex-direction:column">
+              <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px">Questões feitas</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:10px" id="weeklyQuestionsSub">Total semanal entre acertos e erros</div>
+              <div style="position:relative;height:180px">
+                <canvas id="chartSemanalQuestoes"></canvas>
+              </div>
+              <div id="weeklyQuestionsLegend" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
+            </div>
+          </div>
+          <div id="weeklyDaysStrip" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-top:14px"></div>
+        </div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:20px">
@@ -1539,11 +1667,17 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <section id="dashboardFlashcards" style="display:none">
+      <div id="flashcardsDashboardRoot"></div>
+    </section>
   </main>
 
 
   <script src="timer-popup.js"></script>
   <script src="nav.js"></script>
+  <script src="flashcards.js"></script>
   <script>
     var cId = sessionStorage.getItem('ct_concurso_ativo');
     if (!cId) { location.href = 'concursos.html'; }
@@ -1646,9 +1780,418 @@
         var matIdsReset = materiasReset.map(function (m) { return m.id; });
         var topicosReset = CT.getTopicos().filter(function (t) { return matIdsReset.includes(t.materiaId); });
         document.getElementById('sTopicos').textContent = '0/' + topicosReset.length;
+        var subtopicosReset = CT.getSubtopicos().filter(function (s) { return matIdsReset.includes(s.materiaId); });
+        document.getElementById('sSubtopicos').textContent = 'Subtópicos: 0/' + subtopicosReset.length;
       }
       setTimeout(function () { location.reload(); }, 180);
     }
+
+    function normWeeklyName(nome) {
+      return (nome || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+    }
+    function getWeekBounds(baseDate) {
+      var current = new Date(baseDate || new Date());
+      current.setHours(12, 0, 0, 0);
+      var start = new Date(current);
+      start.setDate(current.getDate() - current.getDay());
+      var end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return { start: start, end: end };
+    }
+    function getWeekDates(bounds) {
+      var dates = [];
+      for (var i = 0; i < 7; i++) {
+        var date = new Date(bounds.start);
+        date.setDate(bounds.start.getDate() + i);
+        dates.push(date);
+      }
+      return dates;
+    }
+    function formatShortDate(date) {
+      return String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0');
+    }
+    function getFallbackChartColor(index) {
+      var palette = ['#4f8ef7', '#3ecf8e', '#f5c842', '#f55a5a', '#7c5cfc', '#f5874a', '#00bcd4', '#e91e8c', '#8bc34a', '#795548'];
+      return palette[index % palette.length];
+    }
+    function buildWeeklyMateriaColorMap(materias) {
+      var byId = {};
+      var cycleMap = {};
+      if (typeof window._getCronoMats === 'function') {
+        try {
+          (window._getCronoMats() || []).forEach(function (item) {
+            if (!item) return;
+            if (item.materiaId) cycleMap[item.materiaId] = item.cor;
+            if (item.nome) cycleMap[normWeeklyName(item.nome)] = item.cor;
+          });
+        } catch (e) { }
+      }
+      materias.forEach(function (m, index) {
+        var normalized = normWeeklyName(m.nome);
+        byId[m.id] = cycleMap[m.id] || cycleMap[normalized] || getFallbackChartColor(index);
+      });
+      return byId;
+    }
+    function buildLegendHtml(items, formatter, totalText) {
+      if (!items.length) {
+        return '<div style="padding:8px 2px;color:var(--text3);font-size:12px">Nenhum dado registrado nesta semana ainda.</div>';
+      }
+      var rows = items.map(function (item) {
+        return ''
+          + '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px">'
+          +   '<div style="display:flex;align-items:center;gap:8px;min-width:0">'
+          +     '<span style="width:10px;height:10px;border-radius:999px;background:' + item.color + ';flex-shrink:0"></span>'
+          +     '<span style="color:var(--text2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + item.label + '</span>'
+          +   '</div>'
+          +   '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          +     '<span style="color:var(--text);font-weight:700">' + formatter(item.value, item) + '</span>'
+          +     '<span style="color:var(--text3);font-size:11px">' + item.percentage + '%</span>'
+          +   '</div>'
+          + '</div>';
+      }).join('');
+      return '<div style="font-size:11px;color:var(--text3);margin-bottom:4px">' + totalText + '</div>' + rows;
+    }
+    function buildWeeklyEmptyState(message) {
+      return {
+        type: 'doughnut',
+        data: {
+          labels: ['Sem dados'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['rgba(255,255,255,0.08)'],
+            borderColor: ['rgba(255,255,255,0.08)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '0%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+            title: {
+              display: true,
+              text: message,
+              color: 'rgba(255,255,255,0.45)',
+              font: { size: 11, weight: '600' },
+              padding: { top: 8, bottom: 0 }
+            }
+          }
+        }
+      };
+    }
+    function buildWeeklyPieConfig(items, theme, tooltipFormatter) {
+      return {
+        type: 'doughnut',
+        data: {
+          labels: items.map(function (item) { return item.label; }),
+          datasets: [{
+            data: items.map(function (item) { return item.value; }),
+            backgroundColor: items.map(function (item) { return item.color; }),
+            borderColor: items.map(function () { return theme ? theme.chartSurfaceBorder : '#0d0f14'; }),
+            borderWidth: 2,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: theme ? theme.tooltipBg : '#13161e',
+              borderColor: theme ? theme.tooltipBorder : 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              titleColor: theme ? theme.tooltipTitle : '#f1f2f6',
+              bodyColor: theme ? theme.tooltipBody : '#c3c8df',
+              padding: 12,
+              callbacks: {
+                label: function (context) {
+                  return tooltipFormatter(context.raw, items[context.dataIndex]);
+                }
+              }
+            }
+          }
+        }
+      };
+    }
+    function renderWeeklyDaysStrip(weekDates, weekDateSet, weeklySess, weeklyQ) {
+      var strip = document.getElementById('weeklyDaysStrip');
+      if (!strip) return;
+      var labels = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+      var todayKey = CT._today();
+      strip.innerHTML = weekDates.map(function (date, index) {
+        var key = CT._dateString(date);
+        var hasSess = weeklySess.some(function (item) { return item.data === key; });
+        var hasQ = weeklyQ.some(function (item) { return item.data === key; });
+        var active = hasSess || hasQ;
+        var future = key > todayKey;
+        var bg = future ? 'rgba(255,255,255,0.04)' : (active ? 'rgba(62,207,142,0.14)' : 'rgba(245,90,90,0.12)');
+        var border = future ? 'rgba(255,255,255,0.10)' : (active ? 'rgba(62,207,142,0.35)' : 'rgba(245,90,90,0.28)');
+        var color = future ? 'var(--text2)' : (active ? '#8df0b9' : '#ff8c8c');
+        return ''
+          + '<div style="border:1px solid ' + border + ';background:' + bg + ';border-radius:12px;padding:12px 6px;text-align:center">'
+          +   '<div style="font-size:11px;font-weight:800;letter-spacing:0.4px;color:' + color + '">' + labels[index] + '</div>'
+          +   '<div style="font-size:10px;color:var(--text3);margin-top:6px">' + formatShortDate(date) + '</div>'
+          + '</div>';
+      }).join('');
+    }
+    function ensureWeeklyChartsResponsive() {
+      var grid = document.getElementById('weeklyChartsGrid');
+      if (!grid) return;
+      grid.style.gridTemplateColumns = window.innerWidth <= 860 ? '1fr' : 'repeat(2,minmax(0,1fr))';
+    }
+
+
+    var dashboardLiveTimer = null;
+
+    function readDashboardCycleSummary() {
+      try {
+        var raw = JSON.parse(localStorage.getItem('ct_ciclo_' + (cId || '')) || '{}');
+        var entries = Array.isArray(raw.entries) ? raw.entries : [];
+        var history = Array.isArray(raw.sessionHistory) ? raw.sessionHistory : [];
+        return {
+          studied: history.reduce(function (acc, item) { return acc + (parseInt(item.duracao || item.duracaoSegundos || 0, 10) || 0); }, 0),
+          target: entries.reduce(function (acc, item) { return acc + (parseInt(item.targetSeconds || 0, 10) || 0); }, 0)
+        };
+      } catch (e) {
+        return { studied: 0, target: 0 };
+      }
+    }
+
+    function buildDashboardSnapshot() {
+      var c = CT.getConcurso(cId);
+      if (!c) return null;
+      var materias = CT.getMaterias(cId);
+      var matIds = materias.map(function (m) { return m.id; });
+      var topicos = CT.getTopicos().filter(function (t) { return matIds.includes(t.materiaId); });
+      var subtopicos = CT.getSubtopicos().filter(function (s) { return matIds.includes(s.materiaId); });
+      var sessoes = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId); });
+      var questoesArr = CT.getQuestoes().filter(function (q) { return matIds.includes(q.materiaId); });
+      var q = CT.calcStats(questoesArr);
+      var ultimoSim = CT.ultimoSimulado(cId);
+      var ultimoSimPct = ultimoSim ? CT.getSimuladoPct(ultimoSim) : null;
+      var todosSims = CT.getSimulados(cId)
+        .map(function (s) { return CT.getSimuladoPct(s); })
+        .filter(function (pct) { return pct != null; });
+      var mediaSims = todosSims.length > 0 ? Math.round(todosSims.reduce(function (acc, pct) { return acc + pct; }, 0) / todosSims.length) : null;
+      var materiasStats = {};
+      materias.forEach(function (m) {
+        var tops = CT.getTopicos(m.id);
+        var est = tops.filter(function (t) { return t.estudado; }).length;
+        var mSeg = CT.totalSegundos(CT.getSessoes().filter(function (s) { return s.materiaId === m.id; }));
+        var mQ = CT.calcStats(CT.getQuestoes().filter(function (q) { return q.materiaId === m.id; }));
+        materiasStats[m.id] = { seg: mSeg, pct: mQ.pct, resolvidas: mQ.resolvidas, acertos: mQ.acertos, erros: mQ.erros, estudados: est, totalTopicos: tops.length };
+      });
+      return {
+        concurso: c,
+        materias: materias,
+        matIds: matIds,
+        seg: CT.totalSegundos(sessoes),
+        questoes: q.resolvidas || 0,
+        acertos: q.acertos || 0,
+        erros: q.erros || 0,
+        pct: q.pct,
+        ultimoSimPct: ultimoSimPct,
+        mediaSims: mediaSims,
+        topicosEstudados: topicos.filter(function (t) { return t.estudado; }).length,
+        totalTopicos: topicos.length,
+        subEstudados: subtopicos.filter(function (s) { return s.estudado; }).length,
+        totalSubtopicos: subtopicos.length,
+        materiasStats: materiasStats,
+        cycle: readDashboardCycleSummary()
+      };
+    }
+
+    function formatDeltaTime(seconds) {
+      var abs = Math.abs(seconds || 0);
+      return (seconds > 0 ? '+' : '-') + CT.formatarTempo(abs);
+    }
+
+    function formatDeltaNumber(value, suffix) {
+      return (value > 0 ? '+' : '') + value + (suffix || '');
+    }
+
+    function showLiveDelta(el, text, direction) {
+      if (!el || !text) return;
+      Array.prototype.slice.call(el.querySelectorAll('.ct-live-delta')).forEach(function (old) { old.remove(); });
+      var badge = document.createElement('span');
+      badge.className = 'ct-live-delta ' + (direction === 'negative' ? 'negative' : 'positive');
+      badge.textContent = text;
+      el.appendChild(badge);
+      el.classList.remove('ct-live-pulse');
+      void el.offsetWidth;
+      el.classList.add('ct-live-pulse');
+      setTimeout(function () { if (badge.parentNode) badge.remove(); el.classList.remove('ct-live-pulse'); }, 10100);
+    }
+
+    function showNumericDelta(el, diff, suffix) {
+      if (!el || !diff) return;
+      showLiveDelta(el, formatDeltaNumber(diff, suffix || ''), diff < 0 ? 'negative' : 'positive');
+    }
+
+    function updateDashboardStatCards(snapshot, before, animate) {
+      var sHoras = document.getElementById('sHoras');
+      var sQuestoes = document.getElementById('sQuestoes');
+      var sAcertos = document.getElementById('sAcertos');
+      var sSim = document.getElementById('sSimulado');
+      if (sHoras) sHoras.textContent = snapshot.seg > 0 ? CT.formatarTempo(snapshot.seg) : '0h';
+      if (sQuestoes) sQuestoes.textContent = snapshot.questoes || 0;
+      if (sAcertos) {
+        sAcertos.textContent = snapshot.pct != null ? snapshot.pct + '%' : '\u2014';
+        sAcertos.style.color = snapshot.pct != null ? pctColor(snapshot.pct) : 'var(--text)';
+      }
+      if (sSim) {
+        sSim.textContent = snapshot.ultimoSimPct != null ? snapshot.ultimoSimPct + '%' : '\u2014';
+        sSim.style.color = snapshot.ultimoSimPct != null ? pctColor(snapshot.ultimoSimPct) : 'var(--text)';
+      }
+      var simMedia = document.getElementById('sSimMedia');
+      if (simMedia) simMedia.innerHTML = snapshot.mediaSims != null ? 'media em todos: <strong style="color:var(--text2)">' + snapshot.mediaSims + '%</strong>' : 'media em todos: &mdash;';
+      var sTopicos = document.getElementById('sTopicos');
+      var sSubtopicos = document.getElementById('sSubtopicos');
+      if (sTopicos) sTopicos.textContent = snapshot.topicosEstudados + '/' + snapshot.totalTopicos;
+      if (sSubtopicos) sSubtopicos.textContent = 'Subt\u00f3picos: ' + snapshot.subEstudados + '/' + snapshot.totalSubtopicos;
+      if (!animate || !before) return;
+      var deltaSeg = snapshot.seg - before.seg;
+      if (deltaSeg) showLiveDelta(sHoras, formatDeltaTime(deltaSeg), deltaSeg < 0 ? 'negative' : 'positive');
+      showNumericDelta(sQuestoes, snapshot.questoes - before.questoes);
+      if (snapshot.pct != null && before.pct != null) showNumericDelta(sAcertos, snapshot.pct - before.pct, '%');
+      if (snapshot.ultimoSimPct != null && before.ultimoSimPct != null) showNumericDelta(sSim, snapshot.ultimoSimPct - before.ultimoSimPct, '%');
+    }
+
+    function renderDashboardMateriasLive(snapshot, before, animate) {
+      var tbody = document.getElementById('materiasTbody');
+      if (!tbody) return;
+      var materias = snapshot.materias;
+      var hoje_str = CT._today();
+      if (!materias.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">Nenhuma mat\u00e9ria cadastrada.<br><small>Use + Adicionar mat\u00e9ria acima.</small></td></tr>';
+        return;
+      }
+      tbody.innerHTML = materias.map(function (m) {
+        var tops = CT.getTopicos(m.id);
+        var est = tops.filter(function (t) { return t.estudado; }).length;
+        var pProg = tops.length ? Math.round(est / tops.length * 100) : 0;
+        var mStats = snapshot.materiasStats[m.id] || { seg: 0, pct: null };
+        var revMat = CT.getRevisoes().filter(function (r) { var ctx = CT.getContextoRevisao(r); return ctx.materia && ctx.materia.id === m.id && !r.concluida; }).sort(function (a, b) { return a.data.localeCompare(b.data); });
+        var revBadge = '<span class="badge-revisao none">&mdash;</span>';
+        if (revMat.length) { var r = revMat[0]; if (r.data < hoje_str) revBadge = '<span class="badge-revisao atrasada">&#128308; ' + diasAtraso(r.data) + 'd</span>'; else if (r.data === hoje_str) revBadge = '<span class="badge-revisao hoje">&#128993; hoje</span>'; else revBadge = '<span class="badge-revisao futura">&#128197; ' + r.data.split('-').slice(1).reverse().join('/') + '</span>'; }
+        var pctStr = mStats.pct != null ? '<span class="pct" data-live-pct="' + m.id + '" style="color:' + pctColor(mStats.pct) + '">' + mStats.pct + '%</span>' : '<span class="pct none" data-live-pct="' + m.id + '">&mdash;</span>';
+        var tempoStr = mStats.seg > 0 ? CT.formatarTempo(mStats.seg) : '<span style="color:var(--text3)">&mdash;</span>';
+        return '<tr onclick="abrirMateria(\'' + m.id + '\')" style="cursor:pointer">'
+          + '<td><div class="mat-nome">' + m.nome + '</div></td>'
+          + '<td>' + revBadge + '</td>'
+          + '<td><span class="tempo-text" data-live-tempo="' + m.id + '">' + tempoStr + '</span></td>'
+          + '<td>' + pctStr + '</td>'
+          + '<td><div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:' + pProg + '%"></div></div><span class="prog-text">' + est + '/' + tops.length + '</span></div></td>'
+          + '<td style="white-space:nowrap"><button data-mid="' + m.id + '" onclick="event.stopPropagation();deletarMateria(this.dataset.mid)" style="padding:2px 7px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:12px;cursor:pointer">&times;</button></td>'
+          + '</tr>';
+      }).join('');
+      if (!animate || !before) return;
+      materias.forEach(function (m) {
+        var prev = before.materiasStats && before.materiasStats[m.id];
+        var next = snapshot.materiasStats && snapshot.materiasStats[m.id];
+        if (!prev || !next) return;
+        var tempoEl = tbody.querySelector('[data-live-tempo="' + m.id + '"]');
+        var pctEl = tbody.querySelector('[data-live-pct="' + m.id + '"]');
+        var segDiff = next.seg - prev.seg;
+        if (segDiff) showLiveDelta(tempoEl, formatDeltaTime(segDiff), segDiff < 0 ? 'negative' : 'positive');
+        if (next.pct != null && prev.pct != null) showNumericDelta(pctEl, next.pct - prev.pct, '%');
+      });
+    }
+
+    function renderDashboardWeeklyLive(snapshot) {
+      if (typeof Chart === 'undefined') return;
+      var materias = snapshot.materias;
+      var matIds = snapshot.matIds;
+      var theme = window.TrackTheme ? TrackTheme.palette() : null;
+      var weekBounds = getWeekBounds(new Date());
+      var weekDates = getWeekDates(weekBounds);
+      var weekDateSet = {};
+      weekDates.forEach(function (date) { weekDateSet[CT._dateString(date)] = true; });
+      var chartSub = document.getElementById('weeklyChartSub');
+      if (chartSub) chartSub.textContent = formatShortDate(weekBounds.start) + ' a ' + formatShortDate(weekBounds.end) + ' - domingo a s\u00e1bado';
+      var weeklySess = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId) && weekDateSet[s.data]; });
+      var weeklyQ = CT.getQuestoes().filter(function (quest) { return matIds.includes(quest.materiaId) && weekDateSet[quest.data]; });
+      var materiaColorMap = buildWeeklyMateriaColorMap(materias);
+      var hoursByMateria = {};
+      weeklySess.forEach(function (sess) { if (sess && sess.materiaId) hoursByMateria[sess.materiaId] = (hoursByMateria[sess.materiaId] || 0) + (sess.duracaoSegundos || 0); });
+      var hoursItems = Object.keys(hoursByMateria).map(function (materiaId, index) {
+        var materia = materias.find(function (m) { return m.id === materiaId; });
+        if (!materia) return null;
+        return { label: materia.nome, value: Number((hoursByMateria[materiaId] / 3600).toFixed(2)), seconds: hoursByMateria[materiaId], color: materiaColorMap[materiaId] || getFallbackChartColor(index) };
+      }).filter(function (item) { return item && item.value > 0; }).sort(function (a, b) { return b.value - a.value; });
+      var totalHours = hoursItems.reduce(function (acc, item) { return acc + item.value; }, 0);
+      hoursItems.forEach(function (item) { item.percentage = totalHours > 0 ? Math.round((item.value / totalHours) * 100) : 0; });
+      var weeklyQuestionStats = CT.calcStats(weeklyQ);
+      var questionItems = [];
+      if ((weeklyQuestionStats.acertos || 0) > 0) questionItems.push({ label: 'Certas', value: weeklyQuestionStats.acertos || 0, color: '#3ecf8e' });
+      if ((weeklyQuestionStats.erros || 0) > 0) questionItems.push({ label: 'Erradas', value: weeklyQuestionStats.erros || 0, color: '#f55a5a' });
+      var totalQuestions = questionItems.reduce(function (acc, item) { return acc + item.value; }, 0);
+      questionItems.forEach(function (item) { item.percentage = totalQuestions > 0 ? Math.round((item.value / totalQuestions) * 100) : 0; });
+      var hoursSub = document.getElementById('weeklyHoursSub');
+      var questionsSub = document.getElementById('weeklyQuestionsSub');
+      var hoursLegend = document.getElementById('weeklyHoursLegend');
+      var questionsLegend = document.getElementById('weeklyQuestionsLegend');
+      if (hoursSub) hoursSub.textContent = totalHours > 0 ? CT.formatarTempo(Math.round(totalHours * 3600)) + ' distribu\u00eddas nas mat\u00e9rias estudadas nesta semana' : 'Distribui\u00e7\u00e3o por mat\u00e9ria na semana atual';
+      if (questionsSub) questionsSub.textContent = totalQuestions > 0 ? totalQuestions + ' quest\u00f5es resolvidas nesta semana' : 'Total semanal entre acertos e erros';
+      if (hoursLegend) hoursLegend.innerHTML = buildLegendHtml(hoursItems, function (value, item) { return CT.formatarTempo(item.seconds || Math.round(value * 3600)); }, 'Per\u00edodo: ' + formatShortDate(weekBounds.start) + ' a ' + formatShortDate(weekBounds.end));
+      if (questionsLegend) questionsLegend.innerHTML = buildLegendHtml(questionItems, function (value) { return value; }, 'Total da semana: ' + totalQuestions + ' quest\u00f5es');
+      var hoursCanvas = document.getElementById('chartSemanalHoras');
+      var questionsCanvas = document.getElementById('chartSemanalQuestoes');
+      if (hoursCanvas) {
+        var oldHours = Chart.getChart ? Chart.getChart(hoursCanvas) : null;
+        if (oldHours) oldHours.destroy();
+        new Chart(hoursCanvas.getContext('2d'), hoursItems.length ? buildWeeklyPieConfig(hoursItems, theme, function (raw, item) { return item.label + ': ' + CT.formatarTempo(item.seconds || Math.round(raw * 3600)) + ' (' + item.percentage + '%)'; }) : buildWeeklyEmptyState('Sem horas nesta semana'));
+      }
+      if (questionsCanvas) {
+        var oldQuestions = Chart.getChart ? Chart.getChart(questionsCanvas) : null;
+        if (oldQuestions) oldQuestions.destroy();
+        new Chart(questionsCanvas.getContext('2d'), questionItems.length ? buildWeeklyPieConfig(questionItems, theme, function (raw, item) { return item.label + ': ' + raw + ' quest\u00f5es (' + item.percentage + '%)'; }) : buildWeeklyEmptyState('Sem quest\u00f5es nesta semana'));
+      }
+      renderWeeklyDaysStrip(weekDates, weekDateSet, weeklySess, weeklyQ);
+      ensureWeeklyChartsResponsive();
+    }
+
+    function showCycleLiveDelta(before, snapshot) {
+      if (!before || !snapshot || !before.cycle || !snapshot.cycle) return;
+      var diff = snapshot.cycle.studied - before.cycle.studied;
+      if (!diff) return;
+      var el = document.getElementById('cycleCargaEstudadaValue') || document.querySelector('.crono-cycle-studied-value');
+      showLiveDelta(el, formatDeltaTime(diff), diff < 0 ? 'negative' : 'positive');
+    }
+
+    function renderDashboardLive(options) {
+      var opts = options || {};
+      var before = window._dashboardLiveSnapshot || buildDashboardSnapshot();
+      var snapshot = buildDashboardSnapshot();
+      if (!snapshot) return;
+      updateDashboardStatCards(snapshot, before, !!opts.animate);
+      renderDashboardMateriasLive(snapshot, before, !!opts.animate);
+      renderDashboardWeeklyLive(snapshot);
+      if (typeof window.renderCrono === 'function') window.renderCrono();
+      if (typeof renderFaixa === 'function') renderFaixa(cId);
+      if (typeof renderPainelProva === 'function') renderPainelProva();
+      if (opts.animate) showCycleLiveDelta(before, snapshot);
+      window._dashboardLiveSnapshot = buildDashboardSnapshot() || snapshot;
+    }
+
+    function scheduleDashboardLiveUpdate(event) {
+      var detail = event && event.detail ? event.detail : {};
+      if (detail.concursoId && detail.concursoId !== cId) return;
+      clearTimeout(dashboardLiveTimer);
+      dashboardLiveTimer = setTimeout(function () { renderDashboardLive({ animate: true }); }, 90);
+    }
+
+    window.addEventListener('ct-data-updated', scheduleDashboardLiveUpdate);
+    window.addEventListener('storage', function (event) {
+      if (!event || !['ct_sessoes', 'ct_questoes', 'ct_simulados', 'ct_topicos', 'ct_subtopicos'].includes(event.key)) return;
+      clearTimeout(dashboardLiveTimer);
+      dashboardLiveTimer = setTimeout(function () { renderDashboardLive({ animate: false }); }, 90);
+    });
+    window.atualizarDashboardAgora = function () { renderDashboardLive({ animate: false }); };
 
     (function run() {
       if (!cId) return;
@@ -1739,15 +2282,19 @@
       document.getElementById('sSimMedia').innerHTML = mediaSims != null ? 'média em todos: <strong style="color:var(--text2)">' + mediaSims + '%</strong>' : 'média em todos: —';
 
       document.getElementById('sTopicos').textContent = estudados + '/' + topicos.length;
+      var subtopicos = CT.getSubtopicos().filter(function (s) { return matIds.includes(s.materiaId); });
+      var subEstudados = subtopicos.filter(function (s) { return s.estudado; }).length;
+      var subRestantes = Math.max(0, subtopicos.length - subEstudados);
+      document.getElementById('sSubtopicos').textContent = 'Subtópicos: ' + subEstudados + '/' + subtopicos.length;
 
       var rev = CT.classificarRevisoes();
-      var urgentes = [].concat(rev.atrasadas, rev.hoje).filter(function (r) { var t = CT.getTopico(r.topicoId); return t && matIds.includes(t.materiaId); }).length;
+      var urgentes = [].concat(rev.atrasadas, rev.hoje).filter(function (r) { var ctx = CT.getContextoRevisao(r); return ctx.materia && matIds.includes(ctx.materia.id); }).length;
       var bEl = document.getElementById('revBadge');
       if (urgentes > 0) { bEl.textContent = urgentes; bEl.style.display = ''; }
 
       var alertas = [];
-      rev.atrasadas.forEach(function (r) { var t = CT.getTopico(r.topicoId); if (t && matIds.includes(t.materiaId)) alertas.push('<span class="alert-tag atrasada">🔴 ' + t.nome + ' — ' + diasAtraso(r.data) + 'd atrasado</span>'); });
-      rev.hoje.forEach(function (r) { var t = CT.getTopico(r.topicoId); if (t && matIds.includes(t.materiaId)) alertas.push('<span class="alert-tag hoje">🟡 ' + t.nome + ' — hoje</span>'); });
+      rev.atrasadas.forEach(function (r) { var ctx = CT.getContextoRevisao(r); if (ctx.materia && matIds.includes(ctx.materia.id)) alertas.push('<span class="alert-tag atrasada">🔴 ' + ctx.nome + ' — ' + diasAtraso(r.data) + 'd atrasado</span>'); });
+      rev.hoje.forEach(function (r) { var ctx = CT.getContextoRevisao(r); if (ctx.materia && matIds.includes(ctx.materia.id)) alertas.push('<span class="alert-tag hoje">🟡 ' + ctx.nome + ' — hoje</span>'); });
       if (alertas.length) { document.getElementById('alertSection').style.display = ''; document.getElementById('alertTags').innerHTML = alertas.join(''); }
       var hoje_str = CT._today();
       var tbody = document.getElementById('materiasTbody');
@@ -1760,7 +2307,7 @@
           var pProg = tops.length ? Math.round(est / tops.length * 100) : 0;
           var mSeg = CT.totalSegundos(CT.getSessoes().filter(function (s) { return s.materiaId === m.id; }));
           var mQ = CT.calcStats(CT.getQuestoes().filter(function (q) { return q.materiaId === m.id; }));
-          var revMat = CT.getRevisoes().filter(function (r) { var t = CT.getTopico(r.topicoId); return t && t.materiaId === m.id && !r.concluida; }).sort(function (a, b) { return a.data.localeCompare(b.data); });
+          var revMat = CT.getRevisoes().filter(function (r) { var ctx = CT.getContextoRevisao(r); return ctx.materia && ctx.materia.id === m.id && !r.concluida; }).sort(function (a, b) { return a.data.localeCompare(b.data); });
           var revBadge = '<span class="badge-revisao none">—</span>';
           if (revMat.length) { var r = revMat[0]; if (r.data < hoje_str) revBadge = '<span class="badge-revisao atrasada">🔴 ' + diasAtraso(r.data) + 'd</span>'; else if (r.data === hoje_str) revBadge = '<span class="badge-revisao hoje">🟡 hoje</span>'; else revBadge = '<span class="badge-revisao futura">📅 ' + r.data.split('-').slice(1).reverse().join('/') + '</span>'; }
           var pctStr = mQ.pct != null ? '<span class="pct" style="color:' + pctColor(mQ.pct) + '">' + mQ.pct + '%</span>' : '<span class="pct none">—</span>';
@@ -1808,102 +2355,90 @@
 
       var allSess = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId); });
       var allQ = CT.getQuestoes().filter(function (q) { return matIds.includes(q.materiaId); });
-      var lbls = [], hData = [], qData = [];
-      for (var i = 6; i >= 0; i--) { var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i); var ds = CT._dateString(d); lbls.push(dSem[d.getDay()]); hData.push(parseFloat((CT.totalSegundos(allSess.filter(function (s) { return s.data === ds; })) / 3600).toFixed(2))); qData.push(CT.calcStats(allQ.filter(function (q2) { return q2.data === ds; })).resolvidas || 0); }
-      var chartCtx = document.getElementById('chartSemanal').getContext('2d');
       var theme = window.TrackTheme ? TrackTheme.palette() : null;
-      var gradHoras = chartCtx.createLinearGradient(0, 0, 0, 260);
-      gradHoras.addColorStop(0, theme ? TrackTheme.alpha(theme.accent, 0.42) : 'rgba(79, 142, 247, 0.42)');
-      gradHoras.addColorStop(1, theme ? TrackTheme.alpha(theme.accent, 0.03) : 'rgba(79, 142, 247, 0.03)');
-      var gradQuestoes = chartCtx.createLinearGradient(0, 0, 0, 260);
-      gradQuestoes.addColorStop(0, theme ? TrackTheme.alpha(theme.yellow, 0.24) : 'rgba(255, 212, 86, 0.22)');
-      gradQuestoes.addColorStop(1, theme ? TrackTheme.alpha(theme.yellow, 0) : 'rgba(255, 212, 86, 0)');
-      new Chart(chartCtx, {
-        type: 'line',
-        data: {
-          labels: lbls,
-          datasets: [
-            {
-              label: 'Horas',
-              data: hData,
-              yAxisID: 'y',
-              borderColor: theme ? theme.accent : '#72a7ff',
-              backgroundColor: gradHoras,
-              fill: true,
-              tension: 0.42,
-              borderWidth: 3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: theme ? theme.chartSurfaceBorder : '#0d0f14',
-              pointBorderColor: theme ? theme.accent : '#9fc0ff',
-              pointBorderWidth: 2
-            },
-            {
-              label: 'Questões',
-              data: qData,
-              yAxisID: 'y2',
-              borderColor: theme ? theme.yellow : '#ffd456',
-              backgroundColor: gradQuestoes,
-              fill: true,
-              tension: 0.35,
-              borderWidth: 2.5,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              pointBackgroundColor: theme ? theme.yellow : '#ffd456',
-              pointBorderColor: theme ? theme.chartSurfaceBorder : '#0d0f14',
-              pointBorderWidth: 2
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: {
-              labels: {
-                color: theme ? theme.chartAxisStrong : '#aeb4cf',
-                font: { size: 11, weight: '600' },
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 18
-              }
-            },
-            tooltip: {
-              backgroundColor: theme ? theme.tooltipBg : '#13161e',
-              borderColor: theme ? theme.tooltipBorder : 'rgba(255,255,255,0.08)',
-              borderWidth: 1,
-              titleColor: theme ? theme.tooltipTitle : '#f1f2f6',
-              bodyColor: theme ? theme.tooltipBody : '#c3c8df',
-              padding: 12,
-              displayColors: true
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: theme ? theme.chartAxis : '#6f7694', font: { size: 10 } },
-              grid: { color: theme ? theme.chartGrid : 'rgba(255,255,255,0.035)', drawBorder: false }
-            },
-            y: {
-              position: 'left',
-              beginAtZero: true,
-              ticks: {
-                color: theme ? theme.accent : '#72a7ff',
-                font: { size: 10 },
-                callback: function(value) { return value + 'h'; }
-              },
-              grid: { color: theme ? theme.chartGrid : 'rgba(255,255,255,0.04)', drawBorder: false }
-            },
-            y2: {
-              position: 'right',
-              beginAtZero: true,
-              ticks: { color: theme ? theme.yellow : '#ffd456', font: { size: 10 } },
-              grid: { display: false, drawBorder: false }
-            }
-          }
-        }
+      var weekBounds = getWeekBounds(new Date());
+      var weekDates = getWeekDates(weekBounds);
+      var weekDateSet = {};
+      weekDates.forEach(function (date) { weekDateSet[CT._dateString(date)] = true; });
+      document.getElementById('weeklyChartSub').textContent = formatShortDate(weekBounds.start) + ' a ' + formatShortDate(weekBounds.end) + ' - domingo a sábado';
+
+      var weeklySess = CT.getSessoes().filter(function (s) { return matIds.includes(s.materiaId) && weekDateSet[s.data]; });
+      var weeklyQ = CT.getQuestoes().filter(function (quest) { return matIds.includes(quest.materiaId) && weekDateSet[quest.data]; });
+      var materiaColorMap = buildWeeklyMateriaColorMap(materias);
+      var hoursByMateria = {};
+      weeklySess.forEach(function (sess) {
+        if (!sess || !sess.materiaId) return;
+        hoursByMateria[sess.materiaId] = (hoursByMateria[sess.materiaId] || 0) + (sess.duracaoSegundos || 0);
+      });
+      var hoursItems = Object.keys(hoursByMateria).map(function (materiaId, index) {
+        var materia = materias.find(function (m) { return m.id === materiaId; });
+        if (!materia) return null;
+        return {
+          label: materia.nome,
+          value: Number((hoursByMateria[materiaId] / 3600).toFixed(2)),
+          seconds: hoursByMateria[materiaId],
+          color: materiaColorMap[materiaId] || getFallbackChartColor(index)
+        };
+      }).filter(function (item) {
+        return item && item.value > 0;
+      }).sort(function (a, b) {
+        return b.value - a.value;
+      });
+      var totalHours = hoursItems.reduce(function (acc, item) { return acc + item.value; }, 0);
+      hoursItems.forEach(function (item) {
+        item.percentage = totalHours > 0 ? Math.round((item.value / totalHours) * 100) : 0;
       });
 
+      var weeklyQuestionStats = CT.calcStats(weeklyQ);
+      var questionItems = [];
+      if ((weeklyQuestionStats.acertos || 0) > 0) questionItems.push({ label: 'Certas', value: weeklyQuestionStats.acertos || 0, color: '#3ecf8e' });
+      if ((weeklyQuestionStats.erros || 0) > 0) questionItems.push({ label: 'Erradas', value: weeklyQuestionStats.erros || 0, color: '#f55a5a' });
+      var totalQuestions = questionItems.reduce(function (acc, item) { return acc + item.value; }, 0);
+      questionItems.forEach(function (item) {
+        item.percentage = totalQuestions > 0 ? Math.round((item.value / totalQuestions) * 100) : 0;
+      });
+
+      document.getElementById('weeklyHoursSub').textContent = totalHours > 0
+        ? CT.formatarTempo(Math.round(totalHours * 3600)) + ' distribuídas nas matérias estudadas nesta semana'
+        : 'Distribuição por matéria na semana atual';
+      document.getElementById('weeklyQuestionsSub').textContent = totalQuestions > 0
+        ? totalQuestions + ' questões resolvidas nesta semana'
+        : 'Total semanal entre acertos e erros';
+      document.getElementById('weeklyHoursLegend').innerHTML = buildLegendHtml(
+        hoursItems,
+        function (value, item) { return CT.formatarTempo(item.seconds || Math.round(value * 3600)); },
+        'Período: ' + formatShortDate(weekBounds.start) + ' a ' + formatShortDate(weekBounds.end)
+      );
+      document.getElementById('weeklyQuestionsLegend').innerHTML = buildLegendHtml(
+        questionItems,
+        function (value) { return value; },
+        'Total da semana: ' + totalQuestions + ' questões'
+      );
+
+      var pieHoursCtx = document.getElementById('chartSemanalHoras').getContext('2d');
+      var pieQuestionsCtx = document.getElementById('chartSemanalQuestoes').getContext('2d');
+      new Chart(
+        pieHoursCtx,
+        hoursItems.length
+          ? buildWeeklyPieConfig(hoursItems, theme, function (raw, item) {
+            return item.label + ': ' + CT.formatarTempo(item.seconds || Math.round(raw * 3600)) + ' (' + item.percentage + '%)';
+          })
+          : buildWeeklyEmptyState('Sem horas nesta semana')
+      );
+      new Chart(
+        pieQuestionsCtx,
+        questionItems.length
+          ? buildWeeklyPieConfig(questionItems, theme, function (raw, item) {
+            return item.label + ': ' + raw + ' questões (' + item.percentage + '%)';
+          })
+          : buildWeeklyEmptyState('Sem questões nesta semana')
+      );
+      renderWeeklyDaysStrip(weekDates, weekDateSet, weeklySess, weeklyQ);
+      ensureWeeklyChartsResponsive();
+      window.addEventListener('resize', ensureWeeklyChartsResponsive);
+
       renderPainelProva();
+      window._dashboardLiveSnapshot = buildDashboardSnapshot();
     })();
 
     // ══ PAINEL DA PROVA ══════════════════════════════
@@ -3184,22 +3719,50 @@
       document.getElementById('modalAddMatDash')?.remove();
       location.reload();
     }
-    function alternarAbaAddMat(abaStr) {
-      if (abaStr === 'nova') {
-        document.getElementById('tabAddNova').style.display = 'block';
-        document.getElementById('tabAddClonar').style.display = 'none';
-        document.getElementById('btnTabNova').style.color = 'var(--accent)';
-        document.getElementById('btnTabNova').style.borderBottom = '2px solid var(--accent)';
-        document.getElementById('btnTabClonar').style.color = 'var(--text3)';
-        document.getElementById('btnTabClonar').style.borderBottom = '2px solid transparent';
-      } else {
-        document.getElementById('tabAddNova').style.display = 'none';
-        document.getElementById('tabAddClonar').style.display = 'block';
-        document.getElementById('btnTabClonar').style.color = 'var(--accent)';
-        document.getElementById('btnTabClonar').style.borderBottom = '2px solid var(--accent)';
-        document.getElementById('btnTabNova').style.color = 'var(--text3)';
-        document.getElementById('btnTabNova').style.borderBottom = '2px solid transparent';
+    function _dCopiarPromptJson() {
+      var el = document.getElementById('dashMatJsonPrompt');
+      var txt = el ? el.value : '';
+      if (!txt) return;
+      if (window.CT && typeof CT.copy === 'function') CT.copy(txt);
+      else if (navigator.clipboard) navigator.clipboard.writeText(txt);
+      var btn = document.getElementById('btnCopyJsonPrompt');
+      if (btn) {
+        var old = btn.textContent;
+        btn.textContent = 'Prompt copiado';
+        setTimeout(function () { btn.textContent = old; }, 1400);
       }
+    }
+    function _dConfirmJson() {
+      var raw = document.getElementById('dashMatJson')?.value.trim();
+      if (!raw) {
+        var el = document.getElementById('dashMatJson');
+        if (el) { el.style.borderColor = 'var(--red)'; setTimeout(function () { el.style.borderColor = 'var(--border2)'; }, 1200); }
+        return;
+      }
+      var res = CT.importarMateriaJson(raw, cId);
+      if (!res || !res.ok) {
+        alert('Nao foi possivel importar a materia: ' + ((res && res.erro) || 'JSON invalido'));
+        return;
+      }
+      document.getElementById('modalAddMatDash')?.remove();
+      location.reload();
+    }
+    function alternarAbaAddMat(abaStr) {
+      const tabs = [
+        { key: 'nova', panel: 'tabAddNova', button: 'btnTabNova' },
+        { key: 'clonar', panel: 'tabAddClonar', button: 'btnTabClonar' },
+        { key: 'json', panel: 'tabAddJson', button: 'btnTabJson' },
+      ];
+      tabs.forEach(function (tab) {
+        const active = abaStr === tab.key;
+        const panel = document.getElementById(tab.panel);
+        const button = document.getElementById(tab.button);
+        if (panel) panel.style.display = active ? 'block' : 'none';
+        if (button) {
+          button.style.color = active ? 'var(--accent)' : 'var(--text3)';
+          button.style.borderBottom = active ? '2px solid var(--accent)' : '2px solid transparent';
+        }
+      });
     }
 
     function abrirModalAddMateriaDash() {
@@ -3215,8 +3778,9 @@
 
       const abasHTML = `
     <div style="display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:20px;">
-      <div id="btnTabNova" onclick="alternarAbaAddMat('nova')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;transition:all 0.2s">✨ Criar Nova</div>
-      <div id="btnTabClonar" onclick="alternarAbaAddMat('clonar')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s">🔗 Clonar Existente</div>
+      <div id="btnTabNova" onclick="alternarAbaAddMat('nova')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;transition:all 0.2s">Criar Manualmente</div>
+      <div id="btnTabClonar" onclick="alternarAbaAddMat('clonar')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s">Clonar Mat&eacute;ria</div>
+      <div id="btnTabJson" onclick="alternarAbaAddMat('json')" style="padding-bottom:10px;font-size:14px;font-weight:700;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s">Importar Via JSON</div>
     </div>
   `;
 
@@ -3236,6 +3800,34 @@
     </div>
   `;
 
+      const contentJson = `
+    <div id="tabAddJson" style="display:none">
+      <div style="display:grid;gap:14px">
+        <div style="background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.22);border-radius:12px;padding:14px 15px">
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px">Como usar</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.55">Copie o prompt abaixo, cole em uma intelig&ecirc;ncia artificial junto com o conte&uacute;do que voc&ecirc; quer estudar e pe&ccedil;a o retorno em JSON puro. Depois cole o JSON final no campo de importa&ccedil;&atilde;o.</div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)">Prompt para IA</div>
+            <button id="btnCopyJsonPrompt" onclick="_dCopiarPromptJson()" style="padding:7px 12px;border:1px solid var(--accent);border-radius:8px;background:rgba(79,142,247,0.1);color:var(--accent);font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer">Copiar prompt</button>
+          </div>
+          <textarea id="dashMatJsonPrompt" readonly spellcheck="false" style="width:100%;min-height:150px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text2);font-family:var(--mono);font-size:11px;line-height:1.55;outline:none;box-sizing:border-box;resize:vertical">Voce vai transformar a lista de conteudos abaixo em JSON puro para importar uma unica materia no Track Concursos.&#10;&#10;Responda somente com JSON valido. Nao use markdown, nao use bloco de codigo, nao explique nada.&#10;&#10;Formato obrigatorio:&#10;{&#10;  "materia": {&#10;    "nome": "Nome da materia",&#10;    "topicos": [&#10;      { "nome": "Nome do topico", "subtopicos": ["Subtopico 1", "Subtopico 2"] }&#10;    ]&#10;  }&#10;}&#10;&#10;Regras:&#10;- Crie apenas uma materia.&#10;- Organize titulos, itens e incisos como topicos/subtopicos.&#10;- Use nomes curtos e objetivos.&#10;- Se um topico nao tiver subtopicos, use "subtopicos": [].&#10;- Preserve a ordem original.&#10;- Nao inclua comentarios.&#10;&#10;Conteudo para organizar:&#10;[COLE AQUI O CONTEUDO DA MATERIA]</textarea>
+        </div>
+
+        <div>
+          <div style="font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Cole aqui o JSON puro retornado pela IA</div>
+          <textarea id="dashMatJson" spellcheck="false" placeholder='{"materia":{"nome":"Informatica","topicos":[{"nome":"Windows","subtopicos":["Atalhos","Explorador de Arquivos"]}]}}' style="width:100%;min-height:170px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px;color:var(--text);font-family:var(--mono);font-size:12px;line-height:1.55;outline:none;box-sizing:border-box;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button onclick="document.getElementById('modalAddMatDash').remove()" style="padding:10px 20px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text3);font-family:var(--sans);font-size:14px;cursor:pointer">Cancelar</button>
+        <button onclick="_dConfirmJson()" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer">Importar mat&eacute;ria</button>
+      </div>
+    </div>
+  `;
+
       // Agrupar matérias por concurso
       const matsPorConcurso = {};
       outrass.forEach(m => {
@@ -3251,6 +3843,7 @@
           <div class="contest-clone-card" onclick="exibirMateriasParaClonar('${c.id}')" id="cardC_${c.id}">
             <div class="contest-clone-logo">${c.logoPath ? `<img src="${c.logoPath}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : (c.logoBase64 ? `<img src="${c.logoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : (c.logoEmoji || '📋'))}</div>
             <div class="contest-clone-name">${c.nome}</div>
+            <div class="contest-clone-banca">${c.banca || 'Banca nao informada'}</div>
           </div>
         `).join('')}
       </div>
@@ -3266,7 +3859,7 @@
     </div>
   `;
 
-      o.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:30px;width:550px;max-width:94vw;max-height:86vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative">' + abasHTML + contentNova + contentClonar + '</div>';
+      o.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:30px;width:680px;max-width:94vw;max-height:86vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.6);position:relative">' + abasHTML + contentNova + contentJson + contentClonar + '</div>';
       o.addEventListener('click', function (e) { if (e.target === o) o.remove(); }); document.body.appendChild(o);
 
       // Adiciona funções auxiliares ao escopo global temporariamente para o modal funcionar
@@ -3526,15 +4119,23 @@
 
       const desc = document.getElementById('modalDesc');
       const label = document.getElementById('modalLabel');
-      const fusionBox = document.querySelector('.report-body .report-card');
-      const fusionTitle = document.querySelector('.report-body .report-card-label');
+      const fusionBox = document.getElementById('fusionToolCard');
       const btnFusion = document.getElementById('btnConfirmMerge');
+      document.getElementById('infoBanca').value = c.banca || '';
+      document.getElementById('infoVagas').value = c.vagas ?? '';
+      document.getElementById('infoDataProva').value = c.dataProva || '';
+      document.getElementById('infoLocalProva').value = c.localProva || '';
+      document.getElementById('infoCargo').value = c.cargo || '';
+      document.getElementById('infoSalario').value = c.salario || '';
+      document.getElementById('infoLinkEdital').value = c.linkEdital || '';
+      document.getElementById('infoObs').value = c.obs || '';
 
       if (c.preEdital) {
-        label.textContent = "✦ Finalizar Batalha (Pré-Edital)";
-        desc.innerHTML = "Este concurso de <b>Pré-Edital</b> chegou ao fim? Se você já realizou a prova oficial, pode finalizá-lo e fusionar suas estatísticas de estudo com o card definitivo.";
+        label.textContent = "✦ Informações do Pré-Edital";
+        desc.innerHTML = "Dados gerais, edital e observacoes deste concurso.";
         fusionBox.style.display = 'block';
         btnFusion.style.display = 'block';
+        btnFusion.dataset.allowed = '1';
 
         const todos = CT.getConcursos();
         const realizados = todos.filter(x => x.realizado && x.id !== cId);
@@ -3542,16 +4143,31 @@
         select.innerHTML = '<option value="">Selecione para onde enviar estes dados...</option>' +
           realizados.map(r => `<option value="${r.id}">${r.nome} (${r.banca})</option>`).join('');
       } else {
-        label.textContent = "✦ Opções do Edital (Pós-Edital)";
-        desc.innerHTML = "Visualize ações e status do seu concurso em andamento. Você pode exportar os dados deste edital para backup ou compartilhamento.";
+        label.textContent = "✦ Informações do Edital";
+        desc.innerHTML = "Dados gerais, edital e observacoes deste concurso.";
         fusionBox.style.display = 'none';
         btnFusion.style.display = 'none';
+        btnFusion.dataset.allowed = '0';
         document.getElementById('mergePreview').style.display = 'none';
       }
 
       document.getElementById('modalMerge').classList.add('visible');
     }
 
+    function salvarInfoConcursoDashboard() {
+      const c = CT.getConcurso(cId);
+      if (!c) return;
+      c.banca = document.getElementById('infoBanca')?.value.trim() || '';
+      c.vagas = parseInt(document.getElementById('infoVagas')?.value, 10) || null;
+      c.dataProva = document.getElementById('infoDataProva')?.value || null;
+      c.localProva = document.getElementById('infoLocalProva')?.value.trim() || '';
+      c.cargo = document.getElementById('infoCargo')?.value.trim() || '';
+      c.salario = document.getElementById('infoSalario')?.value.trim() || '';
+      c.linkEdital = document.getElementById('infoLinkEdital')?.value.trim() || '';
+      c.obs = document.getElementById('infoObs')?.value.trim() || '';
+      CT.saveConcurso(c);
+      CT.toast('Informações do concurso salvas.', '✅');
+    }
     function fecharModalMerge() {
       document.getElementById('modalMerge').classList.remove('visible');
     }

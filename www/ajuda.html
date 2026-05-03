@@ -52,18 +52,20 @@
   }
   .dev-card-link { text-decoration:none; color:inherit; display:block; }
   .dev-avatar {
-    width:80px;height:80px;border-radius:50%;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    width:92px;height:92px;border-radius:0;
+    background:transparent;
     display:flex;align-items:center;justify-content:center;
     font-size:36px;flex-shrink:0;
     color:#fff;
   }
   .dev-avatar svg { width:72px;height:72px;display:block;fill:currentColor; }
+  .dev-avatar img { width:92px;height:92px;object-fit:contain;display:block; }
   .dev-info { flex:1;min-width:180px; }
   .dev-name { font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
   .dev-tagline { font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:12px; }
   .dev-badges { display:flex;gap:8px;flex-wrap:wrap; }
   .dev-badge { padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid; }
+  .dev-badges .release-note-card { padding:6px 12px; }
 
   .contact-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:28px; }
   .contact-card {
@@ -224,6 +226,26 @@
      color:var(--text3);
      opacity:0.7;
    }
+   .release-note-card {
+     display:inline-flex;
+     align-items:center;
+     gap:8px;
+     padding:7px 12px;
+     border-radius:999px;
+     border:1px solid rgba(79,142,247,0.32);
+     background:rgba(79,142,247,0.08);
+     color:var(--accent);
+     text-decoration:none;
+     font-size:12px;
+     font-weight:700;
+     line-height:1;
+     transition:all .15s ease;
+   }
+   .release-note-card:hover {
+     border-color:rgba(79,142,247,0.58);
+     background:rgba(79,142,247,0.14);
+     transform:translateY(-1px);
+   }
   /* Esconder botões nativos de scroll numérico */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; appearance: none; }
@@ -239,7 +261,7 @@
   </div>
   <nav class="nav">
     <div class="nav-label">Menu</div>
-    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon">🗂</span> Meus Concursos</div>
+    <div class="nav-item" onclick="location.href='concursos.html'" style="cursor:pointer"><span class="icon"><img src="assets/michel-m-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;display:block"></span> Meus Concursos</div>
     <div class="nav-item" onclick="location.href='dashboard.html'" style="cursor:pointer"><span class="icon">🏠</span> Dashboard</div>
     <div class="nav-item" onclick="location.href='revisoes.html'" style="cursor:pointer"><span class="icon">🔁</span> Revisões <span class="nav-badge" id="revBadge" style="display:none">0</span></div>
     <div class="nav-item" onclick="location.href='historico.html'" style="cursor:pointer"><span class="icon">📈</span> Métricas</div>
@@ -273,21 +295,13 @@
   <div class="page-sub">Saiba como usar o Track Concursos, baixar versões oficiais e enviar feedbacks ou sugestões.</div>
 
   <!-- SOFTWARE CARD -->
-  <a href="https://github.com/michel-softwares/track-concursos" target="_blank" rel="noopener noreferrer" class="dev-card-link" title="Página oficial do projeto no GitHub">
+  <div class="dev-card-link" title="Página oficial do projeto no GitHub" onclick="window.open('https://github.com/michel-softwares/track-concursos','_blank','noopener')">
     <div class="dev-card">
       <div class="dev-avatar" aria-hidden="true">
-        <svg viewBox="0 0 16 16" role="img">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
-          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
-          -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64
-          -.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65
-          0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
-          1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
-          0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
-        </svg>
+        <img src="assets/logo-oficial-track-concursos.png?v=1.0.1" alt="Track Concursos">
       </div>
       <div class="dev-info">
-        <div class="dev-name">Track Concursos <span class="dev-badge" style="color:var(--accent);border-color:rgba(79,142,247,0.3)">v1.0.0</span></div>
+        <div class="dev-name">Track Concursos <span class="dev-badge" style="color:var(--accent);border-color:rgba(79,142,247,0.3)">v1.0.1</span></div>
         <div class="dev-tagline">
           Software desenvolvido para uso gratuito com intuito de auxiliar o usuário a organizar seus estudos para qualquer concurso, analisar suas atividades de estudo de forma inteligente e registrar o histórico de todos os seus concursos já realizados.<br>
           Para sua segurança, baixe o programa e futuras atualizações pela página oficial do projeto no GitHub.<br>
@@ -296,10 +310,11 @@
         </div>
         <div class="dev-badges">
           <span class="dev-badge" style="color:var(--accent2);border-color:rgba(124,92,252,0.3)">powered by Antigravity Gemini</span>
+          <a class="release-note-card" href="release-notes-v1.0.1.html" onclick="event.stopPropagation()">Notas da atualização v1.0.1</a>
         </div>
       </div>
     </div>
-  </a>
+  </div>
 
   <!-- CONTATO -->
   <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px">📬 Contato</div>
@@ -526,9 +541,10 @@ function copyPixKey(event) {
   // Rev badge
   const rev = CT.classificarRevisoes ? CT.classificarRevisoes() : null;
   if (rev) {
-    const urgentes = [...(rev.atrasadas||[]),...(rev.hoje||[])].filter(r=>{const t=CT.getTopico(r.topicoId);return t&&t.concursoId===cId;}).length;
+    const urgentes = [...(rev.atrasadas||[]), ...(rev.hoje||[])].filter(r => { const ctx = CT.getContextoRevisao(r); return ctx.concursoId === cId; }).length;
     const b = document.getElementById('revBadge');
     if (b) { b.textContent=urgentes; b.style.display=urgentes>0?'':'none'; }
   }
 })();
 </script>
+<script src="timer-popup.js"></script>

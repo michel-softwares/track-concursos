@@ -282,15 +282,11 @@
   });
   document.body.appendChild(fab);
 
-  // Exibir conforme regras: Dashboard sempre, PDF/Materia só se rodando
+  // Mantem o cronometro acessivel em todas as telas que carregam este script.
   function updateFabVisibility() {
-      const isDashboard = window.location.pathname.includes('dashboard.html') || window.location.pathname.endsWith('/');
       const isRunning = state.freeRunning || state.pomoRunning;
-      if (isDashboard || isRunning || state.open) {
-          fab.style.display = 'flex';
-      } else {
-          fab.style.display = 'none';
-      }
+      fab.style.display = 'flex';
+      fab.classList.toggle('running', isRunning);
   }
   updateFabVisibility();
 
@@ -654,12 +650,19 @@
     modalPendingOrigem = '';
   }
 
+  function clearCyclePresetState() {
+    state.cyclePreset = null;
+    state.isRevisionCard = false;
+    state.selectedTipo = '';
+  }
+
   $btnModalCancel.addEventListener('click', function () {
     if (confirm('Tem certeza que deseja descartar este tempo estudado? Ele não vai para suas métricas.')) {
       if (modalPendingOrigem === 'pomodoro') {
         state.pomoAccumulatedTime = 0;
         saveState();
       }
+      if (state.cyclePreset) clearCyclePresetState();
       closeSessionModal();
       if (modalPendingOrigem === 'timer_livre') resetFree();
     }
@@ -701,9 +704,11 @@
     }
 
     const matNameInfo = matId ? ($modalMat.options[$modalMat.selectedIndex].text) : (modalPendingOrigem === 'pomodoro' ? 'Pomodoro' : 'Livre');
-    const cItemId = (window.cycleTimer && window.cycleTimer.preset) ? window.cycleTimer.preset.itemId : null;
+    const cPreset = state.cyclePreset || null;
+    const cItemId = cPreset ? cPreset.itemId : null;
     state.sessions.push({ dur: modalPendingDur, mat: matNameInfo, ts: Date.now(), sessaoId: savedSessaoId, materiaId: matId || null, cycleItemId: cItemId });
     renderSessions();
+    if (cPreset) clearCyclePresetState();
 
     if (modalPendingOrigem === 'pomodoro') {
       state.pomoAccumulatedTime = 0;
@@ -930,27 +935,28 @@
   function deleteSession(idx) {
     if (idx < 0 || idx >= state.sessions.length) return;
     var session = state.sessions[idx];
+    var removedByCT = false;
     // Remove from CT localStorage
     if (cId && typeof CT !== 'undefined') {
       try {
-        var allSessoes = JSON.parse(localStorage.getItem('ct_sessoes') || '[]');
-        // Find matching session by timestamp or id
-        var found = -1;
-        for (var i = allSessoes.length - 1; i >= 0; i--) {
-          var s = allSessoes[i];
-          if (s.concursoId === cId && s.duracaoSegundos === session.dur) {
-            if (session.sessaoId && s.id === session.sessaoId) { found = i; break; }
-            if (!session.sessaoId && s.materiaId === (session.materiaId || null)) { found = i; break; }
+        var foundId = session.sessaoId || null;
+        if (!foundId) {
+          var allSessoes = JSON.parse(localStorage.getItem('ct_sessoes') || '[]');
+          for (var i = allSessoes.length - 1; i >= 0; i--) {
+            var s = allSessoes[i];
+            if (s.concursoId === cId && s.duracaoSegundos === session.dur && s.materiaId === (session.materiaId || null)) {
+              foundId = s.id;
+              break;
+            }
           }
         }
-        if (found >= 0) {
-          allSessoes.splice(found, 1);
-          localStorage.setItem('ct_sessoes', JSON.stringify(allSessoes));
+        if (foundId && typeof CT.excluirSessao === 'function') {
+          removedByCT = CT.excluirSessao(foundId);
         }
       } catch (e) { }
     }
-    if (session.cycleItemId && typeof window.CTCycle !== 'undefined') {
-      window.CTCycle.refundCycleTime(session.cycleItemId, session.dur);
+    if (!removedByCT && session.cycleItemId && typeof window.CTCycle !== 'undefined') {
+      window.CTCycle.refundCycleTime(session.cycleItemId, session.dur, session.sessaoId);
     }
     state.sessions.splice(idx, 1);
     renderSessions();
